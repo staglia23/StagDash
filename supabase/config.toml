@@ -1,0 +1,8 @@
+# Supabase project config. Ajustar project_id al enlazar con el proyecto real (supabase link).
+project_id = "stag-dashboard"
+
+[db]
+major_version = 15
+
+[functions.guesty-sync]
+verify_jwt = false   # la invoca el cron interno; se protege con el secret de service_role

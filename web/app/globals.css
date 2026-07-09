@@ -1,0 +1,94 @@
+/* Tokens de la paleta validada (dataviz). Light + dark seleccionados. */
+:root {
+  --page:           #f9f9f7;
+  --surface-1:      #fcfcfb;
+  --text-primary:   #0b0b0b;
+  --text-secondary: #52514e;
+  --muted:          #898781;
+  --gridline:       #e1e0d9;
+  --baseline:       #c3c2b7;
+  --border:         rgba(11, 11, 11, 0.10);
+  --series-1:       #2a78d6;  /* barra tendencia */
+  --good:           #006300;
+  --critical:       #d03b3b;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page:           #0d0d0d;
+    --surface-1:      #1a1a19;
+    --text-primary:   #ffffff;
+    --text-secondary: #c3c2b7;
+    --muted:          #898781;
+    --gridline:       #2c2c2a;
+    --baseline:       #383835;
+    --border:         rgba(255, 255, 255, 0.10);
+    --series-1:       #3987e5;
+    --good:           #0ca30c;
+    --critical:       #e66767;
+  }
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.45;
+}
+a { color: inherit; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 64px; }
+
+.header { margin-bottom: 20px; }
+.header h1 { font-size: 1.35rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+.header .sub { color: var(--text-secondary); font-size: 0.9rem; }
+.header .stamp { color: var(--muted); font-size: 0.8rem; margin-top: 6px; }
+
+.section-title {
+  font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); margin: 32px 0 12px; font-weight: 600;
+}
+
+/* KPI grid — responsive: 1 col móvil, 2 tablet, 3 desktop */
+.kpi-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 560px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 860px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+.kpi-label { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 6px; }
+.kpi-value { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em; }
+.kpi-sub { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+
+/* Tabla ranking — scroll horizontal en móvil */
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-1); }
+table.ranking { width: 100%; border-collapse: collapse; font-size: 0.9rem; min-width: 640px; }
+table.ranking th, table.ranking td { padding: 10px 14px; text-align: right; white-space: nowrap; }
+table.ranking th:first-child, table.ranking td:first-child { text-align: left; position: sticky; left: 0; background: var(--surface-1); }
+table.ranking thead th {
+  color: var(--muted); font-weight: 600; font-size: 0.75rem;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--gridline);
+}
+table.ranking tbody tr { border-bottom: 1px solid var(--gridline); }
+table.ranking tbody tr:last-child { border-bottom: none; }
+table.ranking td.num { font-variant-numeric: tabular-nums; }
+table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline); }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+.pos { color: var(--good); }
+.neg { color: var(--critical); }
+
+.chart-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 12px 8px; }
+
+.notice { background: var(--surface-1); border: 1px dashed var(--baseline); border-radius: 12px; padding: 20px; color: var(--text-secondary); }
+.backlink { display: inline-block; margin-bottom: 12px; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; }
+.backlink:hover { color: var(--text-primary); }

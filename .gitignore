@@ -1,0 +1,25 @@
+# deps / build
+node_modules/
+web/.next/
+web/out/
+dist/
+
+# env & secrets (NUNCA commitear)
+.env
+.env.local
+.env*.local
+supabase/.env
+.vercel/
+
+# datos sensibles — viven local + en Supabase, nunca en el repo
+*.xlsx
+00_Contexto_Negocio_Stag.md
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
+
+# OS / editor
+.DS_Store
+*.log
+__pycache__/
