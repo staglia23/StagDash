@@ -4,7 +4,8 @@
       "Bash(python3 -c \"import openpyxl; print\\('openpyxl OK'\\)\")",
       "Bash(pip3 install *)",
       "Bash(python3 -c \"import openpyxl; print\\('openpyxl OK now'\\)\")",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "mcp__claude_ai_Supabase__apply_migration"
     ]
   }
 }
