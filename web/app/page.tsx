@@ -1,10 +1,13 @@
 import { KpiCard } from "@/components/KpiCard";
+import { Alertas, type AlertaRow } from "@/components/Alertas";
+import { PropiedadCards, type PropCard } from "@/components/PropiedadCards";
 import { RankingTable, type RankingRow } from "@/components/RankingTable";
 import { TrendChart, type TrendPoint } from "@/components/TrendChart";
 import { BreakevenTable, type BreakevenRow } from "@/components/BreakevenTable";
 import { CostesTable, type CosteRow } from "@/components/CostesTable";
 import { CanalTable, type CanalRow } from "@/components/CanalTable";
 import { OnTheBooksTable, type OtbRow } from "@/components/OnTheBooksTable";
+import { Tabs } from "@/components/Tabs";
 import { readView, supabaseConfigured } from "@/lib/supabase";
 import { eur, pct, fechaLarga } from "@/lib/format";
 
@@ -17,7 +20,7 @@ type Kpis = {
 };
 
 export default async function Home() {
-  const [kpisArr, ranking, trend, breakeven, costes, canal, otb] = await Promise.all([
+  const [kpisArr, ranking, trend, breakeven, costes, canal, otb, alertas] = await Promise.all([
     readView<Kpis>("v_kpis"),
     readView<RankingRow>("v_ranking_ytd"),
     readView<TrendPoint>("v_trend_mensual", { col: "mes" }),
@@ -25,11 +28,22 @@ export default async function Home() {
     readView<CosteRow>("v_costes_ytd"),
     readView<CanalRow>("v_canal_ytd"),
     readView<OtbRow>("v_on_the_books", { col: "mes" }),
+    readView<AlertaRow>("v_alertas"),
   ]);
   const k = kpisArr[0];
-  // orden de columnas de los pivots: el del ranking (por margen neto)
   const codigos = ranking.map((r) => r.codigo);
   const comprometido = otb.reduce((a, r) => a + Number(r.ingreso ?? 0), 0);
+
+  // tarjetas = ranking + colchón del break-even
+  const cards: PropCard[] = ranking.map((r) => ({
+    codigo: r.codigo,
+    ingreso_samavi: r.ingreso_samavi,
+    margen_neto: r.margen_neto,
+    margen_neto_pct: r.margen_neto_pct,
+    ocup_pct: r.ocup_pct,
+    eur_noche_neto: r.eur_noche_neto,
+    colchon: breakeven.find((b) => b.codigo === r.codigo)?.colchon ?? null,
+  }));
 
   return (
     <main className="container">
@@ -58,37 +72,28 @@ export default async function Home() {
           sub="Reservas futuras confirmadas" />
       </div>
 
-      <div className="section-title">Ranking de propiedades — por Margen Neto</div>
-      <RankingTable rows={ranking} />
+      <div className="section-title">Requiere atención</div>
+      <Alertas rows={alertas} />
 
-      <div className="section-title">Punto de equilibrio</div>
-      <p className="section-note">
-        Ocupación mínima para cubrir costes fijos (renta, suministros, comunidad, otros y overhead).
-        El colchón es la distancia entre tu ocupación real y ese mínimo: cuanto más chico, más frágil.
-      </p>
-      <BreakevenTable rows={breakeven} />
-
-      <div className="section-title">Desglose de costes por propiedad</div>
-      <p className="section-note">
-        Cuánto cuesta cada línea en lo que va del año. «Overhead» es la parte de los gastos generales
-        de Samavi (sueldo, gestoría, software…) que le toca a cada propiedad, según su peso en ingresos.
-      </p>
-      <CostesTable rows={costes} />
+      <div className="section-title">Propiedades — de un vistazo</div>
+      <p className="section-note">Tocá una tarjeta para ver su ficha completa.</p>
+      <PropiedadCards rows={cards} />
 
       <div className="section-title">Tendencia Margen Neto mensual</div>
       <div className="chart-card">
         <TrendChart data={trend} />
       </div>
 
-      <div className="section-title">Mix por canal</div>
-      <p className="section-note">Ingreso por canal de venta en lo que va del año.</p>
-      <CanalTable rows={canal} codigos={codigos} />
-
-      <div className="section-title">Ingreso ya reservado (on the books)</div>
-      <p className="section-note">
-        No es una proyección: son reservas confirmadas para las noches que todavía no ocurrieron.
-      </p>
-      <OnTheBooksTable rows={otb} codigos={codigos} />
+      <div className="section-title">Comparar las 4 propiedades</div>
+      <Tabs
+        items={[
+          { label: "Ranking", content: <RankingTable rows={ranking} /> },
+          { label: "Equilibrio", content: <BreakevenTable rows={breakeven} /> },
+          { label: "Costes", content: <CostesTable rows={costes} /> },
+          { label: "Canales", content: <CanalTable rows={canal} codigos={codigos} /> },
+          { label: "Ya reservado", content: <OnTheBooksTable rows={otb} codigos={codigos} /> },
+        ]}
+      />
     </main>
   );
 }

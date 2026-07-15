@@ -95,6 +95,62 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 
 .chart-card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 16px 12px 8px; }
 
+/* ── Alertas ── */
+.alertas { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.alerta {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-left: 3px solid var(--baseline);
+  border-radius: 10px; padding: 10px 14px; font-size: 0.88rem;
+}
+.alerta.critical { border-left-color: var(--critical); }
+.alerta.warning  { border-left-color: var(--warning); }
+.alerta.ok       { border-left-color: var(--good); }
+.alerta-prop { font-weight: 700; text-decoration: none; }
+.alerta-msg  { color: var(--text-secondary); }
+
+/* ── Tarjetas por propiedad (semáforo) ── */
+.prop-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 560px) { .prop-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 980px) { .prop-grid { grid-template-columns: repeat(4, 1fr); } }
+.prop-card {
+  display: block; text-decoration: none; color: inherit;
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-top: 3px solid var(--baseline);
+  border-radius: 12px; padding: 14px 16px; transition: border-color .15s;
+}
+.prop-card:hover { border-color: var(--muted); }
+.prop-card.good { border-top-color: var(--good); }
+.prop-card.warning { border-top-color: var(--warning); }
+.prop-card.critical { border-top-color: var(--critical); }
+.prop-head { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; margin-bottom: 8px; }
+.estado { margin-left: auto; font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
+.estado.good { color: var(--good); }
+.estado.warning { color: var(--warning); }
+.estado.critical { color: var(--critical); }
+.prop-value { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+.prop-label { color: var(--muted); font-size: 0.78rem; margin-bottom: 10px; }
+.prop-meta {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 0;
+  border-top: 1px solid var(--gridline); padding-top: 8px;
+}
+.prop-meta div { margin: 0; }
+.prop-meta dt { color: var(--muted); font-size: 0.68rem; }
+.prop-meta dd { margin: 0; font-size: 0.85rem; font-variant-numeric: tabular-nums; }
+
+/* ── Pestañas ── */
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px; }
+.tab {
+  background: transparent; border: 1px solid var(--border); color: var(--text-secondary);
+  border-radius: 999px; padding: 6px 14px; font-size: 0.82rem; cursor: pointer;
+  font-family: inherit;
+}
+.tab:hover { color: var(--text-primary); }
+.tab.active {
+  background: var(--surface-1); color: var(--text-primary);
+  border-color: var(--muted); font-weight: 600;
+}
+
 .notice { background: var(--surface-1); border: 1px dashed var(--baseline); border-radius: 12px; padding: 20px; color: var(--text-secondary); }
 .backlink { display: inline-block; margin-bottom: 12px; color: var(--text-secondary); font-size: 0.9rem; text-decoration: none; }
 .backlink:hover { color: var(--text-primary); }

@@ -1,4 +1,4 @@
--- apply_all.sql — pegar TODO en Supabase SQL Editor y ejecutar (schema, rls, views, métricas, seed).
+-- apply_all.sql — pegar TODO en Supabase SQL Editor y ejecutar (schema, rls, views, métricas, alertas, seed).
 -- Generado por concatenación de migrations + seed. No editar a mano.
 
 -- 001_schema.sql — tablas fuente del dashboard Samavi

@@ -17,8 +17,8 @@ export type CosteRow = {
 const suma = (rows: CosteRow[], k: keyof CosteRow) =>
   rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
 
-export function CostesTable({ rows }: { rows: CosteRow[] }) {
-  const tTotal = suma(rows, "total_costes");
+/** showTotal=false en la ficha de una sola propiedad (la fila TOTAL sería redundante). */
+export function CostesTable({ rows, showTotal = true }: { rows: CosteRow[]; showTotal?: boolean }) {
   return (
     <div className="table-wrap">
       <table className="ranking">
@@ -54,18 +54,20 @@ export function CostesTable({ rows }: { rows: CosteRow[] }) {
               <td className="num">{pct(r.pct_sobre_ingreso)}</td>
             </tr>
           ))}
-          <tr className="total">
-            <td>TOTAL</td>
-            <td className="num">{eur(suma(rows, "renta"))}</td>
-            <td className="num">{eur(suma(rows, "limpieza"))}</td>
-            <td className="num">{eur(suma(rows, "suministros"))}</td>
-            <td className="num">{eur(suma(rows, "comunidad"))}</td>
-            <td className="num">{eur(suma(rows, "otros"))}</td>
-            <td className="num">{eur(suma(rows, "total_directos"))}</td>
-            <td className="num">{eur(suma(rows, "overhead"))}</td>
-            <td className="num">{eur(tTotal)}</td>
-            <td className="num">—</td>
-          </tr>
+          {showTotal && (
+            <tr className="total">
+              <td>TOTAL</td>
+              <td className="num">{eur(suma(rows, "renta"))}</td>
+              <td className="num">{eur(suma(rows, "limpieza"))}</td>
+              <td className="num">{eur(suma(rows, "suministros"))}</td>
+              <td className="num">{eur(suma(rows, "comunidad"))}</td>
+              <td className="num">{eur(suma(rows, "otros"))}</td>
+              <td className="num">{eur(suma(rows, "total_directos"))}</td>
+              <td className="num">{eur(suma(rows, "overhead"))}</td>
+              <td className="num">{eur(suma(rows, "total_costes"))}</td>
+              <td className="num">—</td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
