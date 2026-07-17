@@ -492,8 +492,12 @@ insert into general_expenses (concepto, importe_mes) values
   ('Claude.ai', 200.0),
   ('Comisión Revolut', 43.0),
   ('Viajes corporativos', 50.0),
-  ('Otros AEAT/admin', 50.0),
-  ('Brand Partners (marketing)', 500.0);
+  ('Otros AEAT/admin', 50.0);
+
+-- Brand Partners: 500 €/mes desde may-2026 hasta nuevo aviso (sin setup; fix 16/07/2026).
+-- Requiere las columnas de vigencia de la migración 010 (desde/hasta).
+insert into general_expenses (concepto, importe_mes, desde) values
+  ('Brand Partners (marketing)', 500.0, date '2026-05-01');
 
 insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas) values
   (2026, 1, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Sequra', -304.34, 'ene-mar 2026'),
@@ -515,15 +519,6 @@ insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, n
   (2026, 8, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
   (2026, 9, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
   (2026, 10, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
-  (2026, 5, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners ongoing', -500.0, 'inicio mayo'),
-  (2026, 6, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners ongoing', -500.0, NULL),
-  (2026, 7, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners ongoing', -500.0, NULL),
-  (2026, 8, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners ongoing', -500.0, NULL),
-  (2026, 9, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners ongoing', -500.0, NULL),
-  (2026, 10, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners ongoing', -500.0, NULL),
-  (2026, 11, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners ongoing', -500.0, NULL),
-  (2026, 12, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners ongoing', -500.0, NULL),
-  (2026, 5, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Brand Partners setup', -1400.0, 'one-time mayo'),
   (2026, 1, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
   (2026, 2, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
   (2026, 3, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
@@ -538,3 +533,423 @@ insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, n
   (2026, 12, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi');
 
 commit;
+-- 006_alertas.sql — alertas del dashboard (backfill: ya aplicada en producción el 15/07/2026,
+-- se reconstruye aquí para que el repo refleje el estado real de la base).
+--   · listings.aviso_fecha / aviso_nota: fecha límite dura por propiedad (contratos).
+--   · v_alertas: colchón de break-even < 10 pp, meses en negativo, avisos de contrato ≤ 90 días.
+
+alter table listings add column if not exists aviso_fecha date;
+alter table listings add column if not exists aviso_nota  text;
+
+create or replace view v_alertas as
+select
+  'breakeven'::text as tipo,
+  codigo,
+  case when colchon < 0 then 'critical' else 'warning' end as severidad,
+  case when colchon < 0
+       then 'Por debajo del punto de equilibrio: pierde plata al ritmo actual'
+       else 'Colchón ajustado: solo ' || translate(to_char(colchon*100, 'FM990.0'), '.', ',')
+            || ' pp por encima del equilibrio ('
+            || translate(to_char(ocup_breakeven*100, 'FM990.0'), '.', ',') || ' % necesario)'
+  end as mensaje
+from v_breakeven_ytd
+where colchon is not null and colchon < 0.10
+
+union all
+
+select
+  'mes_negativo'::text as tipo,
+  codigo,
+  'warning' as severidad,
+  count(*) || ' mes(es) con margen neto negativo este año' as mensaje
+from v_pnl_neto_propiedad
+where anio = extract(year from now())::int and margen_neto < 0
+group by codigo
+
+union all
+
+select
+  'contrato'::text as tipo,
+  codigo,
+  case when (aviso_fecha - current_date) <= 30 then 'critical' else 'warning' end as severidad,
+  coalesce(aviso_nota, 'Aviso de contrato') || ' — fecha límite '
+    || to_char(aviso_fecha, 'DD/MM/YYYY')
+    || ' (faltan ' || (aviso_fecha - current_date) || ' días)' as mensaje
+from listings
+where aviso_fecha is not null
+  and aviso_fecha >= current_date
+  and (aviso_fecha - current_date) <= 90;
+
+grant select on v_alertas to anon, authenticated;
+-- 007_v2_fase1.sql — SQL de la Fase 1 del Dashboard CEO v2 (flujo portada → alerta → ficha ALEX → simulador).
+--   1) v_propiedades: parámetros NO sensibles por propiedad. El simulador necesita modelo /
+--      renta_base / comision_pct y hoy ninguna vista los expone; propietario, NIF e IBAN quedan fuera.
+--   2) v_alertas v2: columnas estructuradas al final (clase, fecha_limite, dias_restantes) para
+--      countdown y cascada del titular. Las 4 primeras columnas no cambian: el front v1 sigue vivo
+--      entre la migración y el deploy.
+--   3) v_freshness: honestidad del dato — last_sync + hasta qué mes hay costes manuales cargados
+--      (los events están precargados hacia adelante; max(mes) dice hasta dónde llega la proyección).
+
+-- 1) Parámetros por propiedad (sin datos personales) ───────────────────────────
+create or replace view v_propiedades as
+select codigo, modelo, fecha_inicio, renta_base, comision_pct, aviso_fecha, aviso_nota
+from listings;
+
+-- 2) v_alertas v2 — alerta = tiene fecha límite; señal = condición persistente sin fecha ──
+create or replace view v_alertas as
+select
+  'breakeven'::text as tipo,
+  codigo,
+  case when colchon < 0 then 'critical' else 'warning' end as severidad,
+  case when colchon < 0
+       then 'Por debajo del punto de equilibrio: pierde plata al ritmo actual'
+       else 'Colchón ajustado: solo ' || translate(to_char(colchon*100, 'FM990.0'), '.', ',')
+            || ' pp por encima del equilibrio ('
+            || translate(to_char(ocup_breakeven*100, 'FM990.0'), '.', ',') || ' % necesario)'
+  end as mensaje,
+  'senal'::text as clase,
+  null::date    as fecha_limite,
+  null::int     as dias_restantes
+from v_breakeven_ytd
+where colchon is not null and colchon < 0.10
+
+union all
+
+select
+  'mes_negativo'::text as tipo,
+  codigo,
+  'warning' as severidad,
+  count(*) || ' mes(es) con margen neto negativo este año' as mensaje,
+  'senal'::text as clase,
+  null::date    as fecha_limite,
+  null::int     as dias_restantes
+from v_pnl_neto_propiedad
+where anio = extract(year from now())::int and margen_neto < 0
+group by codigo
+
+union all
+
+select
+  'contrato'::text as tipo,
+  codigo,
+  case when (aviso_fecha - current_date) <= 30 then 'critical' else 'warning' end as severidad,
+  coalesce(aviso_nota, 'Aviso de contrato') || ' — fecha límite '
+    || to_char(aviso_fecha, 'DD/MM/YYYY')
+    || ' (faltan ' || (aviso_fecha - current_date) || ' días)' as mensaje,
+  'alerta'::text as clase,
+  aviso_fecha    as fecha_limite,
+  (aviso_fecha - current_date) as dias_restantes
+from listings
+where aviso_fecha is not null
+  and aviso_fecha >= current_date
+  and (aviso_fecha - current_date) <= 90;
+
+-- 3) Frescura del dato ─────────────────────────────────────────────────────────
+create or replace view v_freshness as
+select
+  (select last_run from sync_state where id = 1)          as last_sync,
+  (select max(make_date(anio, mes, 1)) from events)       as costes_cargados_hasta;
+
+grant select on v_propiedades, v_freshness to anon, authenticated;
+grant select on v_alertas to anon, authenticated;
+-- 008_lockdown_vistas.sql — cerrar la fuga de las vistas internas del motor (hallazgo crítico
+-- de la revisión adversarial, 16/07/2026).
+--
+-- Problema: los default privileges de Supabase auto-otorgan SELECT a anon/authenticated sobre
+-- CADA vista nueva de public, anulando el modelo whitelist declarado en 002_rls.sql. Resultado
+-- verificado en producción: v_reservation_income respondía a la anon key con host_payout y
+-- pasivo_madre por reserva (515 filas) — exactamente lo que 002 promete que nunca viaja al front.
+--
+-- Fix: revocar las vistas internas y dejar GRANT explícito solo en las vistas del dashboard.
+-- v_reservation_nights queda expuesta A PROPÓSITO (§3 de la spec: grano noche para heatmap,
+-- MTD del titular y lista de reservas; sin PII) — hasta ahora funcionaba solo por el default.
+-- ⚠ Regla operativa a futuro: toda vista nueva nace pública por el default privilege → si no
+-- va al dashboard, revocarla en la misma migración que la crea.
+
+revoke select on
+  v_reservation_income,
+  v_nights_monthly,
+  v_bookings_monthly,
+  v_month_spine,
+  v_samavi_gen_mensual
+from anon, authenticated;
+
+grant select on v_reservation_nights to anon, authenticated;
+
+-- Fix menor (hallazgo de la misma revisión): singular del countdown embebido en el mensaje.
+create or replace view v_alertas as
+select
+  'breakeven'::text as tipo,
+  codigo,
+  case when colchon < 0 then 'critical' else 'warning' end as severidad,
+  case when colchon < 0
+       then 'Por debajo del punto de equilibrio: pierde plata al ritmo actual'
+       else 'Colchón ajustado: solo ' || translate(to_char(colchon*100, 'FM990.0'), '.', ',')
+            || ' pp por encima del equilibrio ('
+            || translate(to_char(ocup_breakeven*100, 'FM990.0'), '.', ',') || ' % necesario)'
+  end as mensaje,
+  'senal'::text as clase,
+  null::date    as fecha_limite,
+  null::int     as dias_restantes
+from v_breakeven_ytd
+where colchon is not null and colchon < 0.10
+
+union all
+
+select
+  'mes_negativo'::text as tipo,
+  codigo,
+  'warning' as severidad,
+  count(*) || ' mes(es) con margen neto negativo este año' as mensaje,
+  'senal'::text as clase,
+  null::date    as fecha_limite,
+  null::int     as dias_restantes
+from v_pnl_neto_propiedad
+where anio = extract(year from now())::int and margen_neto < 0
+group by codigo
+
+union all
+
+select
+  'contrato'::text as tipo,
+  codigo,
+  case when (aviso_fecha - current_date) <= 30 then 'critical' else 'warning' end as severidad,
+  coalesce(aviso_nota, 'Aviso de contrato') || ' — fecha límite '
+    || to_char(aviso_fecha, 'DD/MM/YYYY')
+    || case when (aviso_fecha - current_date) = 0 then ' (vence hoy)'
+            when (aviso_fecha - current_date) = 1 then ' (falta 1 día)'
+            else ' (faltan ' || (aviso_fecha - current_date) || ' días)' end as mensaje,
+  'alerta'::text as clase,
+  aviso_fecha    as fecha_limite,
+  (aviso_fecha - current_date) as dias_restantes
+from listings
+where aviso_fecha is not null
+  and aviso_fecha >= current_date
+  and (aviso_fecha - current_date) <= 90;
+
+grant select on v_alertas to anon, authenticated;
+-- 009_cancelaciones_retenidas.sql — decisión de negocio (Stag, 16/07/2026):
+-- las reservas CANCELADAS con cobro retenido son plata que ingresó y entran al conteo.
+-- (Revierte parcialmente la exclusión total de canceladas de 003: aquella tiraba también
+-- los payouts retenidos — 1.344,48 € YTD que Guesty sí muestra y el dashboard no.)
+--
+-- Reglas:
+--   · Se imputan al MES DEL CHECK-IN de la estancia cancelada (como el Excel histórico).
+--   · Van como LÍNEA SEPARADA (ingreso_cancelaciones): nunca tocan noches, ocupación ni ADR.
+--   · Misma regla por modelo del motor: comisión (JACO) → bruto × comision_pct; resto → host_payout.
+--   · ingreso_samavi (y todo lo que cae en cascada: margen directo/neto, prorrateo de
+--     overhead, ranking, KPIs, % de costes) pasa a incluirlas.
+--   · comision_aparente queda referida SOLO al ingreso por noches (el bruto no las incluye).
+--   · El mix de canal (v_canal_ytd) sigue siendo de noches confirmadas: su total ya no
+--     cuadra 1:1 con el ingreso Samavi — la diferencia es exactamente esta línea.
+
+create or replace view v_ingreso_cancelaciones as
+select
+  r.codigo,
+  extract(year  from r.checkin_local)::int as anio,
+  extract(month from r.checkin_local)::int as mes,
+  sum(case when l.modelo = 'comision' then coalesce(r.bruto,0) * l.comision_pct
+           else coalesce(r.host_payout,0) end)                as ingreso_cancelaciones,
+  count(*)                                                    as reservas_canceladas
+from reservations r
+join listings l on l.codigo = r.codigo
+where r.status = 'canceled'
+  and coalesce(r.host_payout, 0) <> 0
+  and r.checkin_local is not null
+group by r.codigo, extract(year from r.checkin_local), extract(month from r.checkin_local);
+
+grant select on v_ingreso_cancelaciones to anon, authenticated;
+
+-- v_pnl_mensual_propiedad: ingreso_samavi = noches + cancelaciones. Columnas nuevas al final.
+create or replace view v_pnl_mensual_propiedad as
+with ev as (
+  select propiedad_codigo as codigo, anio, mes,
+    coalesce(sum(importe) filter (where categoria='RENTA'),0) as ev_renta,
+    coalesce(sum(importe) filter (where categoria='OTROS'),0) as ev_otros
+  from events
+  group by propiedad_codigo, anio, mes
+),
+base as (
+  select
+    s.codigo, s.anio, s.mes, days_in_month(s.anio, s.mes) as dias_mes,
+    coalesce(n.bruto,0)                  as bruto,
+    coalesce(n.ingreso_samavi,0)         as ingreso_noches,
+    coalesce(c.ingreso_cancelaciones,0)  as ingreso_cancelaciones,
+    coalesce(n.noches,0)                 as noches,
+    coalesce(b.reservas,0)               as reservas,
+    (case when l.modelo='subarriendo' then -l.renta_base else 0 end + coalesce(ev.ev_renta,0)) as renta,
+    -(l.limpieza_por_reserva * coalesce(b.reservas,0))                                          as limpieza,
+    -l.suministros_mes                                                                          as suministros,
+    -l.comunidad_ibi_mes                                                                        as comunidad,
+    (-(l.minut + l.akiles + l.amenities + l.pricelabs + l.guesty_fee + l.extras)
+       + coalesce(ev.ev_otros,0))                                                               as otros
+  from v_month_spine s
+  join listings l                     on l.codigo = s.codigo
+  left join v_nights_monthly n        on n.codigo=s.codigo and n.anio=s.anio and n.mes=s.mes
+  left join v_bookings_monthly b      on b.codigo=s.codigo and b.anio=s.anio and b.mes=s.mes
+  left join v_ingreso_cancelaciones c on c.codigo=s.codigo and c.anio=s.anio and c.mes=s.mes
+  left join ev                        on ev.codigo=s.codigo and ev.anio=s.anio and ev.mes=s.mes
+)
+select
+  codigo, anio, mes, dias_mes, bruto,
+  (ingreso_noches + ingreso_cancelaciones)                            as ingreso_samavi,
+  (bruto - ingreso_noches)                                            as comision_aparente,
+  noches, reservas,
+  round(noches::numeric / dias_mes, 4)                                as ocup_pct,
+  case when noches > 0 then round(bruto / noches, 2) else 0 end       as adr,
+  round(bruto / dias_mes, 2)                                          as revpar,
+  case when reservas > 0 then round(noches::numeric / reservas, 2) else 0 end as alos,
+  renta, limpieza, suministros, comunidad, otros,
+  (renta + limpieza + suministros + comunidad + otros)                as total_gastos_directos,
+  (ingreso_noches + ingreso_cancelaciones
+     + renta + limpieza + suministros + comunidad + otros)            as margen_directo,
+  ingreso_noches,
+  ingreso_cancelaciones
+from base;
+
+-- v_ranking_ytd: misma salida + ingreso_cancelaciones YTD al final (para el waterfall).
+create or replace view v_ranking_ytd as
+with ytd as (
+  select codigo,
+    sum(ingreso_samavi)         as ingreso_samavi,
+    sum(bruto)                  as bruto,
+    sum(noches)                 as noches,
+    sum(reservas)               as reservas,
+    sum(dias_mes)               as noches_disponibles,
+    sum(total_gastos_directos)  as gastos_directos,
+    sum(margen_directo)         as margen_directo,
+    sum(ingreso_cancelaciones)  as ingreso_cancelaciones
+  from v_pnl_mensual_propiedad
+  where anio = extract(year from now())::int
+  group by codigo
+),
+oh as (select coalesce(sum(overhead),0) as total from v_samavi_gen_mensual where anio=extract(year from now())::int),
+tt as (select coalesce(sum(ingreso_samavi),0) as t from ytd)
+select
+  y.codigo, y.ingreso_samavi, y.bruto, y.noches, y.reservas, y.noches_disponibles,
+  y.gastos_directos, y.margen_directo,
+  round(-(select total from oh) * case when (select t from tt)>0 then y.ingreso_samavi/(select t from tt) else 0 end, 2) as cuota_samavi_gen,
+  round(y.margen_directo - (select total from oh) * case when (select t from tt)>0 then y.ingreso_samavi/(select t from tt) else 0 end, 2) as margen_neto,
+  case when y.ingreso_samavi>0
+       then round((y.margen_directo - (select total from oh) * (y.ingreso_samavi/(select t from tt))) / y.ingreso_samavi, 4)
+       else 0 end as margen_neto_pct,
+  case when y.noches>0
+       then round((y.margen_directo - (select total from oh) * (y.ingreso_samavi/(select t from tt))) / y.noches, 2)
+       else 0 end as eur_noche_neto,
+  case when y.noches_disponibles>0 then round(y.noches::numeric/y.noches_disponibles,4) else 0 end as ocup_pct,
+  case when y.noches>0 then round(y.bruto/y.noches,2) else 0 end as adr,
+  case when y.noches_disponibles>0 then round(y.bruto/y.noches_disponibles,2) else 0 end as revpar,
+  y.ingreso_cancelaciones
+from ytd y
+order by margen_neto desc;
+-- 010_gastos_generales_vigencia.sql — (Stag, 16/07/2026) los gastos generales pueden tener
+-- vigencia: Brand Partners es 500 €/mes desde may-2026 "hasta nuevo aviso" (el setup de
+-- 1.400 € NO existió). Modelarlo como evento año a año repetiría el gotcha ene-2027 de la
+-- renta de ALEX (se cargó solo nov–dic y en enero desaparece): un recurrente sin fin va en
+-- general_expenses con fecha de inicio, no en events.
+--   · general_expenses.desde / .hasta (null = sin límite por ese lado).
+--   · v_samavi_gen_mensual solo suma las líneas vigentes en cada mes.
+--   · Se eliminan los eventos Brand Partners (setup + ongoing may–dic): quedaban duplicados.
+
+alter table general_expenses add column if not exists desde date;
+alter table general_expenses add column if not exists hasta date;
+
+delete from events where propiedad_codigo = 'SAMAVI_GEN' and concepto like 'Brand Partners%';
+
+insert into general_expenses (concepto, importe_mes, desde)
+select 'Brand Partners (marketing)', 500.00, date '2026-05-01'
+where not exists (select 1 from general_expenses where concepto = 'Brand Partners (marketing)');
+
+create or replace view v_samavi_gen_mensual as
+select m.anio, m.mes,
+  (select coalesce(sum(g.importe_mes), 0)
+     from general_expenses g
+    where (g.desde is null or make_date(m.anio, m.mes, 1) >= date_trunc('month', g.desde)::date)
+      and (g.hasta is null or make_date(m.anio, m.mes, 1) <= g.hasta))
+  - coalesce((select sum(importe) from events e
+              where e.categoria='SAMAVI_GEN' and e.anio=m.anio and e.mes=m.mes), 0) as overhead
+from (select distinct anio, mes from v_month_spine) m;
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- SYNC PRODUCCIÓN 17/07/2026 — estado CONCILIADO contra Revolut + BBVA + tarjeta
+-- (ene–jun 2026). Sustituye los valores de arriba; fuente de verdad = producción.
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+update listings set suministros_mes = 150, comunidad_ibi_mes = 331.12, amenities = 30,
+  guesty_fee = 30, extras = 30 where codigo = '1A_NICA';           -- extras = trastero Box2box
+update listings set suministros_mes = 150, amenities = 30 where codigo = '4B_ALEX';
+update listings set amenities = 30 where codigo = '3G_MARE';
+update listings set suministros_mes = 0, amenities = 34.58, extras = 0 where codigo = '1A_JACO';
+
+delete from general_expenses;
+insert into general_expenses (concepto, importe_mes, desde, hasta) values
+  ('Sueldo Stag bruto', 3333.33, NULL, NULL),
+  ('Brand Partners (marketing)', 500.00, date '2026-05-01', NULL),   -- efectivo/Argentina: no sale en bancos
+  ('TGSS RETA Stag', 370.75, NULL, NULL),
+  ('Orange (fibra pisos + dispositivos)', 329.80, NULL, NULL),       -- promedio real ene–jun
+  ('Viajes corporativos', 200.00, NULL, NULL),                       -- cubre el día a día Revolut; viajes grandes = eventos
+  ('Asesor Confisic', 181.50, NULL, NULL),
+  ('Claude.ai (plan 90)', 90.00, date '2026-06-01', NULL),
+  ('Otros AEAT/admin', 50.00, NULL, NULL),
+  ('Revolut Business cuota', 43.00, NULL, NULL),
+  ('Seguro vida préstamo (Allianz 499,51/año)', 41.63, date '2026-05-01', NULL),
+  ('Seguro RC', 18.25, NULL, NULL),
+  ('Google Workspace', 15.94, NULL, NULL),
+  ('Hostinger', 12.74, NULL, NULL);                                  -- pago anual 152,87 (feb) devengado
+
+delete from events;
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas) values
+  (2026, 1, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 1, '1A_NICA', 'OTROS', 'Comunidad extra + Ayuntamiento (IBI plazos)', -385.09, '32,32+243,94+108,83'),
+  (2026, 1, '1A_NICA', 'OTROS', 'Mobiliario aplazado (Paypal 3 plazos)', -105.82, NULL),
+  (2026, 1, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, 'financiación ene-oct 2026'),
+  (2026, 1, '4B_ALEX', 'OTROS', 'Termo eléctrico (J.E. Cabrera)', -450.00, 'confirmado Stag 17/07: es de Alexander (compra enero, distinta del Ariston/Obramat de abril compensado por Alberto)'),
+  (2026, 1, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Sequra', -304.34, 'ene-mar 2026'),
+  (2026, 2, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 2, '1A_NICA', 'OTROS', 'Derrama forjado 50% (Segovia 8)', -765.00, 'recibo 25/02'),
+  (2026, 2, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
+  (2026, 2, 'SAMAVI_GEN', 'SAMAVI_GEN', 'BLT Law — 6ª y última cuota gestores anteriores', -584.89, 'deuda saldada, no se repite'),
+  (2026, 2, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Sequra', -304.34, NULL),
+  (2026, 2, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Viajes tarjeta (ITA/Booking/Iberia)', -1447.64, 'tarjeta 0084, adeudo 05/03'),
+  (2026, 3, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 3, '1A_NICA', 'OTROS', 'Comunidad extra', -34.25, NULL),
+  (2026, 3, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
+  (2026, 3, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Claude/Anthropic (real bancos)', -20.00, 'barrido 17/07'),
+  (2026, 3, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Orange amortización equipos (tarjeta)', -460.78, 'payoff dispositivos, no está en la línea mensual'),
+  (2026, 3, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Sequra', -304.34, NULL),
+  (2026, 3, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Servicio digital web (N. Casale)', -159.60, 'puntual'),
+  (2026, 3, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Viaje por carretera (Hertz/hotel/gasolina/peajes)', -600.73, 'tarjeta 0084, adeudo 06/04'),
+  (2026, 4, '1A_JACO', 'OTROS', 'Mantenimiento termo Ariston (Concesionario)', -258.94, 'cuota mantenimiento'),
+  (2026, 4, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 4, '1A_NICA', 'OTROS', 'IBI/tributos NRC + Ayuntamiento', -1141.60, '1.031,67+109,93'),
+  (2026, 4, '3G_MARE', 'OTROS', 'Aire acondicionado (Nico Chaban, Fc 235)', -1754.50, 'compensado vía descuentos de renta may/jun'),
+  (2026, 4, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
+  (2026, 4, '4B_ALEX', 'OTROS', 'Termo Ariston 4B (Obramat + instalación, neto IVA)', -383.06, 'compensado 383,06 por Alberto vía facturas may/jun (mail 18/05)'),
+  (2026, 4, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Claude/Anthropic (real bancos)', -219.22, '38,25+82,29+98,68'),
+  (2026, 5, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 5, '1A_NICA', 'OTROS', 'Comunidad extra', -30.25, NULL),
+  (2026, 5, '3G_MARE', 'RENTA', 'Plan AA mayo (renta total descontada)', 1100.00, 'renta efectiva 0'),
+  (2026, 5, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
+  (2026, 5, '4B_ALEX', 'RENTA', 'Termo descuento renta', 191.53, 'termo 1/2: crédito base 191,53 (efecto caja 195,36 con IVA/IRPF); pagado 1.222,69'),
+  (2026, 5, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Asesoría laboral (J.A. Mateos)', -159.00, 'consulta puntual'),
+  (2026, 5, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Claude/Anthropic (real bancos)', -110.59, '20,59+90,00'),
+  (2026, 5, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Curso fiscalidad (Hotmart)', -747.04, 'formación empresa'),
+  (2026, 5, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Notaría escritura préstamo (Herrand)', -379.26, 'gasto del préstamo prefabricada'),
+  (2026, 6, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 6, '1A_NICA', 'OTROS', 'Forjado pago 1/2', -382.50, 'recibo 24/06'),
+  (2026, 6, '3G_MARE', 'RENTA', 'Plan AA + compensación aire acondicionado (renta pagada: 365,50)', 734.50, 'renta efectiva 600'),
+  (2026, 6, '3G_MARE', 'OTROS', 'Refacturación 50% inscripción registral', -218.22, 'a J.L. De La Torre 19/06'),
+  (2026, 6, '4B_ALEX', 'OTROS', 'Klarna-Sklum cancelación anticipada mobiliario', -472.28, 'salda jul–oct (4×162,77=651,08) con descuento; confirmado Stag 17/07'),
+  (2026, 6, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
+  (2026, 6, '4B_ALEX', 'RENTA', 'Termo descuento renta', 199.19, 'termo 2/2 + ajuste técnico -3,83 regularizado; pagado 1.215,03'),
+  (2026, 6, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Intereses préstamo BBVA (prefabricada)', -158.45, 'amortización 923,78 excluida: devolución de deuda'),
+  (2026, 6, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Viajes tarjeta (Enjoy Travel)', -66.04, 'adeudo esperado jul'),
+  (2026, 7, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 7, '1A_NICA', 'OTROS', 'Forjado pago 2/2', -382.50, 'confirmado Stag; verificar en extracto jul'),
+  (2026, 8, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 9, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 10, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 11, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 11, '4B_ALEX', 'RENTA', 'Renta sube Q4', -200.58, '1.614,80 - 1.414,22; desde nov queda 1.614,80 hasta nuevo aviso'),
+  (2026, 12, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
+  (2026, 12, '4B_ALEX', 'RENTA', 'Renta sube Q4', -200.58, NULL);

@@ -34,10 +34,17 @@ export const MESES = [
 export const fechaLarga = (iso: string | null | undefined) => {
   if (!iso) return "—";
   try {
+    // el server de Vercel corre en UTC; el negocio vive en hora de Madrid
     return new Intl.DateTimeFormat("es-ES", {
-      dateStyle: "medium", timeStyle: "short",
+      dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Madrid",
     }).format(new Date(iso));
   } catch {
     return "—";
   }
 };
+
+/** Número es-ES con punto de miles forzado también en 4 cifras (como eur, sin símbolo) */
+export const num = (n: number | null | undefined, dec = 0) =>
+  new Intl.NumberFormat("es-ES", {
+    useGrouping: true, minimumFractionDigits: 0, maximumFractionDigits: dec,
+  }).format(n ?? 0);
