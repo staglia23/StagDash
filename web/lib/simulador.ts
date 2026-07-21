@@ -9,6 +9,7 @@
 //     otras 3 se muestra, no se oculta.
 // Con las palancas en su valor base, la proyección coincide con el run-rate real YTD.
 import { eur, pp } from "./format";
+import { nombreCorto } from "./headline";
 
 export const DIAS_ANIO = 365; // 2026 no es bisiesto
 
@@ -160,7 +161,7 @@ export function fraseSimulada(
   r: SimResultado,
   conOverhead: boolean,
 ): string {
-  const prop = b.codigo.split("_").pop() ?? b.codigo;
+  const prop = nombreCorto(b.codigo);
   const palancas = b.modelo === "subarriendo"
     ? `Con renta ${eur(p.rentaMes)}/mes y ADR ${eur(p.adr)}`
     : `Con ADR ${eur(p.adr)} y ocupación ${Math.round(p.ocup * 100)} %`;

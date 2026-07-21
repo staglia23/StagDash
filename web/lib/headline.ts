@@ -35,8 +35,15 @@ const MES_LARGO = ["", "enero", "febrero", "marzo", "abril", "mayo", "junio",
 const MES_CORTO = ["", "ene", "feb", "mar", "abr", "may", "jun",
   "jul", "ago", "sep", "oct", "nov", "dic"];
 
-/** "4B_ALEX" → "ALEX" (nombre corto para el titular) */
-export const nombreCorto = (codigo: string) => codigo.split("_").pop() ?? codigo;
+/** Nombre de display por propiedad (decisión Stag 21/07: sin piso/puerta) */
+const NOMBRES: Record<string, string> = {
+  "1A_NICA": "Nicasio",
+  "4B_ALEX": "Alexander",
+  "3G_MARE": "Marechal",
+  "1A_JACO": "Jacobine",
+};
+export const nombreCorto = (codigo: string) =>
+  NOMBRES[codigo] ?? codigo.split("_").pop() ?? codigo;
 
 const VERBO_POR_TIPO: Record<string, string> = { contrato: "avisar a" };
 

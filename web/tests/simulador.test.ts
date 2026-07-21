@@ -127,7 +127,7 @@ describe("fraseSimulada — la respuesta es UNA frase con la gramática del titu
 
   it("subarriendo: nombra renta y ADR, reporta margen neto y colchón", () => {
     const f = fraseSimulada(ALEX, p, r, true);
-    expect(f).toMatch(/^Con renta .+\/mes y ADR .+, ALEX deja .+\/año de margen neto \(colchón .+\)$/);
+    expect(f).toMatch(/^Con renta .+\/mes y ADR .+, Alexander deja .+\/año de margen neto \(colchón .+\)$/);
   });
 
   it("con el toggle en directo lo dice", () => {
@@ -138,12 +138,12 @@ describe("fraseSimulada — la respuesta es UNA frase con la gramática del titu
   it("margen negativo → 'pierde'", () => {
     const caro = { ...p, rentaMes: 4000 };
     const rc = simular(TODAS, "4B_ALEX", caro);
-    expect(fraseSimulada(ALEX, caro, rc, true)).toContain("ALEX pierde");
+    expect(fraseSimulada(ALEX, caro, rc, true)).toContain("Alexander pierde");
   });
 
   it("titular (NICA): sin renta — usa ADR y ocupación", () => {
     const pn = palancasBase(NICA);
     const rn = simular(TODAS, "1A_NICA", pn);
-    expect(fraseSimulada(NICA, pn, rn, true)).toMatch(/^Con ADR .+ y ocupación \d+ %, NICA/);
+    expect(fraseSimulada(NICA, pn, rn, true)).toMatch(/^Con ADR .+ y ocupación \d+ %, Nicasio/);
   });
 });

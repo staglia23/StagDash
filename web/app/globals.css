@@ -351,3 +351,77 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
   .otb-card { padding: 10px 14px; }
   .cta-sim { min-height: 56px; padding: 10px 14px; }
 }
+
+/* ═══════════════ v3 — Panel de salud (visión periférica del operador) ═══════════════ */
+
+.global-linea {
+  color: var(--text-secondary); font-size: 0.85rem; margin: -4px 0 10px;
+  line-height: 1.55;
+}
+.global-linea strong { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+
+.salud-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (min-width: 900px) { .salud-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.hcard {
+  display: grid; gap: 8px; min-width: 0; text-decoration: none; color: inherit;
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-left: 3px solid var(--baseline); border-radius: 12px;
+  padding: 10px 12px; transition: border-color .15s;
+}
+.hcard:hover { border-color: var(--muted); }
+.hcard.good { border-left-color: var(--good); }
+.hcard.warning { border-left-color: var(--warning); }
+.hcard.critical { border-left-color: var(--critical); }
+.hcard-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.hcard-nombre { font-size: 0.95rem; letter-spacing: -0.01em; }
+.hcard-head .estado { margin-left: auto; }
+
+/* Tira de 30 días */
+.tira30 { display: flex; gap: 2px; height: 12px; }
+.tira30.grande { height: 30px; gap: 3px; }
+.tira30-celda {
+  flex: 1; min-width: 0; border-radius: 2px;
+  background: var(--gridline); position: relative;
+}
+.tira30.grande .tira30-celda { border-radius: 4px; }
+.tira30-celda.mes-nuevo { box-shadow: inset 2px 0 0 var(--text-primary); }
+.tira30-num {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  font-size: 0.62rem; color: var(--muted); padding-top: 3px;
+}
+.tira30.grande { margin-bottom: 20px; }
+
+/* Stats de la tarjeta */
+.hstats {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0;
+}
+.hstats div { min-width: 0; }
+.hstats dt { color: var(--muted); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.hstats dd {
+  margin: 1px 0 0; font-size: 0.84rem; font-weight: 650;
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+}
+.hstats-eq { color: var(--muted); font-weight: 500; font-size: 0.76rem; }
+.hstats-ficha { margin-top: 12px; }
+.hstats-ficha dt { font-size: 0.7rem; }
+.hstats-ficha dd { font-size: 0.95rem; }
+
+.hmotivo {
+  font-size: 0.76rem; color: var(--text-secondary);
+  border-top: 1px solid var(--gridline); padding-top: 6px;
+}
+.hmotivo.critical { color: var(--critical); }
+.hmotivo.warning { color: var(--warning); }
+
+/* Compacto móvil: el panel entra en la visión sin scroll junto a titular+KPIs+alertas */
+@media (max-width: 480px) {
+  .salud-grid { gap: 8px; }
+  .hcard { padding: 8px 10px; gap: 6px; }
+  .hcard-nombre { font-size: 0.88rem; }
+  .hstats dt { font-size: 0.58rem; }
+  .hstats dd { font-size: 0.78rem; }
+  .hmotivo { font-size: 0.7rem; padding-top: 4px; }
+  .tira30 { height: 10px; }
+  .global-linea { font-size: 0.78rem; }
+}

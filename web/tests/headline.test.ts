@@ -37,7 +37,7 @@ describe("caso 1 — alerta con fecha límite ≤ 60 días", () => {
   it("caso rey: ALEX a 48 días nombra la propiedad y su consumo de costes", () => {
     const frase = buildHeadline(base());
     expect(frase).toBe(
-      `Quedan 48 días para avisar a ALEX — hoy consume el ${pct(0.9447)} de lo que ingresa`,
+      `Quedan 48 días para avisar a Alexander — hoy consume el ${pct(0.9447)} de lo que ingresa`,
     );
     expect(frase.length).toBeLessThanOrEqual(MAX_CHARS);
   });
@@ -65,7 +65,7 @@ describe("caso 1 — alerta con fecha límite ≤ 60 días", () => {
   it("gana la alerta con menor fecha límite", () => {
     const i = base();
     i.alertas.push({ codigo: "3G_MARE", tipo: "contrato", clase: "alerta", dias_restantes: 20 });
-    expect(buildHeadline(i)).toContain("MARE");
+    expect(buildHeadline(i)).toContain("Marechal");
   });
 
   it("las señales sin fecha nunca disparan el caso 1", () => {
@@ -83,7 +83,7 @@ describe("caso 2 — desvío de ingreso MTD ±10 %", () => {
     // total: 6.235 vs 7.874 → cae 21 %; ALEX resta 663 €
     expect(frase).toContain("Ingreso de julio cae");
     expect(frase).toContain("vs junio a igual día");
-    expect(frase).toContain(`ALEX resta ${eur(662.61)}`);
+    expect(frase).toContain(`Alexander resta ${eur(662.61)}`);
     expect(frase.length).toBeLessThanOrEqual(MAX_CHARS);
   });
 
@@ -92,7 +92,7 @@ describe("caso 2 — desvío de ingreso MTD ±10 %", () => {
     i.mtd!.porPropiedad = [{ codigo: "1A_NICA", actual: 3000, previo: 2500 }];
     const frase = buildHeadline(i);
     expect(frase).toContain("sube");
-    expect(frase).toContain("NICA suma");
+    expect(frase).toContain("Nicasio suma");
   });
 
   it("la causante va en la dirección del desvío: una caída nunca se atribuye a la que subió", () => {
@@ -105,7 +105,7 @@ describe("caso 2 — desvío de ingreso MTD ±10 %", () => {
     // total: 5.100 vs 5.700 → cae 10,5 % — la causa es una que RESTA, no NICA
     const frase = buildHeadline(i);
     expect(frase).toContain("cae");
-    expect(frase).not.toContain("NICA");
+    expect(frase).not.toContain("Nicasio");
     expect(frase).toContain("resta");
   });
 
@@ -137,7 +137,7 @@ describe("caso 3 — estado + dato fuerte", () => {
   it("con colchón negativo nombra la peor propiedad", () => {
     const i = soloEstado();
     i.breakeven[0].colchon = -0.03;
-    expect(buildHeadline(i)).toContain("ALEX opera bajo su punto de equilibrio");
+    expect(buildHeadline(i)).toContain("Alexander opera bajo su punto de equilibrio");
   });
 });
 

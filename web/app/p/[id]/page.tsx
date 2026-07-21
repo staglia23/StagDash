@@ -9,10 +9,13 @@ import { CostesTable, type CosteRow } from "@/components/CostesTable";
 import { KpiCard } from "@/components/KpiCard";
 import { MiniBarrasMes } from "@/components/MiniBarrasMes";
 import { OnTheBooksTable, type OtbRow } from "@/components/OnTheBooksTable";
+import { RevparChart } from "@/components/RevparChart";
+import { Salud30 } from "@/components/Salud30";
 import { WaterfallChart } from "@/components/WaterfallChart";
 import { propColor } from "@/lib/colors";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { nombreCorto } from "@/lib/headline";
+import { revparEquilibrio } from "@/lib/salud";
 import type { Modelo } from "@/lib/simulador";
 import { readView } from "@/lib/supabase";
 import { pasosWaterfall } from "@/lib/waterfall";
@@ -34,10 +37,19 @@ type Propiedad = {
   renta_base: number; comision_pct: number; aviso_fecha: string | null; aviso_nota: string | null;
 };
 type Fila = {
-  codigo: string; anio: number; mes: number;
+  codigo: string; anio: number; mes: number; dias_mes: number; revpar: number;
   ingreso_samavi: number; noches: number; reservas: number; ocup_pct: number; adr: number;
   total_gastos_directos: number; margen_directo: number;
   cuota_samavi_gen: number; margen_neto: number;
+};
+type ForwardRow = {
+  codigo: string; noches_7: number; noches_14: number; noches_30: number;
+  bruto_7: number; bruto_30: number; ingreso_30: number;
+};
+type ForwardDia = { codigo: string; dia: string; vendida: boolean };
+type PickupRow = {
+  codigo: string; reservas_7d: number; reservas_15d: number;
+  ultima_reserva: string | null; dias_sin_vender: number | null;
 };
 type Freshness = { last_sync: string | null; costes_cargados_hasta: string | null };
 
@@ -58,7 +70,8 @@ export default async function FichaPropiedad({
   try { codigo = decodeURIComponent(params.id); } catch { codigo = params.id; }
   const verDirecto = searchParams.margen === "directo";
 
-  const [rankAll, beAll, costAll, propAll, canalAll, otbAll, mesesAll, alertAll, freshArr] =
+  const [rankAll, beAll, costAll, propAll, canalAll, otbAll, mesesAll, alertAll, freshArr,
+    forwardArr, forwardDias, pickupArr] =
     await Promise.all([
       readView<RankRow>("v_ranking_ytd"),
       readView<BreakevenRow>("v_breakeven_ytd"),
@@ -69,6 +82,9 @@ export default async function FichaPropiedad({
       readView<Fila>("v_pnl_neto_propiedad", { order: { col: "mes" }, eq: { codigo } }),
       readView<AlertaV2>("v_alertas"),
       readView<Freshness>("v_freshness"),
+      readView<ForwardRow>("v_forward", { eq: { codigo } }),
+      readView<ForwardDia>("v_forward_dias", { order: { col: "dia" }, eq: { codigo } }),
+      readView<PickupRow>("v_pickup", { eq: { codigo } }),
     ]);
 
   const only = <T extends { codigo: string }>(rows: T[]) => rows.filter((r) => r.codigo === codigo);
@@ -115,6 +131,29 @@ export default async function FichaPropiedad({
   const portfolioBruto = rankAll.reduce((s, x) => s + Number(x.bruto), 0);
   const portfolioNoches = rankAll.reduce((s, x) => s + Number(x.noches), 0);
   const portfolioAdr = portfolioNoches > 0 ? portfolioBruto / portfolioNoches : 0;
+
+  // ── Forward: próximos 30 días + velocidad de venta + RevPAR de equilibrio ──
+  const fw = forwardArr[0];
+  const pk = pickupArr[0];
+  const ingresoNochesYtd = Number(r.ingreso_samavi) - Number((r as { ingreso_cancelaciones?: number }).ingreso_cancelaciones ?? 0);
+  const factorEq = propiedad?.modelo === "comision"
+    ? Number(propiedad.comision_pct)
+    : Number(r.bruto) > 0 ? ingresoNochesYtd / Number(r.bruto) : 1;
+  const revparEq = revparEquilibrio({
+    modelo: propiedad?.modelo ?? "titular",
+    costesTotalesYtd: Math.abs(Number(coste.total_costes)),
+    diasDisponiblesYtd: Number(r.noches_disponibles),
+    feeAparente: Number(r.bruto) > 0 ? 1 - ingresoNochesYtd / Number(r.bruto) : 0,
+    comisionModeloPct: Number(propiedad?.comision_pct ?? 0),
+  });
+  const revparFwd30 = Number(fw?.bruto_30 ?? 0) / 30;
+  const revparMensual = mesesAll.map((f) => ({
+    mes: f.mes,
+    revpar: Number(f.revpar),
+    revparEq: Number(f.dias_mes) > 0 && factorEq > 0
+      ? (Math.abs(Number(f.total_gastos_directos)) + Math.abs(Number(f.cuota_samavi_gen))) / Number(f.dias_mes) / factorEq
+      : null,
+  }));
 
   const eurSigned = (v: number | string) => {
     const n = Number(v);
@@ -191,6 +230,37 @@ export default async function FichaPropiedad({
         </>
       )}
 
+      {/* ── los próximos 30 días: qué está vendido y a qué ritmo (requiere migración 011) ── */}
+      {forwardArr.length > 0 && (<>
+      <div className="section-title">Próximos 30 días <span className="badge badge-otb">ya reservado</span></div>
+      <div className="card">
+        <Salud30 grande color={propColor(codigo)}
+          dias={forwardDias.map((d) => ({ dia: d.dia, vendida: d.vendida }))} />
+        <dl className="hstats hstats-ficha">
+          <div>
+            <dt>Vendido 7d · 14d · 30d</dt>
+            <dd>{pct((fw?.noches_7 ?? 0) / 7, 0)} · {pct((fw?.noches_14 ?? 0) / 14, 0)} · {pct((fw?.noches_30 ?? 0) / 30, 0)}</dd>
+          </div>
+          <div>
+            <dt>RevPAR 30d vs equilibrio</dt>
+            <dd className={revparEq != null && revparFwd30 >= revparEq ? "pos" : "neg"}>
+              {revparEq != null && revparFwd30 >= revparEq ? "▲" : "▼"} {eur(revparFwd30)}
+              <span className="hstats-eq"> / {revparEq == null ? "—" : eur(revparEq)}</span>
+            </dd>
+          </div>
+          <div>
+            <dt>Velocidad de venta</dt>
+            <dd className={Number(pk?.dias_sin_vender ?? 0) > 7 ? "warn" : undefined}>
+              {Number(pk?.reservas_7d ?? 0)} en 7d · {Number(pk?.reservas_15d ?? 0)} en 15d
+              {pk?.dias_sin_vender != null
+                ? ` · última hace ${pk.dias_sin_vender} día${Number(pk.dias_sin_vender) === 1 ? "" : "s"}`
+                : ""}
+            </dd>
+          </div>
+        </dl>
+      </div>
+      </>)}
+
       {/* ── diagnóstico ── */}
       <div className="section-title">
         Punto de equilibrio · YTD {anio}{verDirecto ? " · sin overhead" : ""}
@@ -249,6 +319,15 @@ export default async function FichaPropiedad({
             ? "Margen directo = contribución antes del overhead común (si soltás la propiedad, el overhead no desaparece: se redistribuye)."
             : "Margen neto = con la cuota de overhead prorrateada por peso en el ingreso."}
           {" "}Tocá un mes para ir a su fila.
+        </p>
+      </div>
+
+      <div className="section-title">RevPAR real vs equilibrio · {anio}</div>
+      <div className="chart-card">
+        <RevparChart data={revparMensual} color={propColor(codigo)} />
+        <p className="section-note" style={{ marginTop: 4 }}>
+          Cuando la línea de color queda por debajo de la punteada, ese mes no cubrió sus costes
+          por noche disponible.
         </p>
       </div>
 

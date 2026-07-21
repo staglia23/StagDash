@@ -3,6 +3,7 @@
 // simulador en 1 tap. Las preguntas 1–4 del CEO se responden sin scroll (390×844).
 import Link from "next/link";
 import { AlertStack, type AlertaV2 } from "@/components/AlertStack";
+import { HealthCard, type HealthData } from "@/components/HealthCard";
 import { BreakevenTable, type BreakevenRow } from "@/components/BreakevenTable";
 import { BulletBreakeven } from "@/components/BulletBreakeven";
 import { CanalTable, type CanalRow } from "@/components/CanalTable";
@@ -16,6 +17,8 @@ import { propColor } from "@/lib/colors";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { buildHeadline, nombreCorto } from "@/lib/headline";
 import { mtdPorPropiedad, type NocheRow } from "@/lib/mtd";
+import { estadoSalud, revparEquilibrio } from "@/lib/salud";
+import type { Modelo } from "@/lib/simulador";
 import { readView, supabaseConfigured } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -28,6 +31,17 @@ type Kpis = {
 type Freshness = { last_sync: string | null; costes_cargados_hasta: string | null };
 type TrendRow = { anio: number; mes: number; ingreso_samavi: number; margen_directo: number; margen_neto: number };
 type PnlMes = { codigo: string; anio: number; mes: number; dias_mes: number; bruto: number; noches: number };
+type ForwardRow = {
+  codigo: string; noches_7: number; noches_14: number; noches_30: number;
+  bruto_7: number; bruto_30: number; ingreso_30: number;
+};
+type ForwardDia = { codigo: string; dia: string; vendida: boolean };
+type PickupRow = {
+  codigo: string; reservas_7d: number; reservas_15d: number;
+  ultima_reserva: string | null; dias_sin_vender: number | null;
+};
+type PnlNetoMes = { codigo: string; margen_neto: number };
+type PropiedadRow = { codigo: string; modelo: Modelo; comision_pct: number };
 
 const hoyMadrid = () =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
@@ -38,12 +52,13 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
   const [anio, mes] = hoyIso.split("-").map(Number);
   const inicioPrevio = `${anio}-${String(Math.max(mes - 1, 1)).padStart(2, "0")}-01`;
 
-  const [kpisArr, freshArr, alertas, ranking, breakeven, costes, trend, pnlMes, otb, canal, noches] =
+  const [kpisArr, freshArr, alertas, ranking, breakeven, costes, trend, pnlMes, otb, canal, noches,
+    forward, forwardDias, pickup, pnlNetoMesActual, propiedades] =
     await Promise.all([
       readView<Kpis>("v_kpis"),
       readView<Freshness>("v_freshness"),
       readView<AlertaV2>("v_alertas"),
-      readView<RankingRow & { margen_directo: number; bruto: number }>("v_ranking_ytd"),
+      readView<RankingRow & { margen_directo: number; bruto: number; ingreso_cancelaciones: number; noches_disponibles: number }>("v_ranking_ytd"),
       readView<BreakevenRow>("v_breakeven_ytd"),
       readView<CosteRow>("v_costes_ytd"),
       readView<TrendRow>("v_trend_mensual", { order: { col: "mes" } }),
@@ -53,6 +68,11 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
       mes > 1
         ? readView<NocheRow>("v_reservation_nights", { gte: { night: inicioPrevio }, lt: { night: hoyIso } })
         : Promise.resolve([] as NocheRow[]),
+      readView<ForwardRow>("v_forward"),
+      readView<ForwardDia>("v_forward_dias", { order: { col: "dia" } }),
+      readView<PickupRow>("v_pickup"),
+      readView<PnlNetoMes>("v_pnl_neto_propiedad", { eq: { anio, mes } }),
+      readView<PropiedadRow>("v_propiedades"),
     ]);
 
   const k = kpisArr[0];
@@ -142,11 +162,54 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
   const jacoAirbnb = ingresoCanal((r) => r.codigo === "1A_JACO" && r.canal.startsWith("airbnb"));
   const jacoTotal = ingresoCanal((r) => r.codigo === "1A_JACO");
 
-  const chipsOrden = [...ranking].sort((a, b) => {
-    const ca = breakeven.find((x) => x.codigo === a.codigo)?.colchon;
-    const cb = breakeven.find((x) => x.codigo === b.codigo)?.colchon;
-    return Number(ca ?? 9) - Number(cb ?? 9);
-  });
+  // ── Panel de salud: forward por propiedad, ordenado por severidad (peor primero) ──
+  const PESO_SALUD = { critical: 0, warning: 1, good: 2 };
+  const health: HealthData[] = ranking.map((r) => {
+    const fw = forward.find((x) => x.codigo === r.codigo);
+    const pk = pickup.find((x) => x.codigo === r.codigo);
+    const be = breakeven.find((x) => x.codigo === r.codigo);
+    const co = costes.find((x) => x.codigo === r.codigo);
+    const pr = propiedades.find((x) => x.codigo === r.codigo);
+    const ingresoNoches = Number(r.ingreso_samavi) - Number(r.ingreso_cancelaciones ?? 0);
+    const revparEq = co && pr ? revparEquilibrio({
+      modelo: pr.modelo,
+      costesTotalesYtd: Math.abs(Number(co.total_costes)),
+      diasDisponiblesYtd: Number(r.noches_disponibles),
+      feeAparente: Number(r.bruto) > 0 ? 1 - ingresoNoches / Number(r.bruto) : 0,
+      comisionModeloPct: Number(pr.comision_pct),
+    }) : null;
+    const ocup7 = (fw?.noches_7 ?? 0) / 7;
+    const ocup30 = (fw?.noches_30 ?? 0) / 30;
+    const revparFwd30 = Number(fw?.bruto_30 ?? 0) / 30;
+    const margenMes = pnlNetoMesActual.find((x) => x.codigo === r.codigo)?.margen_neto;
+    const salud = estadoSalud({
+      margenMes: margenMes == null ? null : Number(margenMes),
+      ocup7, ocup30,
+      ocupBreakeven: be?.ocup_breakeven == null ? null : Number(be.ocup_breakeven),
+      revparFwd30, revparEq,
+      diasSinVender: pk?.dias_sin_vender == null ? null : Number(pk.dias_sin_vender),
+    });
+    return {
+      codigo: r.codigo, salud,
+      dias: forwardDias.filter((d) => d.codigo === r.codigo).map((d) => ({ dia: d.dia, vendida: d.vendida })),
+      ocup7, ocup30, revparFwd30, revparEq,
+      margenMes: margenMes == null ? null : Number(margenMes),
+      mesLabel: MESES[mes].toLowerCase(),
+      reservas7d: Number(pk?.reservas_7d ?? 0),
+      diasSinVender: pk?.dias_sin_vender == null ? null : Number(pk.dias_sin_vender),
+    };
+  }).sort((a, b) => (PESO_SALUD[a.salud.cls] - PESO_SALUD[b.salud.cls])
+    || ((a.margenMes ?? 0) - (b.margenMes ?? 0)));
+
+  // Línea global del negocio (próximos 30 días agregados)
+  const nProps = Math.max(health.length, 1);
+  const globalOcup7 = health.reduce((s, h) => s + h.ocup7, 0) / nProps;
+  const globalOcup30 = health.reduce((s, h) => s + h.ocup30, 0) / nProps;
+  const globalRevpar = health.reduce((s, h) => s + h.revparFwd30, 0) / nProps;
+  const globalRevparEq = health.some((h) => h.revparEq != null)
+    ? health.reduce((s, h) => s + (h.revparEq ?? 0), 0) / nProps : null;
+  const globalMargenMes = health.reduce((s, h) => s + (h.margenMes ?? 0), 0);
+  const globalReservas7d = health.reduce((s, h) => s + h.reservas7d, 0);
 
   return (
     <main className="container">
@@ -170,7 +233,24 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
       {/* 2 · vital signs con contexto */}
       <KpiStrip items={kpiItems} />
 
-      {/* 3 · qué requiere acción / qué sangra */}
+      {/* 3 · salud por propiedad: visión periférica de los próximos 30 días
+           (solo si la migración 011 ya expone v_forward) */}
+      {forward.length > 0 && (<>
+      <div className="section-title">Salud · próximos 30 días</div>
+      <p className="global-linea">
+        Negocio: <strong>{pct(globalOcup30, 0)}</strong> vendido a 30 días
+        ({pct(globalOcup7, 0)} la semana) · RevPAR <strong>{eur(globalRevpar)}</strong>
+        {globalRevparEq != null ? ` (equilibrio ${eur(globalRevparEq)})` : ""} ·
+        {" "}{MESES[mes].toLowerCase()}: <strong className={globalMargenMes >= 0 ? "pos" : "neg"}>
+          {globalMargenMes >= 0 ? "+" : "−"}{eur(Math.abs(globalMargenMes))}</strong>
+        {" "}· {globalReservas7d} reservas nuevas en 7d
+      </p>
+      <div className="salud-grid">
+        {health.map((h) => <HealthCard key={h.codigo} h={h} />)}
+      </div>
+      </>)}
+
+      {/* 4 · qué requiere acción */}
       <div className="section-title">Requiere atención</div>
       <AlertStack rows={alertas} />
 
@@ -192,25 +272,7 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
         </Link>
       </div>
 
-      {/* ── diagnóstico (1 minuto): las 4 de un vistazo, tendencia y comparativas ── */}
-      <div className="section-title">Propiedades · margen neto YTD (peor colchón primero)</div>
-      <div className="chips chips-props">
-        {chipsOrden.map((r) => {
-          const c = breakeven.find((b) => b.codigo === r.codigo)?.colchon;
-          const colchon = c == null ? null : Number(c);
-          const icono = colchon == null ? "—" : colchon < 0 ? "▼" : colchon < 0.1 ? "⚠" : "▲";
-          const cls = colchon == null ? "muted" : colchon < 0 ? "neg" : colchon < 0.1 ? "warn" : "pos";
-          return (
-            <Link key={r.codigo} href={`/p/${encodeURIComponent(r.codigo)}`} className="chip chip-prop">
-              <span className="dot" style={{ background: propColor(r.codigo) }} />
-              <span className="chip-nombre">{nombreCorto(r.codigo)}</span>
-              <span className="chip-valor">{eur(r.margen_neto)}</span>
-              <span className={"chip-colchon " + cls}>{icono} {colchon == null ? "—" : pp(colchon)} colchón</span>
-            </Link>
-          );
-        })}
-      </div>
-
+      {/* ── diagnóstico (1 minuto): tendencia y comparativas ── */}
       <div className="section-title">
         Tendencia margen {verDirecto ? "directo" : "neto"} mensual · real {anio}
         <span className="toggle toggle-inline">
