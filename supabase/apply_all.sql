@@ -1000,3 +1000,25 @@ left join reservations r
 group by l.codigo;
 
 grant select on v_forward, v_forward_dias, v_pickup to anon, authenticated;
+-- ═══ AJUSTES 21/07/2026 — clasificación del bucket de compras (decisión Stag) ═══
+-- 1) Compras hogar/reposición de los pisos → TODO a Nicasio (eventos reales por mes).
+--    Amazon + Día Madrid + Ideal Home + ferretería + Zara Home + El Corte Inglés + etc.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas) values
+  (2026, 2, '1A_NICA', 'OTROS', 'Compras hogar/reposición pisos (real bancos)', -226.05, 'Amazon 75,80 + Ideal Home 20,45 + Ferretería 46,30 + flores 83,50'),
+  (2026, 3, '1A_NICA', 'OTROS', 'Compras hogar/reposición pisos (real bancos)', -151.62, 'Amazon 129,98 + Día Madrid 21,64'),
+  (2026, 4, '1A_NICA', 'OTROS', 'Compras hogar/reposición pisos (real bancos)', -324.16, 'Amazon 34,41 + Zara Home 178,05 + Rituals 50,90 + Velas 33,90 + Mm 26,90'),
+  (2026, 5, '1A_NICA', 'OTROS', 'Compras hogar/reposición pisos (real bancos)', -424.46, 'Amazon 160,93 + El Corte Inglés 128,90 + Día Madrid 76,90 + H&M 29,98 + Ideal Home 27,75'),
+  (2026, 6, '1A_NICA', 'OTROS', 'Compras hogar/reposición pisos (real bancos)', -813.15, 'Amazon 731,00 + Día Madrid 39,71 + Ideal Home 15,95 + Bricochayta 16,50 + Hiperhogar 9,99');
+
+-- 2) La provisión de amenities de los pisos de Madrid se reemplaza por lo real (arriba):
+--    a 0 para no contar dos veces. Jacobine mantiene su 34,58 (Día SEVILLA, ya separado).
+update listings set amenities = 0 where codigo in ('1A_NICA', '4B_ALEX', '3G_MARE');
+
+-- 3) Lavandería My Laundry = secadas de José Modesto para Jacobine (jun visto: 3 cargos).
+--    ene–may se completan con el barrido de julio (cargos < 20 € no quedaron registrados).
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas) values
+  (2026, 6, '1A_JACO', 'OTROS', 'Lavandería My Laundry (José Modesto)', -16.00, '6+6+4; ene-may pendiente barrido jul');
+
+-- 4) Comidas de negocio (Uber Eats/Glovo/restaurantes) → gasto general.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas) values
+  (2026, 6, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Comidas de negocio (real bancos)', -167.26, 'Uber Eats 45,22 + Glovo 13,54 + Irish Rover 25 + Pavlov 13,50 + Campo Simbólico 70; ene-may pendiente barrido jul');
