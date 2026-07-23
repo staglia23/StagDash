@@ -51,8 +51,11 @@ definición). Reglas del motor, validadas contra el Excel histórico y contra ba
 
 - Ingreso por modelo: titular (NICA) y subarriendo (ALEX, MARE) → `host_payout`;
   comisión (JACO) → 30,25 % del bruto. Bruto = fareAccommodation + fareCleaning.
-- Imputación por **devengo/noche** (Guesty Analytics usa payout por check-in — por eso
-  sus números NO coinciden con los nuestros y está bien que no coincidan).
+- Imputación por **devengo/noche**. Guesty Analytics está en "Recognized Revenue =
+  Calendar Dates" (mismo prorrateo por noche que el motor) con base `host_payout`, así que
+  coincide con nosotros en NICA/ALEX/MARE; la única diferencia real es JACO (mostramos
+  30,25 % del bruto, Guesty Analytics muestra el host_payout bruto). El commission tool de
+  Guesty NO alimenta el dashboard (leemos el dato crudo, no sus reportes).
 - Canceladas excluidas, SALVO cobros retenidos (`v_ingreso_cancelaciones`, línea de
   ingreso separada que nunca toca noches/ADR/ocupación).
 - Overhead (gastos generales) prorrateado por peso en el Ingreso Samavi; los gastos
