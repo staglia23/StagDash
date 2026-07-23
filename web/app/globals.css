@@ -425,3 +425,21 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
   .tira30 { height: 10px; }
   .global-linea { font-size: 0.78rem; }
 }
+
+/* ── /cuadre: integridad del modelo ── */
+.cuadre-resumen { font-size: 1.2rem; }
+.cuadre-lista { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.cuadre-item { display: flex; gap: 10px; align-items: flex-start; flex-wrap: nowrap; }
+.cuadre-item > div { flex: 1; min-width: 0; }
+.cuadre-icono { font-weight: 800; font-size: 1rem; line-height: 1.3; min-width: 18px; text-align: center; }
+.cuadre-titulo { font-weight: 700; }
+.cuadre-num { color: var(--text-primary); font-size: 0.86rem; margin: 2px 0;
+  font-variant-numeric: tabular-nums; }
+.stamp-cuadre { text-decoration: none; font-weight: 700; }
+.stamp-cuadre.pos { color: var(--good); }
+.stamp-cuadre.neg { color: var(--critical); }
+
+/* etiquetas selectivas de las minibarras (último mes con dato + peor mes negativo) */
+.minibar-label { position: absolute; left: 50%; transform: translateX(-50%);
+  font-size: 0.62rem; font-weight: 700; color: var(--text-secondary);
+  white-space: nowrap; z-index: 1; font-variant-numeric: tabular-nums; }

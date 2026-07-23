@@ -43,6 +43,15 @@ export const fechaLarga = (iso: string | null | undefined) => {
   }
 };
 
+/** Compacto para espacios chicos (etiquetas de minibarras): "434 €" · "1,9k€" · "−12,3k€" */
+export const eurCorto = (n: number) => {
+  const sign = n < 0 ? "−" : "";
+  const abs = Math.abs(n);
+  if (abs < 1000) return `${sign}${Math.round(abs)} €`;
+  const k = (abs / 1000).toLocaleString("es-ES", { minimumFractionDigits: 0, maximumFractionDigits: 1 });
+  return `${sign}${k}k€`;
+};
+
 /** Número es-ES con punto de miles forzado también en 4 cifras (como eur, sin símbolo) */
 export const num = (n: number | null | undefined, dec = 0) =>
   new Intl.NumberFormat("es-ES", {

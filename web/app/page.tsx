@@ -14,6 +14,7 @@ import { RankingTable, type RankingRow } from "@/components/RankingTable";
 import { Tabs } from "@/components/Tabs";
 import { TrendChart } from "@/components/TrendChart";
 import { propColor } from "@/lib/colors";
+import { stampCuadre, type CuadreRow } from "@/lib/cuadre";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { buildHeadline, nombreCorto } from "@/lib/headline";
 import { mtdPorPropiedad, type NocheRow } from "@/lib/mtd";
@@ -53,7 +54,7 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
   const inicioPrevio = `${anio}-${String(Math.max(mes - 1, 1)).padStart(2, "0")}-01`;
 
   const [kpisArr, freshArr, alertas, ranking, breakeven, costes, trend, pnlMes, otb, canal, noches,
-    forward, forwardDias, pickup, pnlNetoMesActual, propiedades] =
+    forward, forwardDias, pickup, pnlNetoMesActual, propiedades, cuadre] =
     await Promise.all([
       readView<Kpis>("v_kpis"),
       readView<Freshness>("v_freshness"),
@@ -73,6 +74,7 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
       readView<PickupRow>("v_pickup"),
       readView<PnlNetoMes>("v_pnl_neto_propiedad", { eq: { anio, mes } }),
       readView<PropiedadRow>("v_propiedades"),
+      readView<CuadreRow>("v_cuadre", { order: { col: "orden" } }),
     ]);
 
   const k = kpisArr[0];
@@ -218,6 +220,13 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
         <div className="sub">{fechaLargaDia(hoyIso)} · Samavi Global Vision SL</div>
         <div className="stamp">
           Sync {fechaLarga(fresh?.last_sync ?? k?.last_sync)} · costes cargados hasta {costesHasta}
+          {stampCuadre(cuadre) && (<>
+            {" · "}
+            <Link href="/cuadre"
+              className={"stamp-cuadre " + (stampCuadre(cuadre)!.includes("✓") ? "pos" : "neg")}>
+              {stampCuadre(cuadre)}
+            </Link>
+          </>)}
         </div>
       </header>
 
