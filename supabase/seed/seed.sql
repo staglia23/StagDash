@@ -173,6 +173,11 @@ insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, n
   (2026, 5, '1A_JACO', 'OTROS', 'Lavandería My Laundry (José Modesto)', -13.00, '4,50+3,50+5,00; barrido 23/07'),
   (2026, 6, '1A_JACO', 'OTROS', 'Lavandería My Laundry (José Modesto)', -16.00, '6+6+4; serie ene–jun completa (ene sin cargos)');
 
+-- 3b) Dudas del barrido resueltas por Stag 23/07: ambas a Jacobine.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas) values
+  (2026, 1, '1A_JACO', 'OTROS', 'Papelería carteles instructivos (Folder)', -4.00, 'material carteles del piso, impreso por Stag con tarjeta de José; confirmado Stag 23/07'),
+  (2026, 2, '1A_JACO', 'OTROS', 'Amenities Natura Sevilla Sierpes', -33.80, 'compra puntual amenities; confirmado Stag 23/07');
+
 -- 4) Comidas de negocio (Uber Eats/Glovo/restaurantes) → gasto general.
 --    Serie ene–jun completa (barrido 23/07); ene/mar/abr sin cargos ("Licencia 431" es taxi, MCC 4121).
 insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas) values
