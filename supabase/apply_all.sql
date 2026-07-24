@@ -887,10 +887,10 @@ insert into general_expenses (concepto, importe_mes, desde, hasta) values
   ('Brand Partners (marketing)', 500.00, date '2026-05-01', NULL),   -- efectivo/Argentina: no sale en bancos
   ('TGSS RETA Stag', 370.75, NULL, NULL),
   ('Orange (fibra pisos + dispositivos)', 329.80, NULL, NULL),       -- promedio real ene–jun
-  ('Viajes corporativos', 200.00, NULL, NULL),                       -- cubre el día a día Revolut; viajes grandes = eventos
+  ('Viajes corporativos (transporte)', 200.00, NULL, NULL),          -- solo transporte/traslados; comidas van por bancos (eventos)
   ('Asesor Confisic', 181.50, NULL, NULL),
   ('Claude.ai (plan 90)', 90.00, date '2026-06-01', NULL),
-  ('Otros AEAT/admin', 50.00, NULL, NULL),
+  -- 'Otros AEAT/admin' eliminado 25/07: fantasma; los gastos reales entran como eventos conciliados
   ('Revolut Business cuota', 43.00, NULL, NULL),
   ('Seguro vida préstamo (Allianz 499,51/año)', 41.63, date '2026-05-01', NULL),
   ('Seguro RC', 18.25, NULL, NULL),
