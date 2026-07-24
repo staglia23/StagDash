@@ -8,8 +8,11 @@
 // Secrets requeridos (supabase secrets set ...):
 //   GUESTY_CLIENT_ID, GUESTY_CLIENT_SECRET, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 //
-// ⚠️ MAPEO DE "money" A CONFIRMAR EN FASE 2 (reconciliación con _RAW del Excel).
-//    `bruto` se toma de money.fareAccommodation como candidato inicial.
+// Mapeo de "money" CONFIRMADO (24/07/2026) contra los PDF de Airbnb H1: bruto =
+// fareAccommodation + fareCleaning; host_service_fee = hostServiceFee; host_payout = hostPayout.
+// v4: agrega confirmation_code (Airbnb HMxxxx) para conciliar 1:1 con Airbnb.
+// v5: getToken reintenta en 429. v6: cachea el token en sync_state (dura 24h) → no lo pide
+//     en cada corrida, evitando el rate-limit del endpoint de token. (todo 24/07/2026)
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -25,20 +28,44 @@ const env = (k: string) => {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function getToken(): Promise<string> {
+async function getToken(supabase: any, tries = 5): Promise<string> {
+  // 1) Token cacheado: los de Guesty duran 24h → reusar en vez de pedir en cada corrida
+  //    (pedir seguido dispara el rate-limit del endpoint de token).
+  try {
+    const { data } = await supabase.from("sync_state")
+      .select("guesty_token, guesty_token_exp").eq("id", 1).single();
+    if (data?.guesty_token && data?.guesty_token_exp &&
+        new Date(data.guesty_token_exp).getTime() > Date.now() + 60_000) {
+      return data.guesty_token;
+    }
+  } catch (_) { /* si falla la lectura del caché, pedimos uno nuevo */ }
+
+  // 2) Pedir uno nuevo (con reintento en 429) y cachearlo con su vencimiento.
   const body = new URLSearchParams({
     grant_type: "client_credentials",
     scope: "open-api",
     client_id: env("GUESTY_CLIENT_ID"),
     client_secret: env("GUESTY_CLIENT_SECRET"),
   });
-  const res = await fetch(TOKEN_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
-    body,
-  });
-  if (!res.ok) throw new Error(`Token error ${res.status}: ${await res.text()}`);
-  return (await res.json()).access_token;
+  for (let i = 0; i < tries; i++) {
+    const res = await fetch(TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
+      body,
+    });
+    if (res.status === 429) {
+      const wait = Number(res.headers.get("Retry-After") ?? 5) * 1000 * (i + 1);
+      await sleep(wait);
+      continue;
+    }
+    if (!res.ok) throw new Error(`Token error ${res.status}: ${await res.text()}`);
+    const j = await res.json();
+    const exp = new Date(Date.now() + ((j.expires_in ?? 86400) * 1000)).toISOString();
+    await supabase.from("sync_state")
+      .update({ guesty_token: j.access_token, guesty_token_exp: exp }).eq("id", 1);
+    return j.access_token;
+  }
+  throw new Error("Token error 429: agotó reintentos");
 }
 
 async function guestyGet(path: string, token: string, tries = 4): Promise<any> {
@@ -98,6 +125,9 @@ function toRow(r: any, codigo: string) {
     status: r.status ?? null,
     source: r.source ?? r.integration?.platform ?? null,
     guest_nombre: [r.guest?.firstName, r.guest?.lastName].filter(Boolean).join(" ") || null,
+    // Código del canal (Airbnb HMxxxx, etc.): clave única para conciliar 1:1 contra el
+    // reporte de transacciones de Airbnb, sin depender de monto/fecha.
+    confirmation_code: r.confirmationCode ?? null,
     // Mapeo CONFIRMADO contra el Excel (comisión 18,76% coincide):
     //   bruto = fareAccommodation + fareCleaning · comisión = hostServiceFee · payout = hostPayout
     bruto: (m.fareAccommodation ?? 0) + (m.fareCleaning ?? 0),
@@ -115,7 +145,7 @@ Deno.serve(async () => {
   const supabase = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
   const startedAt = new Date().toISOString();
   try {
-    const token = await getToken();
+    const token = await getToken(supabase);
     const listingMap = await buildListingMap(supabase, token);
 
     const { data: st } = await supabase.from("sync_state").select("last_sync").eq("id", 1).single();
@@ -126,7 +156,7 @@ Deno.serve(async () => {
       { operator: "$gte", field: "lastUpdatedAt", value: since },
     ]));
     const fields = encodeURIComponent(
-      "_id listingId checkIn checkOut checkInDateLocalized checkOutDateLocalized " +
+      "_id listingId confirmationCode checkIn checkOut checkInDateLocalized checkOutDateLocalized " +
       "nightsCount status source integration guest money createdAt lastUpdatedAt",
     );
 

@@ -1191,3 +1191,117 @@ group by r.codigo,
   extract(month from (r.checkin_local + interval '1 day'));
 
 revoke all on v_conciliacion_airbnb from anon, authenticated;
+
+-- ═══ MIGRACIÓN 015 (24/07/2026) ═══
+-- 015 — código de confirmación del canal (Airbnb HMxxxx, etc.) por reserva.
+-- Habilita el cruce 1:1 Guesty ↔ reporte de transacciones de Airbnb (clave única,
+-- sin depender de monto/fecha). Lo llena el sync (guesty-sync v4+); backfill vía re-sync.
+alter table reservations add column if not exists confirmation_code text;
+create index if not exists idx_reservations_conf on reservations (confirmation_code);
+
+-- ═══ MIGRACIÓN 016 (24/07/2026) ═══
+-- 016 — tablas de ingesta para la conciliación a tres puntas (Fase 2).
+-- Internas (ops): REVOKE anon/authenticated. No guardan nombres de huéspedes (PII):
+-- el cruce se hace por confirmation_code, no por nombre.
+
+-- Lado CAJA: depósitos bancarios (Airbnb y otros).
+create table if not exists bank_deposits (
+  id         bigint generated always as identity primary key,
+  banco      text not null,               -- 'revolut' | 'bbva'
+  iban       text,                         -- '7165' | '8920'
+  fecha      date not null,
+  importe    numeric(12,2) not null,       -- + entrada / − salida
+  concepto   text,
+  es_airbnb  boolean default false,
+  archivo    text,                          -- para recargar por archivo sin duplicar
+  cargado_at timestamptz default now()
+);
+create index if not exists idx_bank_dep_fecha on bank_deposits (banco, fecha);
+
+-- Lado FISCAL/pago: reporte de transacciones de Airbnb (IBAN destino + fecha de llegada).
+create table if not exists airbnb_tx (
+  id                bigint generated always as identity primary key,
+  tipo              text not null,          -- 'Payout' | 'Reserva' | 'Resolucion'
+  fecha             date not null,
+  fecha_llegada     date,                   -- llegada estimada al banco (Payout)
+  confirmation_code text,                   -- HMxxxx (Reserva) → cruza con reservations
+  iban              text,                   -- '7165' | '8920' (Payout)
+  alojamiento       text,
+  inicio            date,
+  fin               date,
+  noches            int,
+  cobrado           numeric(12,2),          -- monto del payout
+  importe           numeric(12,2),          -- ganancia del anfitrión (Reserva)
+  comision_servicio numeric(12,2),
+  limpieza          numeric(12,2),
+  bruto             numeric(12,2),
+  anio_fiscal       int,
+  archivo           text,
+  cargado_at        timestamptz default now()
+);
+create index if not exists idx_airbnb_tx_conf   on airbnb_tx (confirmation_code);
+create index if not exists idx_airbnb_tx_payout on airbnb_tx (fecha_llegada, cobrado);
+
+revoke all on bank_deposits from anon, authenticated;
+revoke all on airbnb_tx     from anon, authenticated;
+
+-- ═══ MIGRACIÓN 017 (24/07/2026) ═══
+-- 017 — v_cuadre_banco: conciliación bancaria para el panel de /cuadre (Fase 3).
+-- Por cuenta (7165 Revolut = Nica+Jaco · 8920 BBVA = Alex+Mare) y mes:
+--   airbnb_pago  = lo que Airbnb pagó (desde Guesty, v_conciliacion_airbnb; = el PDF).
+--   banco_recibio = depósitos de Airbnb que entraron (bank_deposits).
+--   diferencia_acum = acumulado banco − airbnb → el "en tránsito" neto; debe quedarse chico.
+-- Restringida al PERÍODO con extractos cargados (para que el acumulado no se contamine con
+-- meses sin banco). Vista de panel (agregada, sin PII ni IBAN completo) → GRANT anon.
+
+create or replace view v_cuadre_banco as
+with rango as (
+  select date_trunc('month', min(fecha))::date as desde,
+         date_trunc('month', max(fecha))::date as hasta
+  from bank_deposits where es_airbnb
+),
+airbnb as (
+  select case when codigo in ('1A_NICA','1A_JACO') then '7165' else '8920' end as iban,
+         anio, mes, sum(payout_total_airbnb) as airbnb_pago
+  from v_conciliacion_airbnb
+  where make_date(anio, mes, 1) between (select desde from rango) and (select hasta from rango)
+  group by 1, anio, mes
+),
+banco as (
+  select iban,
+         extract(year  from fecha)::int as anio,
+         extract(month from fecha)::int as mes,
+         sum(importe) as banco_recibio, count(*) as depositos
+  from bank_deposits
+  where es_airbnb
+  group by iban, extract(year from fecha)::int, extract(month from fecha)::int
+),
+j as (
+  select coalesce(a.iban, b.iban) as iban,
+         coalesce(a.anio, b.anio) as anio,
+         coalesce(a.mes,  b.mes)  as mes,
+         round(coalesce(a.airbnb_pago, 0), 2)   as airbnb_pago,
+         round(coalesce(b.banco_recibio, 0), 2) as banco_recibio,
+         coalesce(b.depositos, 0) as depositos
+  from airbnb a
+  full outer join banco b on a.iban = b.iban and a.anio = b.anio and a.mes = b.mes
+)
+select
+  iban,
+  case iban when '7165' then 'Revolut · Nicasio + Jacobine'
+            when '8920' then 'BBVA · Alexander + Marechal'
+            else iban end as cuenta,
+  anio, mes, airbnb_pago, banco_recibio, depositos,
+  round(banco_recibio - airbnb_pago, 2) as diferencia_mes,
+  round(sum(banco_recibio - airbnb_pago) over (partition by iban order by anio, mes), 2) as diferencia_acum
+from j
+order by iban, anio, mes;
+
+grant select on v_cuadre_banco to anon, authenticated;
+
+-- ═══ MIGRACIÓN 018 (24/07/2026) ═══
+-- 018 — caché del token de Guesty en sync_state (dura 24h → no pedir en cada corrida).
+-- Evita el rate-limit del endpoint de token: se pide uno nuevo solo cuando el cacheado venció.
+-- Lo usa guesty-sync v6+.
+alter table sync_state add column if not exists guesty_token     text;
+alter table sync_state add column if not exists guesty_token_exp timestamptz;
