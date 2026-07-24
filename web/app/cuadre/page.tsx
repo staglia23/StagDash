@@ -4,7 +4,8 @@
 // 012); acá solo se renderiza. Estados siempre con icono + texto, nunca solo color.
 import Link from "next/link";
 import { lineaCuadre, normalizaCuadre, resumenCuadre, type CuadreRow } from "@/lib/cuadre";
-import { fechaLarga } from "@/lib/format";
+import { bancoTodoOk, resumenBanco, type BancoRow } from "@/lib/cuadreBanco";
+import { eur, fechaLarga, MESES } from "@/lib/format";
 import { readView, supabaseConfigured } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
@@ -15,13 +16,22 @@ const ICONO = { ok: "✓", alerta: "✖", info: "ℹ" } as const;
 const CLASE = { ok: "ok", alerta: "critical", info: "" } as const;
 
 export default async function Cuadre() {
-  const [rowsRaw, freshArr] = await Promise.all([
+  const [rowsRaw, freshArr, bancoRows] = await Promise.all([
     readView<CuadreRow>("v_cuadre", { order: { col: "orden" } }),
     readView<Freshness>("v_freshness"),
+    readView<BancoRow>("v_cuadre_banco"),
   ]);
   const rows = normalizaCuadre(rowsRaw);
   const resumen = resumenCuadre(rows);
   const fresh = freshArr[0];
+  const banco = resumenBanco(bancoRows);
+  const periodo = bancoRows.length
+    ? (() => {
+        const ord = [...bancoRows].sort((a, b) => (a.anio - b.anio) || (a.mes - b.mes));
+        const f = ord[0], l = ord[ord.length - 1];
+        return `${MESES[f.mes]}–${MESES[l.mes]} ${l.anio}`;
+      })()
+    : "";
 
   return (
     <main className="container">
@@ -71,6 +81,46 @@ export default async function Cuadre() {
             céntimos que aparecen al redondear por propiedad y mes; cualquier diferencia
             mayor enciende el chequeo.
           </p>
+
+          {banco.length > 0 && (
+            <section>
+              <div className="section-title" style={{ marginTop: 26 }}>
+                Conciliación bancaria · {periodo}
+              </div>
+              <p className={"titular cuadre-resumen " + (bancoTodoOk(banco) ? "pos" : "neg")}
+                 style={{ fontSize: "1.05rem" }}>
+                {bancoTodoOk(banco)
+                  ? "✓ La plata que pagó Airbnb llegó al banco en las dos cuentas"
+                  : "⚠ Una cuenta necesita revisión"}
+              </p>
+              <div className="cuadre-lista">
+                {banco.map((c) => (
+                  <div key={c.iban} className={"alerta cuadre-item " + (c.ok ? "ok" : "critical")}>
+                    <span className={"cuadre-icono " + (c.ok ? "pos" : "neg")} aria-label={c.ok ? "cuadra" : "revisar"}>
+                      {c.ok ? "✓" : "⚠"}
+                    </span>
+                    <div>
+                      <div className="cuadre-titulo">{c.cuenta}</div>
+                      <div className="cuadre-num">
+                        Airbnb pagó {eur(c.airbnb)} · llegó al banco {eur(c.banco)}
+                      </div>
+                      <div className="alerta-msg">
+                        {c.enTransito >= 0
+                          ? `Diferencia +${eur(Math.abs(c.enTransito))}: en tránsito a favor (pagos de fin de período que aún no entraron el mes anterior).`
+                          : `Diferencia −${eur(Math.abs(c.enTransito))}: pagos de fin de período que llegan al banco el mes siguiente.`}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="section-note">
+                Las tres puntas: <strong>Guesty = Airbnb</strong> (arriba) y <strong>Airbnb = banco</strong>
+                {" "}(acá). La diferencia es <strong>timing de pago</strong> (Airbnb transfiere ~5 días
+                después del check-in), no plata perdida — mientras el "en tránsito" quede chico
+                frente a lo que entra, está sano.
+              </p>
+            </section>
+          )}
         </>
       )}
     </main>
