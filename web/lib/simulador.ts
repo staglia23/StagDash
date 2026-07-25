@@ -34,6 +34,11 @@ export type PropBaseline = {
   /** Modelo comisión (JACO): ingreso = % del bruto. NETO de IVA (0,25), no el 30,25 %
    *  facturado — esos 5,25 puntos son IVA repercutido y nunca fueron ingreso (migración 021). */
   comisionModeloPct: number;
+  /** Comisión de canal que SOPORTA Samavi, YTD (migración 033). Es la que desaparece al vender
+   *  por directo. Distinta de la "aparente" de las palancas: esa incluye además los residuos
+   *  (fees de mascota, reembolsos, Booking que no descuenta) y es la que hace cuadrar el
+   *  baseline con el YTD real. En modelo comisión es 0: la paga la dueña, no Samavi. */
+  comisionCanalYtd: number;
 };
 
 export type Palancas = {
@@ -41,6 +46,9 @@ export type Palancas = {
   adr: number;               // € por noche vendida (sobre bruto)
   ocup: number;              // 0..1
   comisionCanalPct: number;  // 0..1, comisión aparente — no aplica a modelo comisión
+  /** 0..1 — porción de las noches que se PASA a canal directo respecto de hoy. Base 0: el mix
+   *  actual ya está dentro de comisionCanalPct, así que esta palanca es un delta, no un nivel. */
+  directoPct: number;
 };
 
 /** Baseline de las palancas: derivado del YTD real, nunca valores inventados. */
@@ -51,7 +59,14 @@ export function palancasBase(b: PropBaseline): Palancas {
     ocup: b.disponiblesYtd > 0 ? b.nochesYtd / b.disponiblesYtd : 0,
     comisionCanalPct: b.modelo === "comision" ? 0
       : b.brutoYtd > 0 ? 1 - b.ingresoYtd / b.brutoYtd : 0,
+    directoPct: 0,
   };
+}
+
+/** Comisión de canal real, como fracción del bruto. Es lo que se recupera por noche directa. */
+export function comisionRealPct(b: PropBaseline): number {
+  if (b.modelo === "comision" || b.brutoYtd <= 0) return 0;
+  return b.comisionCanalYtd / b.brutoYtd;
 }
 
 export type SimProp = {
@@ -70,6 +85,13 @@ export type SimResultado = {
     ocup: number;
     ocupNecesaria: number | null; // según margen elegido (con/sin overhead); puede superar 1
     colchon: number | null;
+    /** Lo que aporta al año pasar `directoPct` de las noches a canal directo. 0 si no se movió
+     *  la palanca, y 0 SIEMPRE en modelo comisión: ahí la comisión del canal la paga la dueña,
+     *  así que vender por directo no le cambia nada a Samavi. */
+    ahorroDirectoAnual: number;
+    /** Punto de equilibrio de la captación: lo máximo que puede costar traer una noche directa
+     *  antes de que salga igual que pagarle al canal. */
+    costeMaxDirectoNoche: number;
   };
   overheadAnual: number;
 };
@@ -89,9 +111,14 @@ function anualRunRate(b: PropBaseline) {
 function anualSimulada(b: PropBaseline, p: Palancas) {
   const noches = p.ocup * DIAS_ANIO;
   const bruto = p.adr * noches;
-  const ingresoNoche = b.modelo === "comision"
+  // Vender por directo no sube el precio: ahorra la comisión del canal, y nada más. Por eso el
+  // ahorro por noche directa ES el coste del canal por noche — que es también, exactamente, lo
+  // máximo que se puede gastar en captarla antes de que deje de convenir. Umbral derivado, no
+  // inventado (doctrina: el único umbral objetivo es el punto de equilibrio).
+  const ahorroNocheDirecta = p.adr * comisionRealPct(b);
+  const ingresoNoche = (b.modelo === "comision"
     ? p.adr * b.comisionModeloPct
-    : p.adr * (1 - p.comisionCanalPct);
+    : p.adr * (1 - p.comisionCanalPct)) + p.directoPct * ahorroNocheDirecta;
   const ingreso = ingresoNoche * noches;
   const limpiezaNoche = b.nochesYtd > 0 ? b.limpiezaYtd / b.nochesYtd : 0;
   const renta = b.modelo === "subarriendo" ? p.rentaMes * 12 : b.rentaYtd * fMeses(b);
@@ -99,7 +126,11 @@ function anualSimulada(b: PropBaseline, p: Palancas) {
   const limpieza = limpiezaNoche * noches;
   const margenDirecto = ingreso - renta - limpieza - fijosMensuales;
   const contribNoche = ingresoNoche - limpiezaNoche;
-  return { noches, bruto, ingreso, margenDirecto, renta, fijosMensuales, contribNoche };
+  return {
+    noches, bruto, ingreso, margenDirecto, renta, fijosMensuales, contribNoche,
+    ahorroDirectoAnual: p.directoPct * ahorroNocheDirecta * noches,
+    costeMaxDirectoNoche: ahorroNocheDirecta,
+  };
 }
 
 export function simular(
@@ -151,6 +182,8 @@ export function simular(
       ocup: p.ocup,
       ocupNecesaria,
       colchon: ocupNecesaria != null ? p.ocup - ocupNecesaria : null,
+      ahorroDirectoAnual: sim.ahorroDirectoAnual,
+      costeMaxDirectoNoche: sim.costeMaxDirectoNoche,
     },
     overheadAnual,
   };
@@ -172,4 +205,19 @@ export function fraseSimulada(
   const tipoMargen = conOverhead ? "margen neto" : "margen directo (sin overhead)";
   const colchon = r.target.colchon != null ? ` (colchón ${pp(r.target.colchon)})` : "";
   return `${palancas}, ${prop} ${verbo} ${eur(Math.abs(margen))}/año de ${tipoMargen}${colchon}`;
+}
+
+/** La palanca de directo lleva SIEMPRE su condición: el ahorro solo es real si captar la noche
+ *  cuesta menos que la comisión que se evita. Sin esa frase, el simulador diría "pasá todo a
+ *  directo y ganás 32.000 €", que es falso — el canal directo no es gratis, solo es otro coste.
+ *  Devuelve null si la palanca está en 0 (nada que decir). */
+export function fraseDirecto(b: PropBaseline, p: Palancas, r: SimResultado): string | null {
+  if (p.directoPct <= 0) return null;
+  const prop = nombreCorto(b.codigo);
+  if (b.modelo === "comision") {
+    return `En ${prop} el directo no le cambia nada a Samavi: la comisión del canal la paga la dueña.`;
+  }
+  const pct = Math.round(p.directoPct * 100);
+  return `Pasar ${pct} % de las noches a directo suma ${eur(r.target.ahorroDirectoAnual)}/año, `
+    + `siempre que captar cada una cueste menos de ${eur(r.target.costeMaxDirectoNoche)}.`;
 }

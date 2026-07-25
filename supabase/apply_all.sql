@@ -2942,3 +2942,7 @@ select * from (values
   ('Apple Watch Ultra a plazos (Orange)',             18.95, null::date, '2026-12-31'::date, false)
 ) as v(concepto, importe_mes, desde, hasta, es_corporativo)
 where not exists (select 1 from general_expenses g where g.concepto = v.concepto);
+
+
+-- 037 — v_costes_ytd expone comision_canal (la que soporta Samavi), para que el simulador
+-- pueda calcular el punto de equilibrio de la captación por canal directo.

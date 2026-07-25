@@ -275,6 +275,12 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 .sim-respuesta { display: grid; gap: 10px; }
 .badges { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .sim-frase { font-size: 1.12rem; font-weight: 700; line-height: 1.4; margin: 0; text-wrap: balance; }
+/* La condición del canal directo: subordinada a la respuesta, pero legible. El ahorro sin su
+   umbral es un número que miente, así que nunca se esconde detrás de un desplegable. */
+.sim-condicion {
+  margin: 8px 0 0; font-size: .92rem; line-height: 1.45; color: var(--muted);
+  border-left: 3px solid var(--accent-bg); padding-left: 10px; text-wrap: pretty;
+}
 .sim-delta { font-size: 0.88rem; color: var(--text-secondary); }
 .sim-reset {
   justify-self: start; min-height: 44px; padding: 8px 16px; border-radius: 999px;

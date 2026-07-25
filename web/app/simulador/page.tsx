@@ -16,7 +16,7 @@ type RankRow = {
 };
 type CosteRow = {
   codigo: string; renta: number; limpieza: number; suministros: number;
-  comunidad: number; otros: number; overhead: number;
+  comunidad: number; otros: number; overhead: number; comision_canal: number;
 };
 type BreakevenRow = { codigo: string; colchon: number | null };
 type Propiedad = { codigo: string; modelo: Modelo; renta_base: number; comision_pct_neta: number };
@@ -56,6 +56,7 @@ export default async function SimuladorPage({ searchParams }: { searchParams: { 
       overheadYtd: Number(c?.overhead ?? 0),
       rentaBaseMes: Number(p?.renta_base ?? 0),
       comisionModeloPct: Number(p?.comision_pct_neta ?? 0),
+      comisionCanalYtd: Number(c?.comision_canal ?? 0),
     };
   });
 

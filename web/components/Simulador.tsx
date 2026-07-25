@@ -9,7 +9,7 @@ import { propColor } from "@/lib/colors";
 import { eur, num, pct, pp } from "@/lib/format";
 import { nombreCorto } from "@/lib/headline";
 import {
-  fraseSimulada, palancasBase, simular, type Palancas, type PropBaseline,
+  fraseDirecto, fraseSimulada, palancasBase, simular, type Palancas, type PropBaseline,
 } from "@/lib/simulador";
 import { BulletBreakeven } from "./BulletBreakeven";
 
@@ -85,7 +85,8 @@ export function Simulador({ baselines, inicial, real }: {
   const delta = margen(resultado) - margen(baseline);
   const casi = (a: number, b: number) => Math.abs(a - b) < 1e-9;
   const enBaseline = casi(p.rentaMes, base.rentaMes) && casi(p.adr, base.adr)
-    && casi(p.ocup, base.ocup) && casi(p.comisionCanalPct, base.comisionCanalPct);
+    && casi(p.ocup, base.ocup) && casi(p.comisionCanalPct, base.comisionCanalPct)
+    && casi(p.directoPct, base.directoPct);
   const r = real[target.codigo];
 
   const set = (patch: Partial<Palancas>) => setP((prev) => ({ ...prev, ...patch }));
@@ -121,6 +122,9 @@ export function Simulador({ baselines, inicial, real }: {
           </div>
         </div>
         <p className="sim-frase">{fraseSimulada(target, p, resultado, conOverhead)}</p>
+        {fraseDirecto(target, p, resultado) && (
+          <p className="sim-condicion">{fraseDirecto(target, p, resultado)}</p>
+        )}
         <div className="sim-delta">
           {enBaseline ? "Este es el escenario actual (baseline real)." : (
             <>vs hoy: <strong className={delta >= 0 ? "pos" : "neg"}>
@@ -166,6 +170,12 @@ export function Simulador({ baselines, inicial, real }: {
             min={0} max={30} step={0.5}
             value={Math.round(p.comisionCanalPct * 1000) / 10} hoy={base.comisionCanalPct * 100}
             onChange={(v) => set({ comisionCanalPct: v / 100 })} />
+        )}
+        {target.modelo !== "comision" && (
+          <SliderRow id="directo" label="Noches que pasás a canal directo" unidad="%"
+            min={0} max={100} step={5}
+            value={Math.round(p.directoPct * 100)} hoy={0}
+            onChange={(v) => set({ directoPct: v / 100 })} />
         )}
       </div>
 

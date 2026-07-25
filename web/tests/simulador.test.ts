@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  DIAS_ANIO, fraseSimulada, palancasBase, simular, type PropBaseline,
+  DIAS_ANIO, comisionRealPct, fraseDirecto, fraseSimulada, palancasBase, simular, type PropBaseline,
 } from "../lib/simulador";
 
 // Fixture: datos reales de producción (15/07/2026) de v_ranking_ytd + v_costes_ytd + v_propiedades.
@@ -13,25 +13,25 @@ const NICA: PropBaseline = {
   codigo: "1A_NICA", modelo: "titular", meses: 7,
   ingresoYtd: 32916.59, brutoYtd: 40422.18, nochesYtd: 196, disponiblesYtd: 212,
   rentaYtd: 0, limpiezaYtd: 2954.6, suministrosYtd: 1505, comunidadYtd: 2819.46, otrosYtd: 985.39,
-  overheadYtd: 13087.59, rentaBaseMes: 0, comisionModeloPct: 0,
+  overheadYtd: 13087.59, rentaBaseMes: 0, comisionModeloPct: 0, comisionCanalYtd: 7218.13,
 };
 const JACO: PropBaseline = {
   codigo: "1A_JACO", modelo: "comision", meses: 7,
   ingresoYtd: 11221.79, brutoYtd: 44887.15, nochesYtd: 171, disponiblesYtd: 212,
   rentaYtd: 0, limpiezaYtd: 0, suministrosYtd: 75.53, comunidadYtd: 0, otrosYtd: 368.2,
-  overheadYtd: 4461.77, rentaBaseMes: 0, comisionModeloPct: 0.25,
+  overheadYtd: 4461.77, rentaBaseMes: 0, comisionModeloPct: 0.25, comisionCanalYtd: 0,
 };
 const MARE: PropBaseline = {
   codigo: "3G_MARE", modelo: "subarriendo", meses: 7,
   ingresoYtd: 23106.78, brutoYtd: 28767.61, nochesYtd: 194, disponiblesYtd: 212,
   rentaYtd: 6100, limpiezaYtd: 2452.8, suministrosYtd: 875, comunidadYtd: 0, otrosYtd: 964.39,
-  overheadYtd: 9187.22, rentaBaseMes: 1100, comisionModeloPct: 0,
+  overheadYtd: 9187.22, rentaBaseMes: 1100, comisionModeloPct: 0, comisionCanalYtd: 5286.61,
 };
 const ALEX: PropBaseline = {
   codigo: "4B_ALEX", modelo: "subarriendo", meses: 7,
   ingresoYtd: 27178.17, brutoYtd: 34265.5, nochesYtd: 194, disponiblesYtd: 212,
   rentaYtd: 9516.48, limpiezaYtd: 2496.6, suministrosYtd: 1015, comunidadYtd: 0, otrosYtd: 2103.78,
-  overheadYtd: 10806.00, rentaBaseMes: 1414.22, comisionModeloPct: 0,
+  overheadYtd: 10806.00, rentaBaseMes: 1414.22, comisionModeloPct: 0, comisionCanalYtd: 6259.40,
 };
 const TODAS = [NICA, JACO, MARE, ALEX];
 
@@ -150,5 +150,65 @@ describe("fraseSimulada — la respuesta es UNA frase con la gramática del titu
     const pn = palancasBase(NICA);
     const rn = simular(TODAS, "1A_NICA", pn);
     expect(fraseSimulada(NICA, pn, rn, true)).toMatch(/^Con ADR .+ y ocupación \d+ %, Nicasio/);
+  });
+});
+
+// La palanca de canal directo (migración 033 + 037). Lo que se juega acá es que el simulador NO
+// diga "pasá todo a directo y ganás 32.000 €": vender por directo no sube el precio, solo ahorra
+// la comisión — y captar la noche cuesta algo. Por eso el ahorro va SIEMPRE con su umbral.
+describe("palanca de canal directo", () => {
+  const plano = (s: string | null) => s?.replace(/\s/g, " ") ?? null;
+
+  it("en 0 no toca nada: el baseline sigue reconciliando con el YTD real", () => {
+    expect(palancasBase(ALEX).directoPct).toBe(0);
+    const r = simular(TODAS, "4B_ALEX", palancasBase(ALEX));
+    expect(r.target.ahorroDirectoAnual).toBe(0);
+    expect(fraseDirecto(ALEX, palancasBase(ALEX), r)).toBeNull();
+  });
+
+  it("el umbral de captación ES el coste del canal por noche, no un target inventado", () => {
+    // adr × comisiónReal = (bruto/noches) × (comisión/bruto) = comisión/noches. Se simplifica.
+    const r = simular(TODAS, "4B_ALEX", palancasBase(ALEX));
+    expect(r.target.costeMaxDirectoNoche).toBeCloseTo(6259.4 / 194, 2);
+  });
+
+  it("al 100 % el ahorro es exactamente la comisión evitada, ni un euro más", () => {
+    const p = { ...palancasBase(ALEX), directoPct: 1 };
+    const r = simular(TODAS, "4B_ALEX", p);
+    expect(r.target.ahorroDirectoAnual)
+      .toBeCloseTo(r.target.costeMaxDirectoNoche * r.target.nochesAnual, 6);
+  });
+
+  it("mueve el margen justo en el ahorro, sin efectos mágicos en los costes", () => {
+    const base = palancasBase(ALEX);
+    const conDirecto = { ...base, directoPct: 0.2 };
+    const r0 = simular(TODAS, "4B_ALEX", base, { conOverhead: false });
+    const r1 = simular(TODAS, "4B_ALEX", conDirecto, { conOverhead: false });
+    expect(r1.target.margenDirectoAnual - r0.target.margenDirectoAnual)
+      .toBeCloseTo(r1.target.ahorroDirectoAnual, 6);
+  });
+
+  it("es lineal: el 50 % vale la mitad que el 100 %", () => {
+    const mitad = simular(TODAS, "4B_ALEX", { ...palancasBase(ALEX), directoPct: 0.5 });
+    const todo = simular(TODAS, "4B_ALEX", { ...palancasBase(ALEX), directoPct: 1 });
+    expect(mitad.target.ahorroDirectoAnual * 2).toBeCloseTo(todo.target.ahorroDirectoAnual, 6);
+  });
+
+  it("en Jacobine NO hace nada, y la frase explica por qué", () => {
+    // Modelo comisión: Samavi factura sobre el bruto, así que la comisión del canal la soporta
+    // la dueña. Vender por directo le mejora el bolsillo a ella, no a Samavi.
+    expect(comisionRealPct(JACO)).toBe(0);
+    const p = { ...palancasBase(JACO), directoPct: 1 };
+    const r = simular(TODAS, "1A_JACO", p);
+    expect(r.target.ahorroDirectoAnual).toBe(0);
+    expect(plano(fraseDirecto(JACO, p, r)))
+      .toBe("En Jacobine el directo no le cambia nada a Samavi: la comisión del canal la paga la dueña.");
+  });
+
+  it("la frase lleva SIEMPRE la condición: sin ella el número miente", () => {
+    const p = { ...palancasBase(ALEX), directoPct: 0.2 };
+    const f = plano(fraseDirecto(ALEX, p, simular(TODAS, "4B_ALEX", p)))!;
+    expect(f).toContain("Pasar 20 % de las noches a directo suma");
+    expect(f).toContain("siempre que captar cada una cueste menos de");
   });
 });
