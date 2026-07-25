@@ -22,10 +22,19 @@ export type ViewQuery = {
   lt?: Record<string, string | number>;
 };
 
-/** Lee una vista; devuelve fallback si no hay config o falla (para build/offline). */
+/**
+ * Lee una vista; devuelve fallback si no hay config o falla (para build/offline).
+ *
+ * Reintenta UNA vez ante un fallo de red. La portada dispara ~16 lecturas en paralelo y un
+ * corte suelto no es teórico: se vio una carga en la que v_breakeven_ytd volvió vacía y la
+ * tabla de margen asegurado pintó en rojo meses que en realidad solo estaban a medio vender
+ * (sin equilibrio conocido, el semáforo no puede distinguirlos). Devolver [] en silencio
+ * convierte un fallo de red en un número equivocado, que es peor que un hueco.
+ */
 export async function readView<T>(view: string, q: ViewQuery = {}, fallback: T[] = []): Promise<T[]> {
   if (!supabaseConfigured) return fallback;
-  try {
+
+  const intentar = async () => {
     let query = supabase.from(view).select("*");
     for (const [col, v] of Object.entries(q.eq ?? {})) query = query.eq(col, v);
     for (const [col, v] of Object.entries(q.gte ?? {})) query = query.gte(col, v);
@@ -34,8 +43,18 @@ export async function readView<T>(view: string, q: ViewQuery = {}, fallback: T[]
     const { data, error } = await query;
     if (error) throw error;
     return (data as T[]) ?? fallback;
-  } catch (e) {
-    console.error(`readView(${view}) falló:`, e);
-    return fallback;
+  };
+
+  try {
+    return await intentar();
+  } catch (e1) {
+    console.warn(`readView(${view}) falló, reintentando:`, e1);
+    try {
+      await new Promise((r) => setTimeout(r, 250));
+      return await intentar();
+    } catch (e2) {
+      console.error(`readView(${view}) falló también en el reintento:`, e2);
+      return fallback;
+    }
   }
 }

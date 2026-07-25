@@ -4,29 +4,34 @@ import {
 } from "../lib/simulador";
 
 // Fixture: datos reales de producción (15/07/2026) de v_ranking_ytd + v_costes_ytd + v_propiedades.
+// Actualizado el 25/07/2026 por la migración 021: la comisión de JACO pasa a ser la NETA de
+// IVA (25 %, no el 30,25 % facturado) y su ingreso baja en consecuencia. Ojo al efecto que
+// parece colateral y no lo es: el overhead es un pool repartido por peso de ingreso, así que
+// al bajar el de JACO las otras tres cargan MÁS cuota. Por eso se recalcularon las cuatro
+// (pool 37.542,59 € intacto). Es lo mismo que pasó en producción: ALEX cayó de +488 a +207 €.
 const NICA: PropBaseline = {
   codigo: "1A_NICA", modelo: "titular", meses: 7,
   ingresoYtd: 32916.59, brutoYtd: 40422.18, nochesYtd: 196, disponiblesYtd: 212,
   rentaYtd: 0, limpiezaYtd: 2954.6, suministrosYtd: 1505, comunidadYtd: 2819.46, otrosYtd: 985.39,
-  overheadYtd: 12768.91, rentaBaseMes: 0, comisionModeloPct: 0,
+  overheadYtd: 13087.59, rentaBaseMes: 0, comisionModeloPct: 0,
 };
 const JACO: PropBaseline = {
   codigo: "1A_JACO", modelo: "comision", meses: 7,
-  ingresoYtd: 13578.36, brutoYtd: 44887.15, nochesYtd: 171, disponiblesYtd: 212,
+  ingresoYtd: 11221.79, brutoYtd: 44887.15, nochesYtd: 171, disponiblesYtd: 212,
   rentaYtd: 0, limpiezaYtd: 0, suministrosYtd: 75.53, comunidadYtd: 0, otrosYtd: 368.2,
-  overheadYtd: 5267.28, rentaBaseMes: 0, comisionModeloPct: 0.3025,
+  overheadYtd: 4461.77, rentaBaseMes: 0, comisionModeloPct: 0.25,
 };
 const MARE: PropBaseline = {
   codigo: "3G_MARE", modelo: "subarriendo", meses: 7,
   ingresoYtd: 23106.78, brutoYtd: 28767.61, nochesYtd: 194, disponiblesYtd: 212,
   rentaYtd: 6100, limpiezaYtd: 2452.8, suministrosYtd: 875, comunidadYtd: 0, otrosYtd: 964.39,
-  overheadYtd: 8963.52, rentaBaseMes: 1100, comisionModeloPct: 0,
+  overheadYtd: 9187.22, rentaBaseMes: 1100, comisionModeloPct: 0,
 };
 const ALEX: PropBaseline = {
   codigo: "4B_ALEX", modelo: "subarriendo", meses: 7,
   ingresoYtd: 27178.17, brutoYtd: 34265.5, nochesYtd: 194, disponiblesYtd: 212,
   rentaYtd: 9516.48, limpiezaYtd: 2496.6, suministrosYtd: 1015, comunidadYtd: 0, otrosYtd: 2103.78,
-  overheadYtd: 10542.88, rentaBaseMes: 1414.22, comisionModeloPct: 0,
+  overheadYtd: 10806.00, rentaBaseMes: 1414.22, comisionModeloPct: 0,
 };
 const TODAS = [NICA, JACO, MARE, ALEX];
 
@@ -49,8 +54,8 @@ describe("simular — baseline reproduce el run-rate real", () => {
 
   it("proyección 2026 de ALEX a ritmo actual ≈ margen neto YTD anualizado", () => {
     // margen_neto_ytd 1.503,43 anualizado ∈ [12/7, 365/212] → ~2.577–2.786
-    expect(r.target.margenNetoAnual).toBeGreaterThan(2400);
-    expect(r.target.margenNetoAnual).toBeLessThan(3000);
+    expect(r.target.margenNetoAnual).toBeGreaterThan(2100);
+    expect(r.target.margenNetoAnual).toBeLessThan(2600);
   });
 
   it("ingreso anual de ALEX = ingreso YTD × 365/212", () => {
@@ -95,10 +100,10 @@ describe("simular — palancas", () => {
     expect(suma).toBeCloseTo(sim.overheadAnual, 6);
   });
 
-  it("JACO: el ingreso es el 30,25 % del bruto y la comisión de canal no aplica", () => {
+  it("JACO: el ingreso es el 25 % del bruto (comisión NETA de IVA) y la de canal no aplica", () => {
     const p = palancasBase(JACO);
     const a = simular(TODAS, "1A_JACO", p);
-    expect(a.target.ingresoAnual).toBeCloseTo(a.target.brutoAnual * 0.3025, 6);
+    expect(a.target.ingresoAnual).toBeCloseTo(a.target.brutoAnual * 0.25, 6);
     const b = simular(TODAS, "1A_JACO", { ...p, comisionCanalPct: 0.2 });
     expect(b.target.ingresoAnual).toBeCloseTo(a.target.ingresoAnual, 6);
   });

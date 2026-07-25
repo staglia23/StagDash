@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { eur, pct } from "@/lib/format";
 import { propColor } from "@/lib/colors";
+import { nombreCorto } from "@/lib/headline";
 
 export type RankingRow = {
   codigo: string;
@@ -53,7 +54,7 @@ export function RankingTable({ rows }: { rows: RankingRow[] }) {
             <tr key={r.codigo}>
               <td>
                 <span className="dot" style={{ background: propColor(r.codigo) }} />
-                <Link href={`/propiedad/${r.codigo}`}>{r.codigo}</Link>
+                <Link href={`/p/${encodeURIComponent(r.codigo)}`}>{nombreCorto(r.codigo)}</Link>
               </td>
               <td className="num">{eur(r.ingreso_samavi)}</td>
               <td className="num">{eur(r.margen_directo)}</td>

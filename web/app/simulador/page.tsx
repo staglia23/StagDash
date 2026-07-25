@@ -19,7 +19,7 @@ type CosteRow = {
   comunidad: number; otros: number; overhead: number;
 };
 type BreakevenRow = { codigo: string; colchon: number | null };
-type Propiedad = { codigo: string; modelo: Modelo; renta_base: number; comision_pct: number };
+type Propiedad = { codigo: string; modelo: Modelo; renta_base: number; comision_pct_neta: number };
 type PnlMes = { codigo: string; mes: number };
 type Freshness = { last_sync: string | null };
 
@@ -55,7 +55,7 @@ export default async function SimuladorPage({ searchParams }: { searchParams: { 
       otrosYtd: Number(c?.otros ?? 0),
       overheadYtd: Number(c?.overhead ?? 0),
       rentaBaseMes: Number(p?.renta_base ?? 0),
-      comisionModeloPct: Number(p?.comision_pct ?? 0),
+      comisionModeloPct: Number(p?.comision_pct_neta ?? 0),
     };
   });
 

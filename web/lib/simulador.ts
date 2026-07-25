@@ -31,7 +31,9 @@ export type PropBaseline = {
   otrosYtd: number;
   overheadYtd: number;       // cuota de overhead prorrateada YTD
   rentaBaseMes: number;      // renta contractual vigente (v_propiedades) — referencia en UI
-  comisionModeloPct: number; // modelo comisión (JACO): ingreso = % del bruto
+  /** Modelo comisión (JACO): ingreso = % del bruto. NETO de IVA (0,25), no el 30,25 %
+   *  facturado — esos 5,25 puntos son IVA repercutido y nunca fueron ingreso (migración 021). */
+  comisionModeloPct: number;
 };
 
 export type Palancas = {

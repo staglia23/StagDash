@@ -57,7 +57,10 @@ export function revparEquilibrio(x: {
   costesTotalesYtd: number;   // directos + cuota overhead, en positivo
   diasDisponiblesYtd: number;
   feeAparente: number;        // 1 − ingreso_noches/bruto (no aplica a modelo comisión)
-  comisionModeloPct: number;  // JACO 0,3025
+  /** Comisión NETA de IVA (JACO 0,25 = v_propiedades.comision_pct_neta), NO el 30,25 %
+   *  facturado: el ingreso Samavi es la base sin IVA desde la migración 021. Pasarle el
+   *  bruto facturado bajaría artificialmente el RevPAR de equilibrio. */
+  comisionModeloPct: number;
 }): number | null {
   if (x.diasDisponiblesYtd <= 0) return null;
   const netoPorDia = x.costesTotalesYtd / x.diasDisponiblesYtd;

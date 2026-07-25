@@ -189,7 +189,9 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 .av2.warning  { border-left-color: var(--warning); }
 .av2.es-senal { border-left-style: dashed; }
 .av2-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.av2-msg { color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Sin truncar: una alerta a medias ("prórroga autom…") no se puede accionar, y son 3 como
+   máximo — el espacio que ahorraba el ellipsis no valía perder la consecuencia. */
+.av2-msg { color: var(--text-secondary); }
 .av2-accion {
   justify-self: start; display: inline-flex; align-items: center;
   text-decoration: none; font-weight: 600; font-size: 0.85rem;
@@ -443,3 +445,118 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 .minibar-label { position: absolute; left: 50%; transform: translateX(-50%);
   font-size: 0.62rem; font-weight: 700; color: var(--text-secondary);
   white-space: nowrap; z-index: 1; font-variant-numeric: tabular-nums; }
+
+/* ══ Portada híbrida (jul 2026) ══════════════════════════════════════════════
+   Fila de salud, tabla de margen asegurado, tabla YTD y accesos. Densidad pensada
+   para 390×844: las 4 propiedades + el año entero sin scroll horizontal del body
+   (las tablas scrollean dentro de .table-wrap, nunca la página). */
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* ── Fila de salud (sustituye a la tarjeta en la portada) ── */
+.salud-filas {
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 2px 12px;
+}
+.sfila {
+  display: block; text-decoration: none; color: inherit;
+  padding: 11px 0; border-bottom: 1px solid var(--gridline);
+}
+.sfila:last-child { border-bottom: 0; }
+.sfila-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sfila-nombre { font-weight: 700; font-size: 0.92rem; letter-spacing: -0.01em; }
+.sfila-top .estado { margin-left: 0; }
+.sfila-cifra {
+  margin-left: auto; font-size: 0.74rem; color: var(--text-secondary);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.sfila .tira30 { margin-top: 7px; }
+.sfila-motivo { font-size: 0.72rem; color: var(--muted); margin-top: 5px; }
+.sfila-motivo.critical { color: var(--critical); }
+.sfila-motivo.warning { color: var(--warning); }
+.tira30-leyenda {
+  display: flex; justify-content: space-between; font-size: 0.62rem;
+  color: var(--muted); padding: 8px 0 4px;
+}
+
+/* ── Tablas de la portada (asegurado + YTD) ── */
+.as-table {
+  width: 100%; border-collapse: collapse; font-size: 0.74rem;
+  font-variant-numeric: tabular-nums;
+}
+.as-table th, .as-table td { padding: 8px 6px; white-space: nowrap; }
+.as-table thead th {
+  font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.04em;
+  color: var(--muted); font-weight: 700; text-align: right;
+  border-bottom: 1px solid var(--gridline);
+}
+.as-table thead th:first-child { text-align: left; white-space: normal; }
+.as-table tbody th {
+  text-align: left; font-weight: 700; font-size: 0.78rem;
+  position: sticky; left: 0; background: var(--surface-1);
+}
+.as-table tbody tr { border-bottom: 1px solid var(--gridline); }
+.as-table tbody tr:last-child { border-bottom: 0; }
+.as-nombre { text-decoration: none; color: inherit; }
+.as-mo { text-align: right; font-weight: 700; }
+.as-table thead th.hoy, .as-mo.hoy { background: color-mix(in srgb, var(--series-1) 7%, transparent); }
+.as-hoy-tag { font-weight: 400; text-transform: none; letter-spacing: 0; }
+.as-total th, .as-total td {
+  border-top: 2px solid var(--gridline); font-weight: 800;
+  background: color-mix(in srgb, var(--text-primary) 4%, transparent);
+}
+.llenando { color: var(--muted); }
+/* ↗ (no "…"): marca que el mes está a medio vender y su cifra sube — un puntito suspensivo
+   se leería como texto cortado. Icono + gris + leyenda: nunca solo color. */
+.as-llenando { font-size: 0.8em; margin-left: 1px; }
+.as-leyenda { margin-top: 8px; line-height: 1.5; }
+.ytd-table td, .ytd-table th { font-size: 0.8rem; }
+.ytd-table tbody th { font-size: 0.82rem; }
+.cruce {
+  font-size: 0.8rem; color: var(--text-secondary); margin: 8px 0 0;
+  padding-left: 10px; border-left: 2px solid var(--series-1); line-height: 1.45;
+}
+
+/* ── Accesos "Ir a" (4 destinos, target táctil ≥44 px) ── */
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.tile {
+  display: flex; align-items: center; gap: 9px; min-height: 56px;
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 12px; padding: 11px 12px; text-decoration: none; color: inherit;
+}
+.tile:hover { border-color: var(--muted); }
+.tile-ic { font-size: 1.15rem; line-height: 1; }
+.tile > span:last-child { min-width: 0; }
+.tile-t { display: block; font-weight: 700; font-size: 0.86rem; }
+.tile-s { display: block; font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+
+@media (max-width: 400px) {
+  /* Los 6 meses tienen que entrar enteros: un mes fuera de cuadro es un mes que nadie mira. */
+  .as-table { font-size: 0.68rem; }
+  .as-table th, .as-table td { padding: 7px 3px; }
+  .as-table tbody th { font-size: 0.72rem; }
+  .as-table .dot { width: 7px; height: 7px; margin-right: 5px; }
+  .ytd-table td, .ytd-table th, .ytd-table tbody th { font-size: 0.76rem; }
+  .sfila-cifra { font-size: 0.7rem; }
+  .sfila-revpar { display: block; text-align: right; }
+}
+
+/* ── "Del margen a la caja" (/analisis): margen operativo → provisión IS → queda ── */
+.fiscal-card { padding: 14px 16px; }
+.fiscal-fila {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid var(--gridline); font-size: 0.88rem;
+}
+.fiscal-fila strong { font-variant-numeric: tabular-nums; white-space: nowrap; font-weight: 700; }
+.fiscal-total { border-bottom: 0; border-top: 2px solid var(--gridline); font-weight: 700; }
+.fiscal-total strong { font-size: 1.1rem; }
+.fiscal-nota {
+  font-size: 0.76rem; color: var(--muted); line-height: 1.5; margin: 10px 0 0;
+}
+
+/* Puente de capas en la tabla YTD de la portada (migración 025) */
+.ytd-puente th, .ytd-puente td { color: var(--text-secondary); font-weight: 600; }
+.ytd-resultado th, .ytd-resultado td { border-top: 2px solid var(--gridline); }

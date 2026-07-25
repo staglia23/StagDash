@@ -1,23 +1,23 @@
-// Portada = Morning Check (02_Prompt §5.1). Respuesta primero: titular generado,
-// tira de KPIs con sparklines, stack de alertas/señales, on-the-books y acceso al
-// simulador en 1 tap. Las preguntas 1–4 del CEO se responden sin scroll (390×844).
+// Portada = Morning Check (02_Prompt §5.1), variante HÍBRIDA (jul 2026).
+//
+// Orden deliberado: primero el estado de hoy (titular + salud a 30 días), después el dinero
+// que ya está asegurado hasta fin de año, después el año corrido, y solo al final los
+// accesos. Todo lo que era diagnóstico (tendencia, comparativas, ya reservado) se fue a
+// /analisis: la portada responde "¿qué pasa hoy?", no acumula tablas.
 import Link from "next/link";
 import { AlertStack, type AlertaV2 } from "@/components/AlertStack";
-import { HealthCard, type HealthData } from "@/components/HealthCard";
-import { BreakevenTable, type BreakevenRow } from "@/components/BreakevenTable";
-import { BulletBreakeven } from "@/components/BulletBreakeven";
-import { CanalTable, type CanalRow } from "@/components/CanalTable";
-import { CostesTable, type CosteRow } from "@/components/CostesTable";
+import { AseguradoLeyenda, AseguradoTable } from "@/components/AseguradoTable";
+import type { HealthData } from "@/components/HealthCard";
 import { KpiStrip, type KpiItem } from "@/components/KpiStrip";
-import { OnTheBooksTable, type OtbRow } from "@/components/OnTheBooksTable";
-import { RankingTable, type RankingRow } from "@/components/RankingTable";
-import { Tabs } from "@/components/Tabs";
-import { TrendChart } from "@/components/TrendChart";
+import { SaludFila } from "@/components/SaludFila";
+import { YtdPropiedadTable } from "@/components/YtdPropiedadTable";
+import { construirTabla, resumenAsegurado, type AseguradoRow } from "@/lib/asegurado";
 import { propColor } from "@/lib/colors";
 import { stampCuadre, type CuadreRow } from "@/lib/cuadre";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { buildHeadline, nombreCorto } from "@/lib/headline";
 import { mtdPorPropiedad, type NocheRow } from "@/lib/mtd";
+import { cruceRentabilidad, spreadContribucion, type RentRow } from "@/lib/rentabilidad";
 import { estadoSalud, revparEquilibrio } from "@/lib/salud";
 import type { Modelo } from "@/lib/simulador";
 import { readView, supabaseConfigured } from "@/lib/supabase";
@@ -29,9 +29,24 @@ type Kpis = {
   adr_ytd: number; revpar_ytd: number; noches_ytd: number;
   margen_neto_pct_ytd: number; last_sync: string | null;
 };
-type Freshness = { last_sync: string | null; costes_cargados_hasta: string | null };
+// cierre_hasta = hasta qué mes llega la conciliación bancaria (el cierre de verdad).
+// costes_cargados_hasta mide la proyección de events, que va hacia adelante: no sirve
+// como sello de "cerrado" (ver migración 020).
+type Freshness = {
+  last_sync: string | null; costes_cargados_hasta: string | null; cierre_hasta: string | null;
+};
 type TrendRow = { anio: number; mes: number; ingreso_samavi: number; margen_directo: number; margen_neto: number };
 type PnlMes = { codigo: string; anio: number; mes: number; dias_mes: number; bruto: number; noches: number };
+type RankingRow = RentRow & {
+  bruto: number; ingreso_cancelaciones: number; noches_disponibles: number; total_costes?: number;
+};
+// Las tres capas del motor (migración 025): contribución → operativo → resultado Samavi.
+type ResultadoRow = {
+  contribucion: number; overhead_operativo: number; margen_operativo: number;
+  costes_corporativos: number; resultado_samavi: number;
+};
+type BreakevenRow = { codigo: string; ocup_breakeven: number | null; colchon: number | null };
+type CosteRow = { codigo: string; total_costes: number; pct_sobre_ingreso: number };
 type ForwardRow = {
   codigo: string; noches_7: number; noches_14: number; noches_30: number;
   bruto_7: number; bruto_30: number; ingreso_30: number;
@@ -42,30 +57,28 @@ type PickupRow = {
   ultima_reserva: string | null; dias_sin_vender: number | null;
 };
 type PnlNetoMes = { codigo: string; margen_neto: number };
-type PropiedadRow = { codigo: string; modelo: Modelo; comision_pct: number };
+type PropiedadRow = { codigo: string; modelo: Modelo; comision_pct_neta: number };
 
 const hoyMadrid = () =>
   new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Madrid" }).format(new Date());
 
-export default async function Home({ searchParams }: { searchParams: { margen?: string } }) {
-  const verDirecto = searchParams.margen === "directo";
+export default async function Home({ searchParams }: { searchParams: { orden?: string } }) {
+  const porIngreso = searchParams.orden === "ingreso";
   const hoyIso = hoyMadrid();
   const [anio, mes] = hoyIso.split("-").map(Number);
   const inicioPrevio = `${anio}-${String(Math.max(mes - 1, 1)).padStart(2, "0")}-01`;
 
-  const [kpisArr, freshArr, alertas, ranking, breakeven, costes, trend, pnlMes, otb, canal, noches,
-    forward, forwardDias, pickup, pnlNetoMesActual, propiedades, cuadre] =
+  const [kpisArr, freshArr, alertas, ranking, breakeven, costes, trend, pnlMes, noches,
+    forward, forwardDias, pickup, pnlNetoMesActual, propiedades, cuadre, asegurado, resultadoArr] =
     await Promise.all([
       readView<Kpis>("v_kpis"),
       readView<Freshness>("v_freshness"),
       readView<AlertaV2>("v_alertas"),
-      readView<RankingRow & { margen_directo: number; bruto: number; ingreso_cancelaciones: number; noches_disponibles: number }>("v_ranking_ytd"),
+      readView<RankingRow>("v_ranking_ytd"),
       readView<BreakevenRow>("v_breakeven_ytd"),
       readView<CosteRow>("v_costes_ytd"),
       readView<TrendRow>("v_trend_mensual", { order: { col: "mes" } }),
       readView<PnlMes>("v_pnl_mensual_propiedad", { order: { col: "mes" } }),
-      readView<OtbRow>("v_on_the_books"),
-      readView<CanalRow>("v_canal_ytd"),
       mes > 1
         ? readView<NocheRow>("v_reservation_nights", { gte: { night: inicioPrevio }, lt: { night: hoyIso } })
         : Promise.resolve([] as NocheRow[]),
@@ -75,11 +88,12 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
       readView<PnlNetoMes>("v_pnl_neto_propiedad", { eq: { anio, mes } }),
       readView<PropiedadRow>("v_propiedades"),
       readView<CuadreRow>("v_cuadre", { order: { col: "orden" } }),
+      readView<AseguradoRow>("v_margen_asegurado", { order: { col: "mes" } }),
+      readView<ResultadoRow>("v_resultado_samavi"),
     ]);
 
   const k = kpisArr[0];
   const fresh = freshArr[0];
-  const codigos = ranking.map((r) => r.codigo);
   const mtd = mtdPorPropiedad(noches, hoyIso);
 
   // ── Titular generado (cascada §5.1) ──────────────────────────────────────────
@@ -141,29 +155,6 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
     },
   ] : [];
 
-  // ── On-the-books: futuro YA confirmado (status reserved fuera — cuestión abierta §8.1) ──
-  const otbTotal = otb.reduce((s, r) => s + Number(r.ingreso ?? 0), 0);
-  const otbNoches = otb.reduce((s, r) => s + Number(r.noches ?? 0), 0);
-  const otbMeses = Array.from(
-    otb.reduce((map, r) => {
-      const key = `${r.anio}-${String(r.mes).padStart(2, "0")}`;
-      map.set(key, (map.get(key) ?? 0) + Number(r.ingreso ?? 0));
-      return map;
-    }, new Map<string, number>()),
-  ).sort(([a], [b]) => a.localeCompare(b)).slice(0, 3);
-
-  const costesHasta = fresh?.costes_cargados_hasta
-    ? `${MESES[Number(fresh.costes_cargados_hasta.split("-")[1])]} ${fresh.costes_cargados_hasta.split("-")[0]}`
-    : "—";
-
-  // Mix de canal: la dependencia de Airbnb es señal permanente (§6.2)
-  const ingresoCanal = (pred: (r: CanalRow) => boolean) =>
-    canal.filter(pred).reduce((s, r) => s + Number(r.ingreso), 0);
-  const totalCanal = ingresoCanal(() => true);
-  const pctAirbnb = totalCanal > 0 ? ingresoCanal((r) => r.canal.startsWith("airbnb")) / totalCanal : 0;
-  const jacoAirbnb = ingresoCanal((r) => r.codigo === "1A_JACO" && r.canal.startsWith("airbnb"));
-  const jacoTotal = ingresoCanal((r) => r.codigo === "1A_JACO");
-
   // ── Panel de salud: forward por propiedad, ordenado por severidad (peor primero) ──
   const PESO_SALUD = { critical: 0, warning: 1, good: 2 };
   const health: HealthData[] = ranking.map((r) => {
@@ -178,7 +169,7 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
       costesTotalesYtd: Math.abs(Number(co.total_costes)),
       diasDisponiblesYtd: Number(r.noches_disponibles),
       feeAparente: Number(r.bruto) > 0 ? 1 - ingresoNoches / Number(r.bruto) : 0,
-      comisionModeloPct: Number(pr.comision_pct),
+      comisionModeloPct: Number(pr.comision_pct_neta),
     }) : null;
     const ocup7 = (fw?.noches_7 ?? 0) / 7;
     const ocup30 = (fw?.noches_30 ?? 0) / 30;
@@ -207,11 +198,33 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
   const nProps = Math.max(health.length, 1);
   const globalOcup7 = health.reduce((s, h) => s + h.ocup7, 0) / nProps;
   const globalOcup30 = health.reduce((s, h) => s + h.ocup30, 0) / nProps;
-  const globalRevpar = health.reduce((s, h) => s + h.revparFwd30, 0) / nProps;
-  const globalRevparEq = health.some((h) => h.revparEq != null)
-    ? health.reduce((s, h) => s + (h.revparEq ?? 0), 0) / nProps : null;
-  const globalMargenMes = health.reduce((s, h) => s + (h.margenMes ?? 0), 0);
   const globalReservas7d = health.reduce((s, h) => s + h.reservas7d, 0);
+
+  // ── Margen asegurado + YTD: las dos tablas comparten el orden de filas ──────
+  const resultado = resultadoArr[0];
+  const rowsYtd = [...ranking]
+    .map((r) => ({
+      codigo: r.codigo,
+      ingreso_samavi: Number(r.ingreso_samavi),
+      contribucion: Number(r.contribucion),
+      contribucion_pct: Number(r.contribucion_pct),
+      margen_neto: Number(r.margen_neto),
+    }))
+    .sort((a, b) => porIngreso
+      ? b.ingreso_samavi - a.ingreso_samavi
+      : b.contribucion - a.contribucion);
+
+  const tabla = construirTabla(
+    asegurado.map((r) => ({ ...r, margen_neto: Number(r.margen_neto), ocup_vendida: Number(r.ocup_vendida) })),
+    Object.fromEntries(breakeven.map((b) => [b.codigo, b.ocup_breakeven == null ? null : Number(b.ocup_breakeven)])),
+    rowsYtd.map((r) => r.codigo),
+  );
+  // Si no hay un cruce real que contar, la horquilla de eficiencia sí dice algo siempre.
+  const cruce = cruceRentabilidad(rowsYtd) ?? spreadContribucion(rowsYtd);
+
+  const cierreHasta = fresh?.cierre_hasta
+    ? `${MESES[Number(fresh.cierre_hasta.split("-")[1])]} ${fresh.cierre_hasta.split("-")[0]}`
+    : "—";
 
   return (
     <main className="container">
@@ -219,7 +232,7 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
         <h1>Morning Check</h1>
         <div className="sub">{fechaLargaDia(hoyIso)} · Samavi Global Vision SL</div>
         <div className="stamp">
-          Sync {fechaLarga(fresh?.last_sync ?? k?.last_sync)} · costes cargados hasta {costesHasta}
+          Sync {fechaLarga(fresh?.last_sync ?? k?.last_sync)} · banco conciliado hasta {cierreHasta}
           {stampCuadre(cuadre) && (<>
             {" · "}
             <Link href="/cuadre"
@@ -239,116 +252,76 @@ export default async function Home({ searchParams }: { searchParams: { margen?: 
       {/* 1 · el titular ES la respuesta */}
       <p className="titular">{titular}</p>
 
-      {/* 2 · vital signs con contexto */}
-      <KpiStrip items={kpiItems} />
-
-      {/* 3 · salud por propiedad: visión periférica de los próximos 30 días
-           (solo si la migración 011 ya expone v_forward) */}
+      {/* 2 · salud: qué pasa en los próximos 30 días, propiedad por propiedad */}
       {forward.length > 0 && (<>
-      <div className="section-title">Salud · próximos 30 días</div>
-      <p className="global-linea">
-        Negocio: <strong>{pct(globalOcup30, 0)}</strong> vendido a 30 días
-        ({pct(globalOcup7, 0)} la semana) · RevPAR <strong>{eur(globalRevpar)}</strong>
-        {globalRevparEq != null ? ` (equilibrio ${eur(globalRevparEq)})` : ""} ·
-        {" "}{MESES[mes].toLowerCase()}: <strong className={globalMargenMes >= 0 ? "pos" : "neg"}>
-          {globalMargenMes >= 0 ? "+" : "−"}{eur(Math.abs(globalMargenMes))}</strong>
-        {" "}· {globalReservas7d} reservas nuevas en 7d
-      </p>
-      <div className="salud-grid">
-        {health.map((h) => <HealthCard key={h.codigo} h={h} />)}
-      </div>
+        <div className="section-title">Salud · próximos 30 días</div>
+        <p className="global-linea">
+          Negocio: <strong>{pct(globalOcup30, 0)}</strong> vendido a 30 días
+          ({pct(globalOcup7, 0)} la semana entrante) · {globalReservas7d} reservas nuevas en 7 días
+        </p>
+        <div className="salud-filas">
+          {health.map((h) => <SaludFila key={h.codigo} h={h} />)}
+          <div className="tira30-leyenda">
+            <span>lleno = noche vendida · hueco = libre</span>
+            <span>hoy → 30 días</span>
+          </div>
+        </div>
       </>)}
 
-      {/* 4 · qué requiere acción */}
+      {/* 3 · el dinero que ya está puesto de aquí a fin de año */}
+      {tabla.filas.length > 0 && (<>
+        <div className="section-title">
+          Margen neto asegurado · hasta diciembre
+          <span className="toggle toggle-inline">
+            <Link href="/" className={"toggle-btn" + (!porIngreso ? " active" : "")}>por aporte</Link>
+            <Link href="/?orden=ingreso" className={"toggle-btn" + (porIngreso ? " active" : "")}>por ingreso</Link>
+          </span>
+        </div>
+        <AseguradoTable tabla={tabla} mesActual={mes} />
+        <AseguradoLeyenda tabla={tabla} resumen={resumenAsegurado(tabla)}
+          sinEquilibrio={breakeven.length === 0} />
+
+        <div className="section-title">Por propiedad · YTD {anio}</div>
+        <YtdPropiedadTable rows={rowsYtd} anio={anio}
+          corporativos={Number(resultado?.costes_corporativos ?? 0)}
+          resultado={Number(resultado?.resultado_samavi ?? 0)} />
+        {cruce ? <p className="cruce">{cruce}</p> : null}
+      </>)}
+
+      {/* 4 · vital signs del año corrido */}
+      <div className="section-title">Vital signs · YTD {anio}</div>
+      <KpiStrip items={kpiItems} />
+
+      {/* 5 · qué requiere acción */}
       <div className="section-title">Requiere atención</div>
       <AlertStack rows={alertas} />
 
-      {/* 4 · ya vendido hacia adelante + 5 · palancas, en 1 tap */}
-      <div className="grid-2">
-        <div className="card otb-card">
-          <div className="kpi-label">Ya reservado <span className="badge badge-otb">futuro confirmado</span></div>
-          <div className="kpi-mini-value">{eur(otbTotal)}</div>
-          <div className="kpi-sub">
-            {otbNoches} noches · {otbMeses.map(([key, v]) => {
-              const [, m] = key.split("-").map(Number);
-              return `${MESES[m]} ${eur(v)}`;
-            }).join(" · ")}
-          </div>
-        </div>
-        <Link href="/simulador" className="cta-sim">
-          <span className="cta-titulo">Simulador de escenarios →</span>
-          <span className="cta-sub">¿Qué pasa si muevo renta, precio u ocupación?</span>
+      {/* 6 · a dónde ir desde acá */}
+      <div className="section-title">Ir a</div>
+      <div className="tiles">
+        <Link href="/analisis" className="tile">
+          <span className="tile-ic" aria-hidden="true">📈</span>
+          <span><span className="tile-t">Análisis</span>
+            <span className="tile-s">tendencia y comparativas</span></span>
+        </Link>
+        <Link href="/simulador" className="tile">
+          <span className="tile-ic" aria-hidden="true">🎚️</span>
+          <span><span className="tile-t">Simulador</span>
+            <span className="tile-s">¿y si muevo renta o precio?</span></span>
+        </Link>
+        <Link href="/cuadre" className="tile">
+          <span className="tile-ic" aria-hidden="true">✓</span>
+          <span><span className="tile-t">Cuadre</span>
+            <span className="tile-s">integridad del modelo y banco</span></span>
+        </Link>
+        <Link href={`/p/${encodeURIComponent(health[0]?.codigo ?? "1A_NICA")}`} className="tile">
+          <span className="tile-ic" aria-hidden="true">
+            <span className="dot" style={{ background: propColor(health[0]?.codigo ?? "1A_NICA"), marginRight: 0 }} />
+          </span>
+          <span><span className="tile-t">{nombreCorto(health[0]?.codigo ?? "1A_NICA")}</span>
+            <span className="tile-s">la que más atención pide</span></span>
         </Link>
       </div>
-
-      {/* ── diagnóstico (1 minuto): tendencia y comparativas ── */}
-      <div className="section-title">
-        Tendencia margen {verDirecto ? "directo" : "neto"} mensual · real {anio}
-        <span className="toggle toggle-inline">
-          <Link href="/" className={"toggle-btn" + (!verDirecto ? " active" : "")}>neto</Link>
-          <Link href="/?margen=directo" className={"toggle-btn" + (verDirecto ? " active" : "")}>directo</Link>
-        </span>
-      </div>
-      <div className="chart-card">
-        <TrendChart
-          nombre={verDirecto ? "Margen directo" : "Margen neto"}
-          data={trend.map((t) => ({
-            mes: t.mes,
-            valor: Number(verDirecto ? t.margen_directo : t.margen_neto),
-          }))}
-        />
-      </div>
-
-      <div className="section-title">Comparar las 4 propiedades · YTD {anio}</div>
-      <Tabs
-        items={[
-          { label: "Ranking", content: <RankingTable rows={ranking} /> },
-          {
-            label: "Equilibrio",
-            content: (
-              <div>
-                <div className="bullets-stack">
-                  {[...breakeven]
-                    .sort((a, b) => Number(a.colchon ?? 9) - Number(b.colchon ?? 9))
-                    .map((b) => (
-                      <div key={b.codigo} className="bullet-fila">
-                        <Link href={`/p/${encodeURIComponent(b.codigo)}`} className="bullet-nombre">
-                          <span className="dot" style={{ background: propColor(b.codigo) }} />
-                          {nombreCorto(b.codigo)}
-                        </Link>
-                        <BulletBreakeven
-                          necesaria={b.ocup_breakeven == null ? null : Number(b.ocup_breakeven)}
-                          real={Number(b.ocup_actual)}
-                          colchon={b.colchon == null ? null : Number(b.colchon)}
-                          color={propColor(b.codigo)}
-                          etiqueta="real"
-                        />
-                      </div>
-                    ))}
-                </div>
-                <BreakevenTable rows={breakeven} />
-              </div>
-            ),
-          },
-          { label: "Costes", content: <CostesTable rows={costes} /> },
-          {
-            label: "Canales",
-            content: (
-              <div>
-                <div className="alerta warning senal-canal">
-                  ⚠️ <span className="alerta-msg">
-                    Airbnb concentra el {pct(pctAirbnb, 1)} del ingreso {anio}.
-                    JACO: {jacoTotal > 0 ? pct(jacoAirbnb / jacoTotal, 0) : "—"} Airbnb y cero Booking
-                    siendo la única con licencia turística (señal permanente, sin fecha límite).
-                  </span>
-                </div>
-                <CanalTable rows={canal} codigos={codigos} />
-              </div>
-            ),
-          },
-          { label: "Ya reservado", content: <OnTheBooksTable rows={[...otb].sort((a, b) => (a.anio - b.anio) || (a.mes - b.mes))} codigos={codigos} /> },
-        ]}
-      />
     </main>
   );
 }

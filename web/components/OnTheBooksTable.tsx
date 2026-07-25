@@ -1,5 +1,6 @@
 import { eur, MESES } from "@/lib/format";
 import { propColor } from "@/lib/colors";
+import { nombreCorto } from "@/lib/headline";
 
 export type OtbRow = { anio: number; mes: number; codigo: string; noches: number; ingreso: number };
 
@@ -28,7 +29,7 @@ export function OnTheBooksTable({ rows, codigos }: { rows: OtbRow[]; codigos: st
             {codigos.map((c) => (
               <th key={c}>
                 <span className="dot" style={{ background: propColor(c) }} />
-                {c}
+                {nombreCorto(c)}
               </th>
             ))}
             <th>Total</th>

@@ -82,7 +82,7 @@ insert into general_expenses (concepto, importe_mes, desde, hasta) values
   ('Brand Partners (marketing)', 500.00, date '2026-05-01', NULL),   -- efectivo/Argentina: no sale en bancos
   ('TGSS RETA Stag', 370.75, NULL, NULL),
   ('Orange (fibra pisos + dispositivos)', 329.80, NULL, NULL),       -- promedio real ene–jun
-  ('Viajes corporativos (transporte)', 200.00, NULL, NULL),          -- solo transporte/traslados; comidas van por bancos (eventos)
+  -- 'Viajes corporativos (transporte)' eliminado 25/07: fantasma; los viajes reales entran como eventos
   ('Asesor Confisic', 181.50, NULL, NULL),
   ('Claude.ai (plan 90)', 90.00, date '2026-06-01', NULL),
   -- 'Otros AEAT/admin' eliminado 25/07: fantasma; los gastos reales entran como eventos conciliados

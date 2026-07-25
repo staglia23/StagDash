@@ -1,5 +1,6 @@
 import { eur, pct, canalNombre } from "@/lib/format";
 import { propColor } from "@/lib/colors";
+import { nombreCorto } from "@/lib/headline";
 
 export type CanalRow = { codigo: string; canal: string; reservas: number; ingreso: number };
 
@@ -24,7 +25,7 @@ export function CanalTable({ rows, codigos }: { rows: CanalRow[]; codigos: strin
             {codigos.map((c) => (
               <th key={c}>
                 <span className="dot" style={{ background: propColor(c) }} />
-                {c}
+                {nombreCorto(c)}
               </th>
             ))}
             <th>Total</th>

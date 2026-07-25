@@ -34,7 +34,7 @@ type BreakevenRow = {
 };
 type Propiedad = {
   codigo: string; modelo: Modelo; fecha_inicio: string | null;
-  renta_base: number; comision_pct: number; aviso_fecha: string | null; aviso_nota: string | null;
+  renta_base: number; comision_pct_neta: number; aviso_fecha: string | null; aviso_nota: string | null;
 };
 type Fila = {
   codigo: string; anio: number; mes: number; dias_mes: number; revpar: number;
@@ -137,14 +137,14 @@ export default async function FichaPropiedad({
   const pk = pickupArr[0];
   const ingresoNochesYtd = Number(r.ingreso_samavi) - Number((r as { ingreso_cancelaciones?: number }).ingreso_cancelaciones ?? 0);
   const factorEq = propiedad?.modelo === "comision"
-    ? Number(propiedad.comision_pct)
+    ? Number(propiedad.comision_pct_neta)
     : Number(r.bruto) > 0 ? ingresoNochesYtd / Number(r.bruto) : 1;
   const revparEq = revparEquilibrio({
     modelo: propiedad?.modelo ?? "titular",
     costesTotalesYtd: Math.abs(Number(coste.total_costes)),
     diasDisponiblesYtd: Number(r.noches_disponibles),
     feeAparente: Number(r.bruto) > 0 ? 1 - ingresoNochesYtd / Number(r.bruto) : 0,
-    comisionModeloPct: Number(propiedad?.comision_pct ?? 0),
+    comisionModeloPct: Number(propiedad?.comision_pct_neta ?? 0),
   });
   const revparFwd30 = Number(fw?.bruto_30 ?? 0) / 30;
   const revparMensual = mesesAll.map((f) => ({
