@@ -34,15 +34,21 @@
 -- Es el mismo patrón que Klarna en Alexander: financiación de hardware que parece gasto
 -- recurrente hasta que se termina.
 --
--- ── LO QUE NO SE DECIDE ACÁ ─────────────────────────────────────────────────────
--- Si los dispositivos y las apps son overhead OPERATIVO (herramienta de gestión, se prorratea a
--- las cuatro propiedades) o CORPORATIVO (no se prorratea) es una decisión de Stag, no una
--- lectura de la factura. Por ahora se mantienen donde estaban — operativo — y el total del año
--- no se mueve. Si se reclasifican, es cambiar `es_corporativo` en dos filas.
+-- ── LA CLASIFICACIÓN, DECIDIDA ──────────────────────────────────────────────────
+-- Preguntado a Stag el 25/07/2026: los dispositivos a plazos y las apps de Apple son
+-- OPERATIVOS — herramienta de gestión de los pisos y suscripciones del negocio. Se quedan en el
+-- overhead que se prorratea a las cuatro por días bajo gestión, mismo criterio que los móviles
+-- en la 029. O sea que las cuatro líneas van con `es_corporativo = false` y el total del año no
+-- se mueve; lo único que cambia es que las cuotas ahora tienen fecha de fin.
+-- (Corporativo, hasta hoy, es solo lo que no es gestión de pisos: viajes de desarrollo de
+-- negocio —026 y 027— y roaming internacional —029.)
 --
--- Dato suelto que conviene mirar: la factura de marzo trae 150,00 € de "cargo por compromiso de
--- permanencia". Es un one-off y queda diluido en el promedio; si hubo un cambio de contrato
--- deliberado, valdría cargarlo como event del mes en vez de repartirlo entre los doce.
+-- Dato suelto NO resuelto: la factura de marzo trae 150,00 € de "cargo por compromiso de
+-- permanencia". Es un one-off y hoy queda diluido en el promedio. Sacarlo a un event de marzo
+-- sería más preciso, pero la línea de 137,04 € se derivó por diferencia sobre un promedio que
+-- YA lo contiene: habría que bajarla en la misma proporción o se cuenta dos veces. Se deja como
+-- está a propósito, y se resuelve solo cuando Orange pase a leerse factura a factura (como la
+-- limpieza en 031 y los suministros en 034) en vez de como una línea plana anual.
 
 -- La línea vieja se convierte en la de móviles, que es lo que realmente le queda.
 update general_expenses
