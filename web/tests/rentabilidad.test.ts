@@ -1,17 +1,18 @@
-// Fixtures = v_ranking_ytd real de producción (25/07/2026), POST migraciones 025–031: el motor
+// Fixtures = v_ranking_ytd real de producción (25/07/2026), POST migraciones 025–034: el motor
 // tiene tres capas y estas funciones miran la CONTRIBUCIÓN, que es la que decide si vale la
 // pena tener una propiedad. Antes miraban el margen neto, que dependía de una regla de
 // reparto de overhead — comparaba el reparto, no el piso.
-// La 031 metió la limpieza real de Ecocleans (ene–jun): baja la contribución de las tres de
-// Madrid, y a Alexander lo deja en 35,96 % — el peor aportador de la cartera.
+// La 031 metió la limpieza real de Ecocleans (ene–jun) y la 034 los suministros reales de las
+// facturas de Confisic: la limpieza baja la contribución, los suministros la suben (el fijo de
+// 150 €/mes estaba largo). Alexander queda en 36,54 % — el peor aportador de la cartera.
 import { describe, expect, it } from "vitest";
 import { cruceRentabilidad, spreadContribucion, type RentRow } from "../lib/rentabilidad";
 
 const REAL: RentRow[] = [
-  { codigo: "1A_NICA", ingreso_samavi: 33517.81, contribucion: 20734.94, contribucion_pct: 0.6186, margen_neto: 13075.09 },
+  { codigo: "1A_NICA", ingreso_samavi: 33517.81, contribucion: 20847.16, contribucion_pct: 0.6220, margen_neto: 13187.31 },
   { codigo: "1A_JACO", ingreso_samavi: 11699.68, contribucion: 10830.03, contribucion_pct: 0.9257, margen_neto: 3170.18 },
-  { codigo: "3G_MARE", ingreso_samavi: 23420.76, contribucion: 10057.85, contribucion_pct: 0.4294, margen_neto: 2398.00 },
-  { codigo: "4B_ALEX", ingreso_samavi: 27178.17, contribucion: 9772.58, contribucion_pct: 0.3596, margen_neto: 2112.73 },
+  { codigo: "3G_MARE", ingreso_samavi: 23420.76, contribucion: 10136.42, contribucion_pct: 0.4328, margen_neto: 2476.57 },
+  { codigo: "4B_ALEX", ingreso_samavi: 27178.17, contribucion: 9931.51, contribucion_pct: 0.3654, margen_neto: 2271.66 },
 ];
 
 /** es-ES mete espacios duros distintos antes de € (U+00A0) y de % (U+202F, fino):
@@ -59,10 +60,10 @@ describe("cruceRentabilidad", () => {
 });
 
 describe("spreadContribucion", () => {
-  it("señala la horquilla real de hoy: Jacobine 93 % contra Alexander 36 %", () => {
+  it("señala la horquilla real de hoy: Jacobine 93 % contra Alexander 37 %", () => {
     expect(plano(spreadContribucion(REAL))).toBe(
       "De cada euro que entra, Jacobine conserva 93 % tras sus costes directos y Alexander "
-      + "solo 36 %. Esa distancia es la renta.",
+      + "solo 37 %. Esa distancia es la renta.",
     );
   });
 
