@@ -1,15 +1,15 @@
-// Fixture = margen neto YTD real de producción tras las migraciones 021 y 022 (25/07/2026).
+// Fixture = margen neto YTD real de producción tras las migraciones 021–029 (25/07/2026).
 import { describe, expect, it } from "vitest";
 import { calcularFiscal, TIPO_IS_ESTIMADO } from "../lib/impuestos";
 
-const MARGEN_YTD = 15143.67;
+const MARGEN_YTD = 15250.46;
 
 describe("calcularFiscal", () => {
   it("provisiona el 20 % sobre el margen operativo real de hoy", () => {
     const f = calcularFiscal(MARGEN_YTD);
     expect(f.tipo).toBe(0.20);
-    expect(f.provisionIS).toBeCloseTo(3028.73, 2);
-    expect(f.quedaEstimado).toBeCloseTo(12114.94, 2);
+    expect(f.provisionIS).toBeCloseTo(3050.09, 2);
+    expect(f.quedaEstimado).toBeCloseTo(12200.37, 2);
   });
 
   it("sin beneficio no provisiona nada: no se inventa un gasto que no existe", () => {
