@@ -80,7 +80,9 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
       readView<TrendRow>("v_trend_mensual", { order: { col: "mes" } }),
       readView<PnlMes>("v_pnl_mensual_propiedad", { order: { col: "mes" } }),
       mes > 1
-        ? readView<NocheRow>("v_reservation_nights", { gte: { night: inicioPrevio }, lt: { night: hoyIso } })
+        // v_noches_mtd, no v_reservation_nights: esta última trae `id` y `bruto_night`, con lo
+        // que se reconstruye el ingreso por reserva — la fuga que cerró la migración 033.
+        ? readView<NocheRow>("v_noches_mtd", { gte: { night: inicioPrevio }, lt: { night: hoyIso } })
         : Promise.resolve([] as NocheRow[]),
       readView<ForwardRow>("v_forward"),
       readView<ForwardDia>("v_forward_dias", { order: { col: "dia" } }),

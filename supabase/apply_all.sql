@@ -2562,3 +2562,161 @@ update reservations r
    and abs(r.bruto - (
          coalesce((r.money_raw::jsonb->>'fareAccommodationAdjusted')::numeric, 0)
        + coalesce((r.money_raw::jsonb->>'fareCleaning')::numeric, 0))) > 0.005;
+
+
+-- 033 — la comisión de canal deja de ser invisible (es el mayor coste directo: 18.764 € en 7
+-- meses, por encima de la renta) + v_canales_mensual + se cierra la fuga de v_reservation_nights.
+
+create or replace view v_reservation_income as
+select
+  r.id, r.codigo, r.checkin_local, r.checkout_local, r.source, r.status,
+  coalesce(r.bruto, 0)       as bruto,
+  coalesce(r.host_payout, 0) as host_payout,
+  l.modelo,
+  case when l.modelo = 'comision'
+       then (coalesce(r.host_payout,0) + coalesce(r.host_service_fee,0)) * l.comision_pct / (1 + l.iva_pct)
+       else coalesce(r.host_payout,0) end                                    as ingreso_samavi,
+  case when l.modelo = 'comision'
+       then coalesce(r.host_payout,0) - (coalesce(r.host_payout,0) + coalesce(r.host_service_fee,0)) * l.comision_pct
+       else 0 end                                                            as pasivo_madre,
+  case when l.modelo = 'comision'
+       then (coalesce(r.host_payout,0) + coalesce(r.host_service_fee,0)) * l.comision_pct * (1 - 1 / (1 + l.iva_pct))
+       else 0 end                                                            as iva_repercutido,
+  coalesce(r.host_service_fee, 0)                                            as comision_canal,
+  case when l.modelo = 'comision' then 0
+       else coalesce(r.host_service_fee, 0) end                              as comision_canal_samavi
+from reservations r
+join listings l on l.codigo = r.codigo
+where r.status in ('confirmed','checked_in','checked_out')
+  and r.checkin_local is not null and r.checkout_local is not null
+  and r.checkout_local > r.checkin_local;
+
+create or replace view v_reservation_nights as
+select
+  ri.codigo,
+  extract(year  from n.night)::integer as anio,
+  extract(month from n.night)::integer as mes,
+  ri.ingreso_samavi  / (ri.checkout_local - ri.checkin_local)::numeric as ingreso_samavi_night,
+  ri.bruto           / (ri.checkout_local - ri.checkin_local)::numeric as bruto_night,
+  n.night::date as night,
+  ri.id,
+  ri.source,
+  ri.iva_repercutido / (ri.checkout_local - ri.checkin_local)::numeric as iva_night,
+  ri.comision_canal        / (ri.checkout_local - ri.checkin_local)::numeric as fee_night,
+  ri.comision_canal_samavi / (ri.checkout_local - ri.checkin_local)::numeric as fee_samavi_night
+from v_reservation_income ri
+cross join lateral generate_series(
+  ri.checkin_local::timestamp, ri.checkout_local - interval '1 day', interval '1 day') n(night);
+
+create or replace view v_nights_monthly as
+select codigo, anio, mes,
+  sum(ingreso_samavi_night) as ingreso_samavi,
+  sum(bruto_night)          as bruto,
+  count(*)                  as noches,
+  sum(iva_night)            as iva_repercutido,
+  sum(fee_night)            as comision_canal,
+  sum(fee_samavi_night)     as comision_canal_samavi
+from v_reservation_nights
+group by codigo, anio, mes;
+
+create or replace view v_noches_mtd as
+select codigo, night, ingreso_samavi_night
+from v_reservation_nights;
+
+grant select on v_noches_mtd to anon, authenticated;
+revoke all on v_reservation_nights from anon, authenticated;
+
+create or replace view v_canales_mensual as
+select
+  codigo, anio, mes,
+  coalesce(source, 'directo')          as canal,
+  count(*)                             as noches,
+  count(distinct id)                   as reservas,
+  round(sum(bruto_night), 2)           as bruto,
+  round(sum(fee_night), 2)             as comision_canal,
+  round(sum(fee_samavi_night), 2)      as comision_canal_samavi,
+  round(sum(ingreso_samavi_night), 2)  as ingreso_samavi,
+  case when sum(bruto_night) > 0
+       then round(sum(fee_night) / sum(bruto_night), 4) else 0 end as comision_pct,
+  case when count(*) > 0
+       then round(sum(fee_night) / count(*), 2) else 0 end         as coste_por_noche
+from v_reservation_nights
+group by codigo, anio, mes, coalesce(source, 'directo');
+
+grant select on v_canales_mensual to anon, authenticated;
+
+create or replace view v_pnl_mensual_propiedad as
+with ev as (
+  select propiedad_codigo as codigo, anio, mes,
+    coalesce(sum(importe) filter (where categoria='RENTA'),0)       as ev_renta,
+    coalesce(sum(importe) filter (where categoria='OTROS'),0)       as ev_otros,
+    coalesce(sum(importe) filter (where categoria='SUMINISTROS'),0) as ev_suministros
+  from events
+  group by propiedad_codigo, anio, mes
+),
+base as (
+  select
+    s.codigo, s.anio, s.mes, days_in_month(s.anio, s.mes) as dias_mes,
+    coalesce(n.bruto,0)                  as bruto,
+    coalesce(n.ingreso_samavi,0)         as ingreso_noches,
+    coalesce(c.ingreso_cancelaciones,0)  as ingreso_cancelaciones,
+    coalesce(n.noches,0)                 as noches,
+    coalesce(b.reservas,0)               as reservas,
+    coalesce(n.iva_repercutido,0) + coalesce(c.iva_cancelaciones,0) as iva_repercutido,
+    coalesce(n.comision_canal,0)         as comision_canal,
+    coalesce(n.comision_canal_samavi,0)  as comision_canal_samavi,
+    ((case when l.modelo='subarriendo' then -l.renta_base else 0 end) + coalesce(ev.ev_renta,0)) as renta_transfer,
+    (l.renta_factura_desde is not null
+      and make_date(s.anio, s.mes, 1) >= date_trunc('month', l.renta_factura_desde)::date) as con_factura,
+    l.renta_iva_pct, l.renta_retencion_pct,
+    lp.coste                                                                                as limpieza,
+    lp.fuente                                                                               as limpieza_fuente,
+    (-l.suministros_mes + coalesce(ev.ev_suministros,0))                                    as suministros,
+    -l.comunidad_ibi_mes                                                                    as comunidad,
+    (-(l.minut + l.akiles + l.amenities + l.pricelabs + l.guesty_fee + l.extras)
+       + coalesce(ev.ev_otros,0))                                                           as otros
+  from v_month_spine s
+  join listings l                     on l.codigo = s.codigo
+  join v_limpieza_mensual lp          on lp.codigo=s.codigo and lp.anio=s.anio and lp.mes=s.mes
+  left join v_nights_monthly n        on n.codigo=s.codigo and n.anio=s.anio and n.mes=s.mes
+  left join v_bookings_monthly b      on b.codigo=s.codigo and b.anio=s.anio and b.mes=s.mes
+  left join v_ingreso_cancelaciones c on c.codigo=s.codigo and c.anio=s.anio and c.mes=s.mes
+  left join ev                        on ev.codigo=s.codigo and ev.anio=s.anio and ev.mes=s.mes
+),
+conv as (
+  select b.*,
+    case when b.con_factura
+         then (1 + b.renta_iva_pct) / (1 + b.renta_iva_pct - b.renta_retencion_pct)
+         else 1 end as factor,
+    case when b.con_factura
+         then b.renta_iva_pct / (1 + b.renta_iva_pct - b.renta_retencion_pct)
+         else 0 end as factor_iva
+  from base b
+),
+final as (
+  select c.*,
+    round(c.renta_transfer * c.factor, 2)     as renta,
+    round(c.renta_transfer * c.factor_iva, 2) as renta_iva
+  from conv c
+)
+select
+  codigo, anio, mes, dias_mes, bruto,
+  (ingreso_noches + ingreso_cancelaciones)                            as ingreso_samavi,
+  (bruto - ingreso_noches)                                            as comision_aparente,
+  noches, reservas,
+  round(noches::numeric / dias_mes, 4)                                as ocup_pct,
+  case when noches > 0 then round(bruto / noches, 2) else 0 end       as adr,
+  round(bruto / dias_mes, 2)                                          as revpar,
+  case when reservas > 0 then round(noches::numeric / reservas, 2) else 0 end as alos,
+  renta, limpieza, suministros, comunidad, otros,
+  (renta + limpieza + suministros + comunidad + otros)                as total_gastos_directos,
+  (ingreso_noches + ingreso_cancelaciones
+     + renta + limpieza + suministros + comunidad + otros)            as margen_directo,
+  ingreso_noches,
+  ingreso_cancelaciones,
+  iva_repercutido,
+  renta_iva,
+  limpieza_fuente,
+  round(comision_canal, 2)        as comision_canal,
+  round(comision_canal_samavi, 2) as comision_canal_samavi
+from final;

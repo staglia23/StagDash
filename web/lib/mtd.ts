@@ -1,5 +1,5 @@
 // Comparación de ingreso MTD (mes en curso vs mes anterior a igual día) para el caso 2
-// del titular. Función PURA sobre filas de v_reservation_nights. El margen no es computable
+// del titular. Función PURA sobre filas de v_noches_mtd. El margen no es computable
 // a grano diario (los costes son mensuales y manuales) → se compara INGRESO devengado.
 // Solo días completos: mes actual días 1..ayer vs mes anterior días 1..(mismo día − 1).
 // En enero no hay mes anterior dentro del año → null (nunca se compara entre años).
