@@ -2971,3 +2971,17 @@ values
   (2026, 1, '4B_ALEX', 51.93, 25.00, 76.93, false,
    'PARCIAL: solo 24-31/01 (TotalEnergies 1NSN260200213697, 77,89 EUR / 12 dias, prorrateo por dia, IVA incluido). Del 01 al 23/01 el CUPS estaba a nombre del titular anterior (Alberto): ~149 EUR sin factura ni reembolso, pendiente de confirmar. Factura a nombre personal de Stag: refacturacion a SAMAVI pendiente. Internet: linea barata de Movistar (20,66 base -> 25,00 c/IVA).')
 on conflict (anio, mes, codigo) do nothing;
+
+
+-- 040 — mayo y junio de Nicasio. El ciclo bimensual del contrato dual (luz+gas) hacía que la
+-- 034 no tuviera factura desde el 11.05; ya se emitió. TotalEnergies además desdualizó el
+-- contrato en julio: desde ahora la luz va mensual y el gas bimensual, como ALEX y MARE.
+-- mayo  = luz 89,00 (11.03-11.05 + 12.05-11.06) + gas 8,01  =  97,01
+-- junio = luz 113,47 (12.05-11.06 + 12.06-12.07) + gas 8,36 = 121,83
+insert into suministros_mensual (anio, mes, codigo, luz_eur, internet_eur, total_eur, fiable, nota)
+values
+  (2026, 5, '1A_NICA',  97.01, 0.00,  97.01, true,
+   'Luz 89,00 (11.03-11.05 1NSN260500251449 + 12.05-11.06 aviso 18/07) + gas 8,01 (11.03-08.05 + 09.05-09.07 aviso 15/07). Prorrateo por dia, IVA incluido. PDF de julio pendiente de archivar en Confisic.'),
+  (2026, 6, '1A_NICA', 121.83, 0.00, 121.83, true,
+   'Luz 113,47 (12.05-11.06 aviso 18/07 + 12.06-12.07 aviso 20/07) + gas 8,36 (09.05-09.07 aviso 15/07). Prorrateo por dia, IVA incluido. PDF de julio pendiente de archivar en Confisic.')
+on conflict (anio, mes, codigo) do nothing;
