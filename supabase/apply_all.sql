@@ -2985,3 +2985,43 @@ values
   (2026, 6, '1A_NICA', 121.83, 0.00, 121.83, true,
    'Luz 113,47 (12.05-11.06 aviso 18/07 + 12.06-12.07 aviso 20/07) + gas 8,36 (09.05-09.07 aviso 15/07). Prorrateo por dia, IVA incluido. PDF de julio pendiente de archivar en Confisic.')
 on conflict (anio, mes, codigo) do nothing;
+
+
+-- 041 — la nota del termo de enero de Nicasio decía "es de Alexander" (nota vieja que la 023 no
+-- actualizó al reimputarlo). El importe y la propiedad estaban bien.
+update events
+   set notas = 'confirmado Stag 17/07: ES DE NICASIO y es coste propio de Samavi. Reimputado desde 4B_ALEX por la migracion 023. Distinto del Ariston/Obramat de abril (383,06), que si es de Alexander y lo reembolso Alberto.'
+ where propiedad_codigo = '1A_NICA' and anio = 2026 and mes = 1
+   and categoria = 'OTROS' and concepto = 'Termo eléctrico Nicasio (J.E. Cabrera)'
+   and notas like '%es de Alexander%';
+
+
+-- 042 — auditoría de Nicasio. El evento de abril eran dos cosas: 109,93 de IBI real (cuota 02
+-- del fraccionamiento, verificada contra la Carpeta Tributaria) y 1.031,67 de IRPF PERSONAL de
+-- Stag pagado por error desde la cuenta de empresa. El IRPF del socio no es gasto de la
+-- sociedad: sale del P&L y queda a compensar en cuenta con el socio (vía Confisic).
+-- Y de las compras de hogar de junio salen 145,80 € de auriculares de oficina (plazo 1/3), que
+-- son herramienta de trabajo y van al overhead operativo, no a reposición de piso.
+-- Nicasio mejora 1.177,47 € en el semestre.
+update events
+   set importe  = -109.93,
+       concepto = 'IBI plazo (fraccionamiento 2025, cuota 02)',
+       notas    = 'FRA/2025/01001446325 cuota 02 del 06/04/26, verificado contra la Carpeta Tributaria. Los 1.031,67 que estaban aca eran IRPF personal de Stag pagado por error desde la cuenta de empresa: no es gasto de la sociedad, queda a compensar en cuenta con el socio (regularizacion via Confisic).'
+ where propiedad_codigo = '1A_NICA' and anio = 2026 and mes = 4
+   and categoria = 'OTROS' and concepto = 'IBI/tributos NRC + Ayuntamiento'
+   and importe = -1141.60;
+
+update events
+   set importe = -667.35,
+       notas   = 'Amazon 585,20 (10 pedidos - 1 reembolso, sin los 145,80 de los auriculares de oficina) + Dia Madrid 39,71 + Ideal Home 15,95 + Bricochayta 16,50 + Hiperhogar 9,99'
+ where propiedad_codigo = '1A_NICA' and anio = 2026 and mes = 6
+   and categoria = 'OTROS' and concepto = 'Compras hogar/reposición pisos (real bancos)'
+   and importe = -813.15;
+
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 6, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Auriculares oficina (Amazon, plazo 1/3)', -145.80,
+       'Amazon.es 23/06 MCC 5732. Herramienta de trabajo, no reposicion de piso; confirmado Stag 26/07. Faltan los plazos 2/3 y 3/3 (145,80 c/u) en los cierres de julio y agosto.'
+where not exists (
+  select 1 from events e
+   where e.anio = 2026 and e.mes = 6 and e.propiedad_codigo = 'SAMAVI_GEN'
+     and e.concepto = 'Auriculares oficina (Amazon, plazo 1/3)');
