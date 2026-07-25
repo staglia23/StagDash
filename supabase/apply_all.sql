@@ -3025,3 +3025,17 @@ where not exists (
   select 1 from events e
    where e.anio = 2026 and e.mes = 6 and e.propiedad_codigo = 'SAMAVI_GEN'
      and e.concepto = 'Auriculares oficina (Amazon, plazo 1/3)');
+
+
+-- 043 — la comisión de Booking no llegaba al P&L. Booking cobra "payment by the property": el
+-- huésped paga el BRUTO al alojamiento y Booking factura su comisión aparte, así que
+-- host_payout = bruto y `bruto − ingreso_samavi` da cero. Factura 1657524585: comisión 150,02 +
+-- 21 % IVA 31,50 = 181,52 €, domiciliada en Revolut ...7165. PARCHE por reserva: el motor sigue
+-- sin entender el modelo de Booking y ya hay dos reservas más confirmadas para agosto.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 6, '1A_NICA', 'OTROS', 'Comisión Booking.com (factura 1657524585)', -181.52,
+       'Reserva BC-qpY7JQDO7, 25-28/06. Comision 150,02 + 21% IVA 31,50. Booking cobra aparte porque la huesped pago el bruto directo (882,48 el 16/06): host_payout = bruto y el motor no descontaba nada. Domiciliado en Revolut ...7165, vencimiento 16/07. PARCHE: quedan BC-68wENnWVl (agosto, 216,92) y BC-jg7mnkyGW (agosto-septiembre, 250,03) sin cubrir.'
+where not exists (
+  select 1 from events e
+   where e.anio = 2026 and e.mes = 6 and e.propiedad_codigo = '1A_NICA'
+     and e.concepto = 'Comisión Booking.com (factura 1657524585)');
