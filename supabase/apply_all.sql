@@ -2917,3 +2917,28 @@ join oh  o on o.anio = b.anio and o.mes = b.mes
 join tot t on t.anio = b.anio and t.mes = b.mes;
 
 grant select on v_margen_asegurado to anon, authenticated;
+
+
+-- 035 — reparto de Movistar confirmado por Stag: linea barata (25,00) a Alexander, cara (30,00)
+-- a Marechal. Deja de ser hipotesis.
+update suministros_mensual set internet_eur = 25.00, total_eur = round(luz_eur + 25.00, 2), fiable = true
+ where codigo = '4B_ALEX' and anio = 2026 and internet_eur = 27.50;
+update suministros_mensual set internet_eur = 30.00, total_eur = round(luz_eur + 30.00, 2), fiable = true
+ where codigo = '3G_MARE' and anio = 2026 and internet_eur = 27.50;
+
+
+-- 036 — la linea de Orange se abre en sus partes: moviles, apps y cuotas de dispositivos, estas
+-- ultimas CON FECHA DE FIN (el forward asumia que se pagan para siempre).
+
+update general_expenses
+   set importe_mes = 137.04,
+       concepto    = 'Orange — móviles corporativos'
+ where concepto = 'Orange — móviles y dispositivos';
+
+insert into general_expenses (concepto, importe_mes, desde, hasta, es_corporativo)
+select * from (values
+  ('Apps y servicios de terceros (Apple vía Orange)', 36.63, null::date, null::date,       false),
+  ('iPhone + AirPods a plazos (Orange)',              79.05, null::date, '2027-10-31'::date, false),
+  ('Apple Watch Ultra a plazos (Orange)',             18.95, null::date, '2026-12-31'::date, false)
+) as v(concepto, importe_mes, desde, hasta, es_corporativo)
+where not exists (select 1 from general_expenses g where g.concepto = v.concepto);
