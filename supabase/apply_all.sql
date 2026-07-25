@@ -2946,3 +2946,28 @@ where not exists (select 1 from general_expenses g where g.concepto = v.concepto
 
 -- 037 — v_costes_ytd expone comision_canal (la que soporta Samavi), para que el simulador
 -- pueda calcular el punto de equilibrio de la captación por canal directo.
+-- OJO: el cuerpo de la 037 nunca se copió acá. Ver supabase/migrations/037_*.sql.
+
+
+-- 038 — el enero de Marechal deja de ser estimado. Las tres facturas de papernest (contrato
+-- 65221, CUPS ES0022000007651514DE1P = 3º G) venían a nombre personal de Stag, por eso no se
+-- habían cruzado con el piso en la 034. Prorrateo por día: 11 días de la PPN 26000007553
+-- (82,25) + 20 días de la PPN 26000020088 (154,48) = 236,73 € de luz. Enero de 4B_ALEX sigue
+-- en estimado: no hay factura del comercializador anterior y el alta en TotalEnergies es del
+-- 05/02/2026.
+insert into suministros_mensual (anio, mes, codigo, luz_eur, internet_eur, total_eur, fiable, nota)
+values
+  (2026, 1, '3G_MARE', 236.73, 30.00, 266.73, true,
+   'Luz: papernest/Galapago contrato 65221 (PPN 26000007553 + PPN 26000020088), prorrateo por dia, IVA incluido. Facturas a nombre personal de Stag: refacturacion a SAMAVI pendiente. Internet: linea cara de Movistar (24,79 base -> 30,00 c/IVA).')
+on conflict (anio, mes, codigo) do nothing;
+
+
+-- 039 — enero de Alexander, parcial. TotalEnergies 1NSN260200213697 (CUPS ...519XG1P = 4º B,
+-- titular personal de Stag) cubre 24.01–05.02: 8 días de enero = 51,93 €. Del 01 al 23/01 el
+-- suministro era del titular anterior (Alberto), ~149 € sin factura ni reembolso → va como
+-- `fiable = false` para que la vista lo etiquete `real_revisar`, no como mes cerrado.
+insert into suministros_mensual (anio, mes, codigo, luz_eur, internet_eur, total_eur, fiable, nota)
+values
+  (2026, 1, '4B_ALEX', 51.93, 25.00, 76.93, false,
+   'PARCIAL: solo 24-31/01 (TotalEnergies 1NSN260200213697, 77,89 EUR / 12 dias, prorrateo por dia, IVA incluido). Del 01 al 23/01 el CUPS estaba a nombre del titular anterior (Alberto): ~149 EUR sin factura ni reembolso, pendiente de confirmar. Factura a nombre personal de Stag: refacturacion a SAMAVI pendiente. Internet: linea barata de Movistar (20,66 base -> 25,00 c/IVA).')
+on conflict (anio, mes, codigo) do nothing;
