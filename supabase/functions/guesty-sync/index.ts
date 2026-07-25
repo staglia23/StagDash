@@ -11,6 +11,7 @@
 // Mapeo de "money" CONFIRMADO (24/07/2026) contra los PDF de Airbnb H1: bruto =
 // fareAccommodation + fareCleaning; host_service_fee = hostServiceFee; host_payout = hostPayout.
 // v4: agrega confirmation_code (Airbnb HMxxxx) para conciliar 1:1 con Airbnb.
+// v7: bruto POST-promoción (fareAccommodationAdjusted) → ADR/RevPAR reales. Ver migración 032.
 // v5: getToken reintenta en 429. v6: cachea el token en sync_state (dura 24h) → no lo pide
 //     en cada corrida, evitando el rate-limit del endpoint de token. (todo 24/07/2026)
 
@@ -130,7 +131,12 @@ function toRow(r: any, codigo: string) {
     confirmation_code: r.confirmationCode ?? null,
     // Mapeo CONFIRMADO contra el Excel (comisión 18,76% coincide):
     //   bruto = fareAccommodation + fareCleaning · comisión = hostServiceFee · payout = hostPayout
-    bruto: (m.fareAccommodation ?? 0) + (m.fareCleaning ?? 0),
+    // v7: POST-promoción. fareAccommodation es el precio de lista; cuando hay una promoción del
+    // canal (Early bird, Last minute, estadía larga) el cobro real es fareAccommodationAdjusted,
+    // y es ese el que cierra con el payout: adjusted + cleaning − hostServiceFee = hostPayout.
+    // Usar el sin ajustar inflaba ADR y RevPAR (+1,56 % en la cartera 2026). Ver migración 032,
+    // que corrigió el histórico desde money_raw sin volver a pedirle nada a Guesty.
+    bruto: (m.fareAccommodationAdjusted ?? m.fareAccommodation ?? 0) + (m.fareCleaning ?? 0),
     host_service_fee: m.hostServiceFee ?? null,
     host_payout: m.hostPayout ?? null,
     total_paid: m.totalPaid ?? null,

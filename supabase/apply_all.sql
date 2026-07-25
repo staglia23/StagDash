@@ -2547,3 +2547,18 @@ join oh  o on o.anio = b.anio and o.mes = b.mes
 join tot t on t.anio = b.anio and t.mes = b.mes;
 
 grant select on v_margen_asegurado to anon, authenticated;
+
+
+-- 032 — el ADR deja de contar plata que nunca se cobró: bruto pasa a ser POST-promoción
+-- (fareAccommodationAdjusted). Corrige el histórico desde money_raw; el sync va en v7.
+
+update reservations r
+   set bruto = round(
+         coalesce((r.money_raw::jsonb->>'fareAccommodationAdjusted')::numeric,
+                  (r.money_raw::jsonb->>'fareAccommodation')::numeric, 0)
+       + coalesce((r.money_raw::jsonb->>'fareCleaning')::numeric, 0), 2)
+ where r.money_raw is not null
+   and (r.money_raw::jsonb->>'fareAccommodationAdjusted') is not null
+   and abs(r.bruto - (
+         coalesce((r.money_raw::jsonb->>'fareAccommodationAdjusted')::numeric, 0)
+       + coalesce((r.money_raw::jsonb->>'fareCleaning')::numeric, 0))) > 0.005;
