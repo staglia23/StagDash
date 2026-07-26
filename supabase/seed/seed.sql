@@ -184,3 +184,185 @@ insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, n
   (2026, 2, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Comidas de negocio (real bancos)', -37.69, 'Uber Eats 16,74 + Café Bistro Nuncio 4,35 + Mina Coffee 16,60; barrido 23/07'),
   (2026, 5, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Comidas de negocio (real bancos)', -15.38, 'Uber Eats 15,38; barrido 23/07'),
   (2026, 6, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Comidas de negocio (real bancos)', -167.26, 'Uber Eats 45,22 + Glovo 13,54 + Irish Rover 25 + Pavlov 13,50 + Campo Simbólico 70; serie ene–jun completa (ene/mar/abr sin cargos, Licencia 431 es taxi)');
+
+
+-- 048 — amenities reales de Jacobine. Era la última línea estimada del semestre: 34,58 €/mes de
+-- provisión fija heredados del modelo pre-auditoría (a las otras tres, la 031 les puso el dato
+-- real de Ecocleans y les dejó la línea en cero; Jacobine quedó fuera porque la limpia José
+-- Modesto, que compra los amenities él mismo). Relevamiento de los 6 extractos de Revolut
+-- ene–jun filtrando DIA Sevilla 2271 y Mp**dia 22144: 175,44 € reales contra 207,48 € de
+-- provisión. El total sobra 32,04 € pero el mes a mes estaba muy mal — enero y febrero no
+-- tuvieron ni una compra y cargaban 34,58 cada uno; marzo gastó casi el doble. Además febrero
+-- contaba dos veces: la compra real (Natura Sierpes, 33,80) ya era un evento y la provisión iba
+-- encima. Mismo criterio que 031 y 034: provisión a cero, gasto real como evento mensual.
+update listings set amenities = 0 where codigo = '1A_JACO';
+
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select v.anio, v.mes, '1A_JACO', 'OTROS', 'Amenities/consumibles Sevilla (DIA, real)', v.importe, v.notas
+from (values
+  (2026, 3, -67.53, 'Dia Sevilla 2271 45,94 del 02/03 (tarjeta Metal) + Mp**dia 22144 5,54 del 10/03 y 16,05 del 28/03 (tarjeta Standard de Jose Modesto). Extracto Revolut marzo 2026.'),
+  (2026, 4, -28.92, 'Mp**dia 22144 10,19 del 12/04 + Dia Sevilla 2271 18,73 del 20/04, tarjeta Standard de Jose Modesto. Extracto Revolut abril 2026.'),
+  (2026, 5, -34.82, 'Mp**dia 22144 4,54 del 01/05 + Dia Sevilla 2271 30,28 del 11/05, tarjeta Standard de Jose Modesto. Extracto Revolut mayo 2026.'),
+  (2026, 6, -44.17, 'Dia Sevilla 2271 9,68 y 5,79 del 31/05 + 28,70 del 25/06, tarjeta Standard de Jose Modesto. Extracto Revolut junio 2026 (los cargos del 31/05 aparecen en el extracto de junio).')
+) as v(anio, mes, importe, notas)
+where not exists (
+  select 1 from events e
+   where e.anio = v.anio and e.mes = v.mes and e.propiedad_codigo = '1A_JACO'
+     and e.concepto = 'Amenities/consumibles Sevilla (DIA, real)');
+
+update events
+   set notas = 'Natura Sevilla Sierpes 33,80 del 27/02, tarjeta Metal. Confirmado Stag 23/07. Es el UNICO gasto de amenities de febrero: hasta la migracion 048 convivia con la provision fija de 34,58, o sea que el mes contaba 68,38 habiendo gastado 33,80.'
+ where propiedad_codigo = '1A_JACO' and anio = 2026 and mes = 2
+   and concepto = 'Amenities Natura Sevilla Sierpes';
+
+
+-- 049 — recobros a la dueña de Jacobine y gastos de bolsillo fuera de banco (26/07/2026).
+-- 1) El mini UPS y la copia de llaves salen de las compras de hogar de Nicasio de febrero.
+--    Quedan los 18,81 de la pasta de dientes + Ideal Home 20,45 + flores 83,50 = 122,76.
+update events
+   set importe = -122.76,
+       notas   = 'Amazon 18,81 (pasta de dientes, 15/02) + Ideal Home 20,45 + Mon Parnasse flores 83,50. Salieron dos cosas que no eran de Nicasio: los 56,99 del Amazon del 12/02 eran el mini UPS de JACOBINE (56,99 + 20,00 de instalacion de Agustin = 77,00 que se le descontaron a la duena en su cuenta corriente, o sea coste neutro para Samavi), y los 46,30 de Ferreteria Diego de Leon eran la copia de llaves de JACOBINE segun la lista de gastos de bolsillo de Stag. Auditoria 26/07/2026.'
+ where propiedad_codigo = '1A_NICA' and anio = 2026 and mes = 2
+   and concepto = 'Compras hogar/reposición pisos (real bancos)'
+   and importe = -226.05;
+
+-- 2) La aspiradora sale de las compras de hogar de Nicasio de marzo.
+--    Quedan los dos Día de Madrid: 21,64 + 10,71 = 32,35.
+update events
+   set importe = -32.35,
+       notas   = 'Dia Madrid 21,64 + Dia Madrid 10,71. Los 129,98 del Amazon del 28/02 (liquidado el 01/03) eran la ASPIRADORA de JACOBINE: figura en la cuenta corriente de la duena como GASTOS 130,00 de marzo con la nota "aspiradora reposicion", o sea que Samavi ya se la cobro. Coste neutro: sale del P&L. Auditoria 26/07/2026.'
+ where propiedad_codigo = '1A_NICA' and anio = 2026 and mes = 3
+   and concepto = 'Compras hogar/reposición pisos (real bancos)'
+   and importe = -162.33;
+
+-- 3) La copia de llaves entra en Jacobine, que es donde se usó.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 2, '1A_JACO', 'OTROS', 'Copia de llaves (Ferretería Diego de León)', -46.30,
+       'Cargo de 46,30 del 17/02 en el Revolut, tarjeta Metal. Estaba imputado a Nicasio por el barrido bancario del 23/07 (ferreteria de Madrid = compra de hogar de Madrid); la lista de gastos de bolsillo de Stag lo tiene en la columna de JACOBINE, "19/02/2026 copia de llaves". No se le descontó a la duena.'
+where not exists (
+  select 1 from events e
+   where e.anio = 2026 and e.mes = 2 and e.propiedad_codigo = '1A_JACO'
+     and e.concepto = 'Copia de llaves (Ferretería Diego de León)');
+
+-- 4) Lo pagado en efectivo, que nunca pasó por el banco.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select v.anio, v.mes, v.cod, 'OTROS', v.concepto, v.importe, v.notas
+from (values
+  (2026, 1, '3G_MARE', 'Cristales (Claudio, efectivo)', -60.00,
+   'Lista de gastos de bolsillo de Stag, "02/01/2026 cristales claudio". Claudio es el portero de Segovia 8. Pagado en efectivo, no pasa por el extracto: por eso el motor no lo veia. Tercer pago en efectivo a Claudio que aparece tarde (los otros 80,00 entraron por la migracion 044).'),
+  (2026, 3, '3G_MARE', 'Arreglo de bañera (Claudio, efectivo)', -150.00,
+   'Lista de gastos de bolsillo de Stag, "03/03/2026 arreglo banera claudio". Pagado en efectivo, sin factura, fuera del extracto.'),
+  (2026, 2, '1A_NICA', 'NRUA — registro único de alojamiento', -32.73,
+   'Lista de gastos de bolsillo de Stag, "24/02/2026 NRUA registro". No aparece en el Revolut de febrero.'),
+  (2026, 2, '4B_ALEX', 'NRUA — registro único de alojamiento', -28.67,
+   'Lista de gastos de bolsillo de Stag, "25/02/2026 NRUA registro". No aparece en el Revolut de febrero.'),
+  (2026, 1, '1A_JACO', 'Gastos de bolsillo (fuera de banco)', -28.57,
+   'Lista de gastos de bolsillo de Stag: "09/01/2026 amenities 28,57". Fuera del extracto. NO duplica la migracion 048, que solo cargo los cargos de DIA Sevilla del Revolut y enero no tenia ninguno. En la misma fecha hay 9,00 de "secadas diciembre" que NO se cargan: el devengo es de diciembre de 2025 y el motor esta fijado al ano en curso.'),
+  (2026, 2, '1A_JACO', 'Gastos de bolsillo (fuera de banco)', -53.65,
+   'Lista de gastos de bolsillo de Stag: ILSA 30,65 (menaje, 27/02) + amenities 10,00 (27/02) + secadas 8,50 (27/02) + secadas de enero 4,50 (pagadas el 05/02). Ninguno pasa por el extracto. La secada de 4,50 del 27/02 SI esta en el banco y ya estaba cargada aparte, no se repite aca.')
+) as v(anio, mes, cod, concepto, importe, notas)
+where not exists (
+  select 1 from events e
+   where e.anio = v.anio and e.mes = v.mes and e.propiedad_codigo = v.cod
+     and e.concepto = v.concepto);
+
+
+-- 050 — dos respuestas de Stag rompen la 049: las secadas de su lista de bolsillo son la MISMA
+-- plata que los cargos My Laundry del Revolut (estaban duplicadas, 13,00 €), e "ILSA" no era
+-- menaje sino la operadora de los trenes iryo, o sea transporte → overhead corporativo.
+-- 1) El evento de bolsillo de febrero se queda sólo con los amenities.
+update events
+   set importe  = -10.00,
+       notas    = 'Amenities 10,00 del 27/02, de la lista de gastos de bolsillo de Stag; fuera del extracto. Salieron dos cosas que la 049 habia metido mal: las secadas (8,50 + 4,50) son la MISMA plata que los cargos My Laundry del Revolut que ya estaban cargados aparte —confirmado por Stag el 26/07, estaban duplicadas— y los 30,65 de "ILSA" no eran menaje sino un billete de tren de iryo (ILSA = Intermodalidad del Levante SA), que va al overhead corporativo, no a la propiedad.'
+ where propiedad_codigo = '1A_JACO' and anio = 2026 and mes = 2
+   and concepto = 'Gastos de bolsillo (fuera de banco)'
+   and importe = -53.65;
+
+-- 2) El billete de iryo entra al overhead corporativo, que es donde Stag quiere el transporte.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 2, 'SAMAVI_GEN', 'CORPORATIVO', 'Tren iryo a Sevilla (ILSA, fuera de banco)', -30.65,
+       'Lista de gastos de bolsillo de Stag, "27/02/2026 ILSA 30,65". ILSA = Intermodalidad del Levante SA, la operadora de iryo: es un billete de tren, confirmado por Stag el 26/07. No aparece en el extracto de febrero, o sea que se pago por fuera de la cuenta. Estaba imputado a Jacobine por la migracion 049 leyendo ILSA como marca de menaje.'
+where not exists (
+  select 1 from events e
+   where e.anio = 2026 and e.mes = 2 and e.propiedad_codigo = 'SAMAVI_GEN'
+     and e.concepto = 'Tren iryo a Sevilla (ILSA, fuera de banco)');
+
+
+-- 051 — el transporte del día a día entra uno a uno. La migración 024 borró la provisión de
+-- 200 €/mes creyendo que era un fantasma, pero el barrido del 23/07 no había cargado los taxis
+-- precisamente PORQUE esa línea los cubría: quedaron sin provisión y sin evento (1.389,84 € en el
+-- semestre, más que los 1.200 que habría provisionado). Stag confirma que son todos de empresa y
+-- que no se vuelve a provisionar. Van a CORPORATIVO, así que no mueven la rentabilidad por piso.
+-- Segunda parte: marca de procedencia en los seis apuntes que descansan solo en la planilla manual.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select v.anio, v.mes, 'SAMAVI_GEN', 'CORPORATIVO', 'Transporte (real bancos)', v.importe, v.notas
+from (values
+  (2026, 2, -332.34,
+   'Iryo 83,77 (09/02) + SBB Suiza 86,59 y 106,33 (25/02) + Renfe 38,75 (26/02) + Uber 8,96 y 7,94 (27/02). Extracto Revolut febrero 2026. Todos confirmados como gasto de empresa por Stag el 26/07.'),
+  (2026, 3, -786.29,
+   'Cabify 6,96 (02/03) + Uber 20,95 (08/03) + Licencia 431 (taxi) 12,30 (16/03) + Uber 9,93, 20,91 y 13,90 (17/03) + iryo 87,63 y Uber 14,96 (19/03) + iryo 103,96 y Vueling 135,66 (23/03) + iryo 54,26 (25/03) + Vueling 311,09, FreeNow 8,00 y Uber 23,95 (26/03) + Uber 14,95 (27/03) = 839,41 brutos, MENOS el reembolso de iryo de 53,12 liquidado el 01/03. Extracto Revolut marzo 2026.'),
+  (2026, 4, -201.37,
+   'Iryo 149,59 y Uber 8,96 (liquidados el 01-02/04, iniciados el 31/03) + Uber 6,94 (01/04) + Uber 10,93 y 8,00 (04/04) + Uber 16,95 (13/04). Extracto Revolut abril 2026.'),
+  (2026, 5, -16.93,
+   'Uber 16,93 (29/05). Unico cargo de transporte del mes. Extracto Revolut mayo 2026.'),
+  (2026, 6, -52.91,
+   'Cabify 22,99 (10/06) + Uber 13,93 (24/06) + Cabify 15,99 (28/06). Extracto Revolut junio 2026.')
+) as v(anio, mes, importe, notas)
+where not exists (
+  select 1 from events e
+   where e.anio = v.anio and e.mes = v.mes and e.propiedad_codigo = 'SAMAVI_GEN'
+     and e.concepto = 'Transporte (real bancos)');
+
+-- ── Y UNA MARCA DE PROCEDENCIA ──────────────────────────────────────────────────────
+-- Stag avisó el 26/07 de que la planilla manual que pasó es como se manejaba ANTES del dashboard y
+-- puede tener errores: hay que contrastar contra documentación real o contra su confirmación, no
+-- asumir. Revisadas las cargas de la migración 049 una por una, seis apuntes descansan SÓLO en esa
+-- planilla — no hay cargo bancario ni factura detrás, porque se pagaron en efectivo o por fuera:
+--
+--   3G_MARE  ene   60,00   cristales (Claudio)
+--   3G_MARE  mar  150,00   arreglo de bañera (Claudio)
+--   1A_NICA  feb   32,73   NRUA registro
+--   4B_ALEX  feb   28,67   NRUA registro
+--   1A_JACO  ene   28,57   amenities
+--   1A_JACO  feb   10,00   amenities
+--
+-- Se quedan cargados —es el criterio de peor caso que el repo ya usa (022, 031, 034, 044)— pero la
+-- nota lo dice, para que nadie los lea como conciliados. La reimputación de la copia de llaves
+-- (46,30, de Nicasio a Jacobine) también sale de la planilla, aunque el cargo bancario sí existe.
+
+update events
+   set notas = notas || ' ⚑ FUENTE: solo la planilla manual de Stag, sin respaldo bancario ni factura (pagado en efectivo o por fuera de la cuenta). Cargado por criterio de peor caso; pendiente de documentar.'
+ where anio = 2026
+   and concepto in ('Cristales (Claudio, efectivo)', 'Arreglo de bañera (Claudio, efectivo)',
+                    'NRUA — registro único de alojamiento', 'Gastos de bolsillo (fuera de banco)')
+   and notas not like '%FUENTE: solo la planilla manual%';
+
+update events
+   set notas = notas || ' ⚑ La REIMPUTACION a Jacobine sale solo de la planilla manual de Stag; el cargo bancario si existe. Pendiente de confirmar que la copia de llaves era del piso de Sevilla y no de uno de Madrid.'
+ where anio = 2026 and mes = 2 and propiedad_codigo = '1A_JACO'
+   and concepto = 'Copia de llaves (Ferretería Diego de León)'
+   and notas not like '%REIMPUTACION a Jacobine sale solo%';
+
+
+-- 052 — la nómina de José verificada contra el BBVA. El TGSS no aparecía en el Revolut porque se
+-- paga desde el BBVA: 204,33 en enero y 204,86 de febrero a junio, cargo por cargo. El modelo era
+-- correcto — la refactura de limpieza de Jacobine gana, poco pero gana. Se afina a 11,23 (ene) y
+-- 11,14 (feb-dic). Y se corrige la marca de la 051 sobre los dos NRUA: sí tienen respaldo bancario,
+-- están en el BBVA.
+update events
+   set importe = 11.23,
+       notas   = 'Nomina de enero 484,44 (pagada el 02/02 desde Revolut) + TGSS regimen general 204,33 (cargada el 30/01 en el BBVA) = 688,77, contra los 700 que se le descuentan a la duena. VERIFICADO contra banco el 26/07/2026, ya no es una suposicion.'
+ where propiedad_codigo = '1A_JACO' and anio = 2026 and mes = 1
+   and concepto = 'Modesto neto (sueldo+TGSS-refactura)';
+
+update events
+   set importe = 11.14,
+       notas   = 'Nomina 484,00 + TGSS regimen general 204,86 = 688,86, contra los 700 que se le descuentan a la duena. La cuota de TGSS subio de 204,33 a 204,86 en febrero y se mantuvo; verificada cargo por cargo en los extractos del BBVA (27/02, 31/03, 30/04, 29/05, 30/06). El cargo de 370,75 que aparece al lado es el RETA de Stag, no el de Jose. VERIFICADO contra banco el 26/07/2026.'
+ where propiedad_codigo = '1A_JACO' and anio = 2026 and mes >= 2
+   and concepto = 'Modesto neto (sueldo+TGSS-refactura)';
+
+update events
+   set notas = replace(notas,
+        ' ⚑ FUENTE: solo la planilla manual de Stag, sin respaldo bancario ni factura (pagado en efectivo o por fuera de la cuenta). Cargado por criterio de peor caso; pendiente de documentar.',
+        ' ⚑ CORREGIDO 26/07: si tiene respaldo bancario, esta en el BBVA (no en el Revolut, por eso no aparecia): transferencia del 24/02 "F4 510 - NRUA" 32,73 para Nicasio y del 26/02 "F4 - 7784 - NRUA" 28,67 para Alexander.')
+ where anio = 2026 and concepto = 'NRUA — registro único de alojamiento';
