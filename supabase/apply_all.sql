@@ -3059,3 +3059,82 @@ update events
    set notas = 'Renta transferida: 365,50 el 08/06, verificado en el extracto de Revolut. Compensacion 734,50 del plan de aire acondicionado acordado con Jose Luis el 21/04 y aceptado el 04/05.'
  where propiedad_codigo = '3G_MARE' and anio = 2026 and mes = 6
    and categoria = 'RENTA' and notas like '%renta efectiva 600%';
+
+
+-- 045 — avisos con fecha: costes que cambian en una fecha conocida. `general_expenses` tiene
+-- vigencia para que el motor DEJE de contar un coste, pero eso no sirve para avisar de uno que
+-- SUBE. Estrena con la promoción de Movistar (vence 27/10/2026: el internet de Marechal pasa de
+-- 30,00 a 40,00 €/mes). Ventana de 120 días, más ancha que los 90 del aviso de contrato, porque
+-- un cambio de precio hay que verlo con tiempo para renegociarlo.
+create table if not exists avisos (
+  id           bigserial primary key,
+  codigo       text not null references listings(codigo),
+  fecha        date not null,
+  tipo         text not null default 'aviso',
+  mensaje      text not null,              -- la consecuencia, SIN la fecha: la vista la añade
+  impacto_mes  numeric(12,2),              -- € al mes que cambian (negativo = el coste sube)
+  nota         text,
+  unique (codigo, fecha, mensaje)
+);
+
+comment on table avisos is
+  'Cambios de coste con fecha conocida. Alimenta v_alertas; no lo consume el motor de P&L.';
+
+revoke all on avisos from anon, authenticated;
+
+insert into avisos (codigo, fecha, tipo, mensaje, impacto_mes, nota)
+select '3G_MARE', date '2026-10-27', 'promocion',
+       'Vence la promoción de Movistar: el internet pasa de 30,00 a 40,00 €/mes', -10.00,
+       'Linea 9142***84 (Fibra 600 Mb). Descuento actual 8,2644 EUR de base = 10,00 con IVA. Factura FMPVAFJ001. La linea ...89 de Alexander tiene otra promocion de 12 meses sin fecha visible en la factura: mirar en Mi Movistar (salto de 25,00 a 36,00).'
+where not exists (select 1 from avisos a where a.codigo='3G_MARE' and a.fecha=date '2026-10-27');
+
+-- La vista suma un cuarto tipo. Los tres existentes quedan idénticos.
+create or replace view v_alertas as
+select 'breakeven'::text as tipo, b.codigo,
+       case when b.colchon < 0 then 'critical' else 'warning' end as severidad,
+       case when b.colchon < 0
+            then 'Por debajo del punto de equilibrio: pierde plata al ritmo actual'
+            else 'Colchón ajustado: solo ' || translate(to_char(b.colchon*100, 'FM990.0'), '.', ',')
+                 || ' pp por encima del equilibrio ('
+                 || translate(to_char(b.ocup_breakeven*100, 'FM990.0'), '.', ',') || ' % necesario)'
+       end as mensaje,
+       'senal'::text as clase, null::date as fecha_limite, null::integer as dias_restantes
+from v_breakeven_ytd b
+where b.colchon is not null and b.colchon < 0.10
+
+union all
+
+select 'mes_negativo'::text, p.codigo, 'warning',
+       count(*) || ' mes(es) con margen neto negativo este año',
+       'senal'::text, null::date, null::integer
+from v_pnl_neto_propiedad p
+where p.anio = extract(year from now())::int and p.margen_neto < 0
+group by p.codigo
+
+union all
+
+select 'contrato'::text, l.codigo,
+       case when (l.aviso_fecha - current_date) <= 30 then 'critical' else 'warning' end,
+       coalesce(l.aviso_nota, 'Aviso de contrato') || ' — fecha límite '
+         || to_char(l.aviso_fecha, 'DD/MM/YYYY')
+         || case when (l.aviso_fecha - current_date) = 0 then ' (vence hoy)'
+                 when (l.aviso_fecha - current_date) = 1 then ' (falta 1 día)'
+                 else ' (faltan ' || (l.aviso_fecha - current_date) || ' días)' end,
+       'alerta'::text, l.aviso_fecha, l.aviso_fecha - current_date
+from listings l
+where l.aviso_fecha is not null and l.aviso_fecha >= current_date
+  and (l.aviso_fecha - current_date) <= 90
+
+union all
+
+select a.tipo, a.codigo,
+       case when (a.fecha - current_date) <= 30 then 'critical' else 'warning' end,
+       a.mensaje || ' — fecha límite ' || to_char(a.fecha, 'DD/MM/YYYY')
+         || case when (a.fecha - current_date) = 0 then ' (vence hoy)'
+                 when (a.fecha - current_date) = 1 then ' (falta 1 día)'
+                 else ' (faltan ' || (a.fecha - current_date) || ' días)' end,
+       'alerta'::text, a.fecha, a.fecha - current_date
+from avisos a
+where a.fecha >= current_date and (a.fecha - current_date) <= 120;
+
+grant select on v_alertas to anon, authenticated;
