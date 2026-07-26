@@ -3039,3 +3039,23 @@ where not exists (
   select 1 from events e
    where e.anio = 2026 and e.mes = 6 and e.propiedad_codigo = '1A_NICA'
      and e.concepto = 'Comisión Booking.com (factura 1657524585)');
+
+
+-- 044 — al aire acondicionado de Marechal le faltaban 80 €. La intervención costó 1.834,50
+-- (factura 235 de Nico Chaban 1.754,50 + 80,00 a Claudio en efectivo, sin factura) y eso es
+-- exactamente lo compensado en las rentas de mayo y junio; el motor tenía la compensación
+-- completa pero sólo el coste de Chaban. Confirmado por Stag: los 80 € los puso Samavi.
+-- Y se corrige la nota del evento de renta de junio, que decía "renta efectiva 600" cuando la
+-- renta transferida fueron 365,50 (verificado en el extracto de Revolut del 08/06).
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 4, '3G_MARE', 'OTROS', 'Reparación y pintura tras el A/C (Claudio, efectivo)', -80.00,
+       'Segundo tramo de la intervencion del aire acondicionado: 1.754,50 (factura 235 Nico Chaban) + 80,00 (Claudio, portero, en efectivo) = 1.834,50, que es exactamente lo compensado en las rentas de mayo y junio. Sin factura formal; pagado en efectivo por Samavi, confirmado por Stag 26/07/2026.'
+where not exists (
+  select 1 from events e
+   where e.anio = 2026 and e.mes = 4 and e.propiedad_codigo = '3G_MARE'
+     and e.concepto = 'Reparación y pintura tras el A/C (Claudio, efectivo)');
+
+update events
+   set notas = 'Renta transferida: 365,50 el 08/06, verificado en el extracto de Revolut. Compensacion 734,50 del plan de aire acondicionado acordado con Jose Luis el 21/04 y aceptado el 04/05.'
+ where propiedad_codigo = '3G_MARE' and anio = 2026 and mes = 6
+   and categoria = 'RENTA' and notas like '%renta efectiva 600%';
