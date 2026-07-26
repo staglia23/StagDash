@@ -3375,3 +3375,26 @@ update events
         ' ⚑ FUENTE: solo la planilla manual de Stag, sin respaldo bancario ni factura (pagado en efectivo o por fuera de la cuenta). Cargado por criterio de peor caso; pendiente de documentar.',
         ' ⚑ CORREGIDO 26/07: si tiene respaldo bancario, esta en el BBVA (no en el Revolut, por eso no aparecia): transferencia del 24/02 "F4 510 - NRUA" 32,73 para Nicasio y del 26/02 "F4 - 7784 - NRUA" 28,67 para Alexander.')
  where anio = 2026 and concepto = 'NRUA — registro único de alojamiento';
+
+
+-- 053 — la renta de Alexander sube el 01/10: se agota la devolución del amoblamiento (3.064 € a
+-- 12 meses = 255,31/mes descontados de la base). El coste pasa de 1.677,65 a 1.986,58 €/mes,
+-- +3.707 €/año = el 94% del margen anual del piso, y ocurre solo el día que se prorroga el
+-- contrato. Va a `avisos` (el mecanismo de la 045). Y se corrige la nota del aviso de contrato:
+-- el preaviso de no prórroga es facultad de Alberto (cláusula 2.2), no de Samavi.
+insert into avisos (codigo, fecha, tipo, mensaje, impacto_mes, nota)
+select '4B_ALEX', date '2026-10-01', 'renta',
+       'Se agota el descuento del amoblamiento: la renta base pasa de 1.386,49 a 1.641,80 €/mes',
+       -308.93,
+       'Samavi amueblo el piso (contrato nº 001/2025, expositivo III: se entrega vacio). El saldo a favor de 3.064,00 EUR se devuelve prorrateado a 12 meses = 255,31/mes descontados de la base imponible, y se agota con la renta de septiembre de 2026. Coste en el modelo: 1.677,65 -> 1.986,58 EUR/mes (+308,93/mes, +3.707/ano), que es el 94% del margen anual de Alexander. OJO: el contrato dice 1.614,80 de renta (clausula 4.1, en letras y numeros, y la fianza de 3.229,60 = 2 mensualidades lo confirma) pero la hoja de trabajo uso 1.641,80: 27 EUR/mes de diferencia que hay que aclarar con Alberto. La palanca es la clausula 4.3, que permite renegociar la contraprestacion cada 12 meses.'
+where not exists (
+  select 1 from avisos a where a.codigo = '4B_ALEX' and a.fecha = date '2026-10-01' and a.tipo = 'renta');
+
+-- Y el aviso de contrato decía lo que no es: el preaviso NO lo da Samavi.
+-- Cláusula 2.2: es LA PROPIEDAD quien puede cortar la prórroga, dentro de los 30 días anteriores
+-- al vencimiento (01–30/09/2026). Cláusulas 3.2 y 3.8: Samavi no puede desistir, y las dificultades
+-- económicas no son causa mayor. La única puerta de Samavi es la 4.3, renegociar.
+-- El detalle vive en este comentario, no en la alerta: se lee en el móvil.
+update listings
+   set aviso_nota = 'Vence el contrato. Solo Alberto puede cortar la prórroga; la palanca de Samavi es renegociar (cláusula 4.3)'
+ where codigo = '4B_ALEX';
