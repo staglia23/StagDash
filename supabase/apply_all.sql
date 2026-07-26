@@ -3398,3 +3398,15 @@ where not exists (
 update listings
    set aviso_nota = 'Vence el contrato. Solo Alberto puede cortar la prórroga; la palanca de Samavi es renegociar (cláusula 4.3)'
  where codigo = '4B_ALEX';
+
+
+-- 054 — la 053 se equivocó dos veces: (a) dijo que el motor no sabía de la subida de renta de
+-- Alexander cuando la migración 022 ya la modelaba (events 92/8/9, oct-dic), y (b) usó los
+-- 1.641,80 de la hoja de trabajo en vez de los 1.614,80 del contrato. El salto real en términos
+-- de coste es +276,26/mes (+3.315/año), no +308,93. El aviso es la capa de ALERTA; el P&L ya lo
+-- contaba. Sin doble conteo: `avisos` sólo alimenta v_alertas.
+update avisos
+   set mensaje = 'Se agota el descuento del amoblamiento: la renta base pasa de 1.386,49 a 1.614,80 €/mes',
+       impacto_mes = -276.26,
+       nota = 'Samavi amueblo el piso (contrato nº 001/2025, expositivo III: se entrega vacio). El saldo a favor de 3.064,00 EUR se devuelve prorrateado a 12 meses = 255,31/mes descontados de la base imponible, y se agota con la renta de septiembre de 2026. Coste modelado: 1.677,65 -> 1.953,91 EUR/mes (+276,26/mes, +3.315/ano), un 84% del margen anual del piso. El P&L de oct-dic YA lo cuenta desde la migracion 022 (events 92/8/9, -232,88 en terminos de transferencia); este aviso es solo la capa de alerta. PENDIENTE: el contrato dice 1.614,80 (clausula 4.1, en letras y numeros, y la fianza de 3.229,60 lo confirma) pero la hoja de trabajo uso 1.641,80. Si Alberto factura 1.641,80, el salto es 308,93. Confirmarlo antes de renovar. La palanca es la clausula 4.3. Y en enero de 2027 hay que actualizar listings.renta_base: los events de la 022 solo llegan a diciembre.'
+ where codigo = '4B_ALEX' and fecha = date '2026-10-01' and tipo = 'renta';
