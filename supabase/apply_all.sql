@@ -3138,3 +3138,15 @@ from avisos a
 where a.fecha >= current_date and (a.fecha - current_date) <= 120;
 
 grant select on v_alertas to anon, authenticated;
+
+
+-- 046 — abril de Marechal, el último mes estimado del semestre. La factura que faltaba
+-- (1NSN260500255032, 12.04–11.05) estaba en la carpeta de mayo. Luz de abril = 7,36 (días 1–3)
+-- + 30,78 (días 12–30) = 38,14 €. El hueco del 4 al 11 es real: TotalEnergies no facturó esos
+-- 8 días — 79 kWh de diferencia entre las lecturas de cierre y apertura del contador 40088848,
+-- unos 15,60 €. Va como fiable = false por si lo regularizan más adelante.
+insert into suministros_mensual (anio, mes, codigo, luz_eur, internet_eur, total_eur, fiable, nota)
+values
+  (2026, 4, '3G_MARE', 38.14, 30.00, 68.14, false,
+   'Luz: 7,36 (1NSN260400331958, abril 1-3) + 30,78 (1NSN260500255032, abril 12-30), prorrateo por dia, IVA incluido. TotalEnergies NO facturo del 4 al 11 de abril: 79 kWh de diferencia entre las lecturas de cierre (04.04) y apertura (12.04) del contador 40088848, unos 15,60 EUR. Si lo regularizan mas adelante, corresponde a abril. Internet: linea cara de Movistar.')
+on conflict (anio, mes, codigo) do nothing;
