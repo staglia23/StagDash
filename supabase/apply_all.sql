@@ -3410,3 +3410,24 @@ update avisos
        impacto_mes = -276.26,
        nota = 'Samavi amueblo el piso (contrato nº 001/2025, expositivo III: se entrega vacio). El saldo a favor de 3.064,00 EUR se devuelve prorrateado a 12 meses = 255,31/mes descontados de la base imponible, y se agota con la renta de septiembre de 2026. Coste modelado: 1.677,65 -> 1.953,91 EUR/mes (+276,26/mes, +3.315/ano), un 84% del margen anual del piso. El P&L de oct-dic YA lo cuenta desde la migracion 022 (events 92/8/9, -232,88 en terminos de transferencia); este aviso es solo la capa de alerta. PENDIENTE: el contrato dice 1.614,80 (clausula 4.1, en letras y numeros, y la fianza de 3.229,60 lo confirma) pero la hoja de trabajo uso 1.641,80. Si Alberto factura 1.641,80, el salto es 308,93. Confirmarlo antes de renovar. La palanca es la clausula 4.3. Y en enero de 2027 hay que actualizar listings.renta_base: los events de la 022 solo llegan a diciembre.'
  where codigo = '4B_ALEX' and fecha = date '2026-10-01' and tipo = 'renta';
+
+
+-- 055 — la renta de octubre según el pacto VERBAL con Alberto (Stag, 27/07/2026): Alberto recibe
+-- 1.614,80 EN CUENTA → base derivada 1.583,14. Los events del Q4 pasan de −232,88 (lectura literal
+-- del contrato) a −200,58, y el aviso a +237,95/mes de coste (+2.855/año). Modela la lectura más
+-- favorable por instrucción de Stag; la adenda de octubre debe fijar la cifra por escrito.
+-- 1) Los events del Q4 pasan a la transferencia pactada: 1.614,80 − 1.414,22 = 200,58.
+update events
+   set importe = -200.58,
+       notas   = 'Fin del prorrateo del amoblamiento: la transferencia pasa de 1.414,22 a 1.614,80 (pacto VERBAL confirmado por Stag el 27/07/2026: Alberto recibe 1.614,80 en cuenta; base derivada 1.583,14). La 022 habia cargado -232,88 con la lectura literal del contrato (base 1.614,80, transferencia 1.647,10). PENDIENTE la adenda que fije la cifra por escrito: sin ella el contrato permite a Alberto facturar 1.647,10.'
+ where propiedad_codigo = '4B_ALEX' and anio = 2026 and mes in (10, 11, 12)
+   and categoria = 'RENTA'
+   and concepto = 'Renta sube Q4 (fin prorrateo mobiliario) — en transferencia'
+   and importe = -232.88;
+
+-- 2) El aviso cuenta la misma historia con el mismo número.
+update avisos
+   set mensaje = 'Se agota el descuento del amoblamiento: Alberto pasa a recibir 1.614,80 €/mes (base 1.583,14)',
+       impacto_mes = -237.95,
+       nota = 'Pacto VERBAL (Stag, 27/07/2026): Alberto recibe 1.614,80 en cuenta -> base 1.583,14. Coste modelado 1.677,65 -> 1.915,60 (+237,95/mes, +2.855/ano, ~73% del margen anual del piso). Modela la lectura MAS FAVORABLE por instruccion de Stag, rompiendo el criterio de peor caso: el contrato literal daria coste 1.953,91 (+38,31/mes mas) y la planilla 1.986,58 (+70,98/mes mas). La adenda de octubre (clausulas 4.3 y 8.2) debe fijar por escrito "transferencia 1.614,80, base 1.583,14, IVA 21%, retencion 19%", formato del contrato de Marechal. Ademas, bajo el pacto verbal el descuento del prorrateo se aplico sobre base equivocada (1.641,80 en vez de 1.583,14): se transfirieron ~59,83/mes de mas desde oct-2025, ~598 en 10 meses — decidir en la adenda si se compensa. El P&L de oct-dic ya cuenta la subida via events (-200,58). En enero de 2027 actualizar listings.renta_base.'
+ where codigo = '4B_ALEX' and fecha = date '2026-10-01' and tipo = 'renta';
