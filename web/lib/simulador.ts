@@ -4,10 +4,12 @@
 // Convención de anualización: año calendario 2026 extrapolando el run-rate YTD.
 //   · Magnitudes por noche (ingreso, bruto, limpieza) escalan por 365/noches_disponibles_ytd.
 //   · Costes fijos mensuales (renta, suministros, comunidad, otros) escalan por 12/meses.
-//   · Overhead anual = overhead YTD total × 12/meses, prorrateado por peso en el Ingreso
-//     Samavi SIMULADO de las 4 → los pesos se recalculan y el efecto colateral sobre las
-//     otras 3 se muestra, no se oculta.
-// Con las palancas en su valor base, la proyección coincide con el run-rate real YTD.
+//   · Overhead anual = overhead YTD total × 12/meses, repartido por DÍAS bajo gestión,
+//     la MISMA regla que el motor (decisión Stag 27/07/2026; antes iba por peso en el
+//     ingreso simulado y el baseline no cuadraba con la ficha). Cada piso conserva su
+//     parte YTD del pool (hoy, un cuarto cada uno): las palancas no mueven la cuota.
+// Con las palancas en su valor base, la proyección coincide con el run-rate real YTD
+// también en margen NETO, no solo en directo.
 import { eur, pp } from "./format";
 import { nombreCorto } from "./headline";
 
@@ -150,15 +152,19 @@ export function simular(
   const mesesAnio = Math.max(...baselines.map((b) => b.meses), 1);
   const overheadAnual = baselines.reduce((s, b) => s + b.overheadYtd, 0) * (12 / mesesAnio);
 
-  // ingreso anual de las 4 con la simulada reemplazada → pesos del prorrateo recalculados
+  // ingreso anual de las 4 con la simulada reemplazada (solo display: la cuota no depende de él)
   const ingresos = baselines.map((b) =>
     b.codigo === codigo ? sim.ingreso : anualRunRate(b).ingreso);
-  const totalIngreso = ingresos.reduce((s, v) => s + v, 0);
+
+  // Cuota por DÍAS bajo gestión, igual que v_pnl_neto_propiedad: cada piso conserva su
+  // parte YTD del pool (con los 4 activos todo el año, un cuarto cada uno). Las palancas
+  // NO mueven la cuota de nadie.
+  const totalOverheadYtd = baselines.reduce((s, b) => s + b.overheadYtd, 0);
 
   const props: SimProp[] = baselines.map((b, idx) => {
     const directo = b.codigo === codigo ? sim.margenDirecto : anualRunRate(b).margenDirecto;
-    const peso = totalIngreso > 0 ? ingresos[idx] / totalIngreso : 0;
-    const cuota = overheadAnual * peso;
+    const parte = totalOverheadYtd > 0 ? b.overheadYtd / totalOverheadYtd : 1 / baselines.length;
+    const cuota = overheadAnual * parte;
     return {
       codigo: b.codigo,
       ingresoAnual: ingresos[idx],

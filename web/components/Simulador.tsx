@@ -181,15 +181,15 @@ export function Simulador({ baselines, inicial, real }: {
         )}
       </div>
 
-      {/* efecto colateral del prorrateo — se muestra, no se oculta */}
+      {/* las otras 3 a ritmo actual — la cuota es fija por días, como el motor */}
       <div className="card sim-colateral">
         <div className="section-title" style={{ margin: "0 0 8px" }}>
-          Efecto en las otras 3 <span className="badge badge-sim">simulado</span>
+          Las otras 3, a ritmo actual <span className="badge badge-sim">simulado</span>
         </div>
         <p className="section-note" style={{ margin: "0 0 10px" }}>
-          El overhead ({eur(resultado.overheadAnual)}/año) no desaparece: acá se re-prorratea por
-          peso en el Ingreso Samavi simulado. Ojo: esa es la regla de esta pantalla — el dashboard
-          real lo reparte por días bajo gestión (hoy, un cuarto por piso).
+          El overhead ({eur(resultado.overheadAnual)}/año) no desaparece: se reparte por días
+          bajo gestión, igual que el dashboard (hoy, un cuarto por piso). Mover tus palancas
+          no les cambia la cuota a las otras 3.
         </p>
         <ul className="colateral-lista">
           {resultado.props.filter((x) => x.codigo !== target.codigo).map((x) => {

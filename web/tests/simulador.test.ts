@@ -3,45 +3,46 @@ import {
   DIAS_ANIO, comisionRealPct, fraseDirecto, fraseSimulada, palancasBase, simular, type PropBaseline,
 } from "../lib/simulador";
 
-// Fixture: datos reales de producción (15/07/2026) de v_ranking_ytd + v_costes_ytd + v_propiedades.
-// Actualizado el 25/07/2026 por la migración 021: la comisión de JACO pasa a ser la NETA de
-// IVA (25 %, no el 30,25 % facturado) y su ingreso baja en consecuencia. Ojo al efecto que
-// parece colateral y no lo es: el overhead es un pool repartido por peso de ingreso, así que
-// al bajar el de JACO las otras tres cargan MÁS cuota. Por eso se recalcularon las cuatro
-// (pool 37.542,59 € intacto). Es lo mismo que pasó en producción: ALEX cayó de +488 a +207 €.
+// Fixture: datos reales de producción (27/07/2026) de v_ranking_ytd + v_costes_ytd +
+// v_propiedades (ingresoYtd sin cancelaciones retenidas, como arma el baseline la page).
+// Regla vigente desde el 27/07/2026 (decisión Stag): el overhead se reparte por DÍAS bajo
+// gestión, igual que el motor — la cuota YTD es idéntica para los 4 (7.696,30) y las
+// palancas NO la mueven. Antes iba por peso en el ingreso y el baseline neto no cuadraba
+// con la ficha (JACO aparecía +6.9k €/año mejor; NICA −5.2k peor).
 const NICA: PropBaseline = {
   codigo: "1A_NICA", modelo: "titular", meses: 7,
-  ingresoYtd: 32916.59, brutoYtd: 40422.18, nochesYtd: 196, disponiblesYtd: 212,
-  rentaYtd: 0, limpiezaYtd: 2954.6, suministrosYtd: 1505, comunidadYtd: 2819.46, otrosYtd: 985.39,
-  overheadYtd: 13087.59, rentaBaseMes: 0, comisionModeloPct: 0, comisionCanalYtd: 7218.13,
+  ingresoYtd: 32916.59, brutoYtd: 40016.96, nochesYtd: 196, disponiblesYtd: 212,
+  rentaYtd: 0, limpiezaYtd: 3073.22, suministrosYtd: 856.62, comunidadYtd: 2317.84, otrosYtd: 5145.32,
+  overheadYtd: 7696.30, rentaBaseMes: 0, comisionModeloPct: 0, comisionCanalYtd: 7275.38,
 };
 const JACO: PropBaseline = {
   codigo: "1A_JACO", modelo: "comision", meses: 7,
-  ingresoYtd: 11221.79, brutoYtd: 44887.15, nochesYtd: 171, disponiblesYtd: 212,
-  rentaYtd: 0, limpiezaYtd: 0, suministrosYtd: 75.53, comunidadYtd: 0, otrosYtd: 368.2,
-  overheadYtd: 4461.77, rentaBaseMes: 0, comisionModeloPct: 0.25, comisionCanalYtd: 0,
+  ingresoYtd: 11204.97, brutoYtd: 44941.32, nochesYtd: 174, disponiblesYtd: 212,
+  rentaYtd: 0, limpiezaYtd: 0, suministrosYtd: 0, comunidadYtd: 0, otrosYtd: 891.52,
+  overheadYtd: 7696.30, rentaBaseMes: 0, comisionModeloPct: 0.25, comisionCanalYtd: 0,
 };
 const MARE: PropBaseline = {
   codigo: "3G_MARE", modelo: "subarriendo", meses: 7,
-  ingresoYtd: 23106.78, brutoYtd: 28767.61, nochesYtd: 194, disponiblesYtd: 212,
-  rentaYtd: 6100, limpiezaYtd: 2452.8, suministrosYtd: 875, comunidadYtd: 0, otrosYtd: 964.39,
-  overheadYtd: 9187.22, rentaBaseMes: 1100, comisionModeloPct: 0, comisionCanalYtd: 5286.61,
+  ingresoYtd: 23276.10, brutoYtd: 28594.01, nochesYtd: 196, disponiblesYtd: 212,
+  rentaYtd: 6138.48, limpiezaYtd: 2538.02, suministrosYtd: 891.30, comunidadYtd: 0, otrosYtd: 4101.41,
+  overheadYtd: 7696.30, rentaBaseMes: 1100, comisionModeloPct: 0, comisionCanalYtd: 5317.91,
 };
 const ALEX: PropBaseline = {
   codigo: "4B_ALEX", modelo: "subarriendo", meses: 7,
-  ingresoYtd: 27178.17, brutoYtd: 34265.5, nochesYtd: 194, disponiblesYtd: 212,
-  rentaYtd: 9516.48, limpiezaYtd: 2496.6, suministrosYtd: 1015, comunidadYtd: 0, otrosYtd: 2103.78,
-  overheadYtd: 10806.00, rentaBaseMes: 1414.22, comisionModeloPct: 0, comisionCanalYtd: 6259.40,
+  ingresoYtd: 27178.17, brutoYtd: 33776.48, nochesYtd: 194, disponiblesYtd: 212,
+  rentaYtd: 11280.06, limpiezaYtd: 2747.03, suministrosYtd: 897.65, comunidadYtd: 0, otrosYtd: 2265.02,
+  overheadYtd: 7696.30, rentaBaseMes: 1414.22, comisionModeloPct: 0, comisionCanalYtd: 6312.29,
 };
 const TODAS = [NICA, JACO, MARE, ALEX];
 
 describe("palancasBase — el baseline sale del YTD real", () => {
   it("ALEX: ADR, ocupación y comisión aparente coinciden con v_ranking_ytd", () => {
     const p = palancasBase(ALEX);
-    expect(p.adr).toBeCloseTo(176.63, 1);
+    expect(p.adr).toBeCloseTo(33776.48 / 194, 1);
     expect(p.ocup).toBeCloseTo(0.9151, 3);
-    expect(p.comisionCanalPct).toBeCloseTo(1 - 27178.17 / 34265.5, 4);
-    expect(p.rentaMes).toBeCloseTo(9516.48 / 7, 2);
+    expect(p.comisionCanalPct).toBeCloseTo(1 - 27178.17 / 33776.48, 4);
+    // la renta baseline es COSTE P&L (media YTD con factor IVA/retención): 1.611,44/mes
+    expect(p.rentaMes).toBeCloseTo(11280.06 / 7, 2);
   });
 
   it("JACO (modelo comisión): sin comisión de canal como palanca", () => {
@@ -53,23 +54,27 @@ describe("simular — baseline reproduce el run-rate real", () => {
   const r = simular(TODAS, "4B_ALEX", palancasBase(ALEX));
 
   it("proyección 2026 de ALEX a ritmo actual ≈ margen neto YTD anualizado", () => {
-    // margen_neto_ytd 1.503,43 anualizado ∈ [12/7, 365/212] → ~2.577–2.786
-    expect(r.target.margenNetoAnual).toBeGreaterThan(2100);
-    expect(r.target.margenNetoAnual).toBeLessThan(2600);
+    // margen_neto_ytd 2.292,11 anualizado ≈ 3.930–3.950; el sim mezcla ×365/212 (noches)
+    // con ×12/7 (fijos) y da ~4.110. Con la cuota por días el baseline ya cuadra con la ficha.
+    expect(r.target.margenNetoAnual).toBeGreaterThan(3700);
+    expect(r.target.margenNetoAnual).toBeLessThan(4500);
   });
 
   it("ingreso anual de ALEX = ingreso YTD × 365/212", () => {
     expect(r.target.ingresoAnual).toBeCloseTo(27178.17 * (DIAS_ANIO / 212), 0);
   });
 
-  it("break-even baseline ≈ v_breakeven_ytd (85,9 % necesario, colchón 5,6 pp)", () => {
-    expect(r.target.ocupNecesaria!).toBeGreaterThan(0.845);
-    expect(r.target.ocupNecesaria!).toBeLessThan(0.875);
-    expect(r.target.colchon!).toBeGreaterThan(0.04);
-    expect(r.target.colchon!).toBeLessThan(0.075);
+  it("break-even baseline ≈ v_breakeven_ytd (82,9 % necesario, colchón 8,6 pp)", () => {
+    expect(r.target.ocupNecesaria!).toBeGreaterThan(0.81);
+    expect(r.target.ocupNecesaria!).toBeLessThan(0.845);
+    expect(r.target.colchon!).toBeGreaterThan(0.07);
+    expect(r.target.colchon!).toBeLessThan(0.105);
   });
 
-  it("el prorrateo reparte exactamente el overhead anual", () => {
+  it("el reparto por días asigna la misma cuota a los 4 y suma el pool exacto", () => {
+    for (const p of r.props) {
+      expect(p.cuotaOverheadAnual).toBeCloseTo(r.overheadAnual / 4, 6);
+    }
     const suma = r.props.reduce((s, p) => s + p.cuotaOverheadAnual, 0);
     expect(suma).toBeCloseTo(r.overheadAnual, 6);
   });
@@ -88,13 +93,16 @@ describe("simular — palancas", () => {
     }
   });
 
-  it("subir el ADR de ALEX re-prorratea el overhead: las otras 3 mejoran (efecto colateral visible)", () => {
+  it("subir el ADR de ALEX NO toca a las otras 3: la cuota es fija por días, como el motor", () => {
+    // Regla Stag 27/07/2026: antes (peso por ingreso) subir el ADR de uno bajaba la cuota
+    // de los demás — un efecto colateral que el dashboard real no tiene.
     const base = simular(TODAS, "4B_ALEX", palancasBase(ALEX));
     const sim = simular(TODAS, "4B_ALEX", { ...palancasBase(ALEX), adr: 220 });
     for (const codigo of ["1A_NICA", "1A_JACO", "3G_MARE"]) {
       const antes = base.props.find((x) => x.codigo === codigo)!;
       const despues = sim.props.find((x) => x.codigo === codigo)!;
-      expect(despues.margenNetoAnual).toBeGreaterThan(antes.margenNetoAnual);
+      expect(despues.cuotaOverheadAnual).toBeCloseTo(antes.cuotaOverheadAnual, 6);
+      expect(despues.margenNetoAnual).toBeCloseTo(antes.margenNetoAnual, 6);
     }
     const suma = sim.props.reduce((s, p) => s + p.cuotaOverheadAnual, 0);
     expect(suma).toBeCloseTo(sim.overheadAnual, 6);
@@ -169,7 +177,7 @@ describe("palanca de canal directo", () => {
   it("el umbral de captación ES el coste del canal por noche, no un target inventado", () => {
     // adr × comisiónReal = (bruto/noches) × (comisión/bruto) = comisión/noches. Se simplifica.
     const r = simular(TODAS, "4B_ALEX", palancasBase(ALEX));
-    expect(r.target.costeMaxDirectoNoche).toBeCloseTo(6259.4 / 194, 2);
+    expect(r.target.costeMaxDirectoNoche).toBeCloseTo(6312.29 / 194, 2);
   });
 
   it("al 100 % el ahorro es exactamente la comisión evitada, ni un euro más", () => {

@@ -106,8 +106,10 @@ export default async function Cuadre() {
                       </div>
                       <div className="alerta-msg">
                         {c.enTransito >= 0
-                          ? `Diferencia +${eur(Math.abs(c.enTransito))}: en tránsito a favor (pagos de fin de período que aún no entraron el mes anterior).`
-                          : `Diferencia −${eur(Math.abs(c.enTransito))}: pagos de fin de período que llegan al banco el mes siguiente.`}
+                          ? `En tránsito +${eur(Math.abs(c.enTransito))}: pagos de fin de período que aún no habían entrado al corte.`
+                          : `En tránsito −${eur(Math.abs(c.enTransito))}: pagos de fin de período que llegan al banco el mes siguiente.`}
+                        {c.bordeExcluido &&
+                          " No cuenta el primer mes de la ventana: esa diferencia es arranque (payouts de estancias anteriores al período), no tránsito."}
                       </div>
                     </div>
                   </div>

@@ -3454,3 +3454,58 @@ alter table limpieza_mensual enable row level security;
 alter table suministros_mensual enable row level security;
 update events set notas = replace(notas, 'a J.L. De La Torre 19/06', 'al dueño de MARE 19/06')
  where notas like '%J.L. De La Torre%';
+
+
+-- 057 — el mes-borde fuera del "en tránsito" del cuadre (decisión Stag 27/07/2026): el
+-- primer mes de la ventana de extractos arrastra payouts de estancias anteriores al
+-- período (Revolut ene: +2.656,55 de dic-2025) — arranque, no tránsito. Se agregan
+-- mes_borde y diferencia_acum_ajustada; el semáforo del panel usa la ajustada.
+create or replace view v_cuadre_banco as
+with rango as (
+  select date_trunc('month', min(fecha))::date as desde,
+         date_trunc('month', max(fecha))::date as hasta
+    from bank_deposits
+   where es_airbnb
+), airbnb as (
+  select case when c.codigo in ('1A_NICA','1A_JACO') then '7165' else '8920' end as iban,
+         c.anio, c.mes,
+         sum(c.payout_total_airbnb) as airbnb_pago
+    from v_conciliacion_airbnb c
+   where make_date(c.anio, c.mes, 1) >= (select desde from rango)
+     and make_date(c.anio, c.mes, 1) <= (select hasta from rango)
+   group by 1, c.anio, c.mes
+), banco as (
+  select iban,
+         extract(year from fecha)::int as anio,
+         extract(month from fecha)::int as mes,
+         sum(importe) as banco_recibio,
+         count(*) as depositos
+    from bank_deposits
+   where es_airbnb
+   group by iban, 2, 3
+), j as (
+  select coalesce(a.iban, b.iban) as iban,
+         coalesce(a.anio, b.anio) as anio,
+         coalesce(a.mes, b.mes) as mes,
+         round(coalesce(a.airbnb_pago, 0), 2) as airbnb_pago,
+         round(coalesce(b.banco_recibio, 0), 2) as banco_recibio,
+         coalesce(b.depositos, 0) as depositos
+    from airbnb a
+    full join banco b on a.iban = b.iban and a.anio = b.anio and a.mes = b.mes
+)
+select iban,
+       case iban
+         when '7165' then 'Revolut · Nicasio + Jacobine'
+         when '8920' then 'BBVA · Alexander + Marechal'
+         else iban
+       end as cuenta,
+       anio, mes, airbnb_pago, banco_recibio, depositos,
+       round(banco_recibio - airbnb_pago, 2) as diferencia_mes,
+       round(sum(banco_recibio - airbnb_pago) over (partition by iban order by anio, mes), 2)
+         as diferencia_acum,
+       row_number() over (partition by iban order by anio, mes) = 1 as mes_borde,
+       round(sum(banco_recibio - airbnb_pago) over (partition by iban order by anio, mes)
+             - first_value(banco_recibio - airbnb_pago) over (partition by iban order by anio, mes), 2)
+         as diferencia_acum_ajustada
+  from j
+ order by iban, anio, mes;

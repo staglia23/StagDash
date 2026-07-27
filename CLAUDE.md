@@ -61,10 +61,10 @@ definición). Reglas del motor, validadas contra el Excel histórico y contra ba
 - Canceladas excluidas, SALVO cobros retenidos (`v_ingreso_cancelaciones`, línea de
   ingreso separada que nunca toca noches/ADR/ocupación).
 - Overhead (gastos generales no corporativos) prorrateado por **días bajo gestión**
-  (`v_dias_gestion`; con los 4 pisos activos todo el mes, 25 % cada uno). OJO: el
-  simulador (`lib/simulador.ts`) y la spec §5.4 aún prorratean por peso en el ingreso —
-  divergencia abierta con Stag. Los gastos generales tienen vigencia `desde`/`hasta`
-  (null = sin límite).
+  (`v_dias_gestion`; con los 4 pisos activos todo el mes, 25 % cada uno). El simulador
+  usa la MISMA regla desde el 27/07/2026 (cuota fija = la parte YTD del pool de cada
+  piso; las palancas no la mueven). Los gastos generales tienen vigencia `desde`/`hasta`
+  (null = sin límite); los corporativos (`es_corporativo`) van fuera del margen por piso.
 - `events` = ajustes mensuales por propiedad: importe negativo = gasto, positivo = crédito.
 - Las vistas están fijadas al año en curso (`v_month_spine` + filtros `now()` propios en
   4 vistas YTD): parametrizar el período requiere RPCs, no filtros en cliente (ver §5.2
