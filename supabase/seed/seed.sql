@@ -76,21 +76,33 @@ update listings set suministros_mes = 150, amenities = 30 where codigo = '4B_ALE
 update listings set amenities = 30 where codigo = '3G_MARE';
 update listings set suministros_mes = 0, amenities = 34.58, extras = 0 where codigo = '1A_JACO';
 
+-- SYNC 27/07/2026: factor de factura de las rentas (migración 022) — sin esto una base
+-- reconstruida deja ALEX en 1.414,22/mes (real: 1.677,65) y MARE sin factor desde jun.
+update listings set renta_factura_desde = date '2025-10-01',
+  renta_iva_pct = 0.21, renta_retencion_pct = 0.19 where codigo = '4B_ALEX';
+update listings set renta_factura_desde = date '2026-06-01',
+  renta_iva_pct = 0.21, renta_retencion_pct = 0.19 where codigo = '3G_MARE';
+
 delete from general_expenses;
-insert into general_expenses (concepto, importe_mes, desde, hasta) values
-  ('Sueldo Stag bruto', 3333.33, NULL, NULL),
-  ('Brand Partners (marketing)', 500.00, date '2026-05-01', NULL),   -- efectivo/Argentina: no sale en bancos
-  ('TGSS RETA Stag', 370.75, NULL, NULL),
-  ('Orange (fibra pisos + dispositivos)', 329.80, NULL, NULL),       -- promedio real ene–jun
-  -- 'Viajes corporativos (transporte)' eliminado 25/07: fantasma; los viajes reales entran como eventos
-  ('Asesor Confisic', 181.50, NULL, NULL),
-  ('Claude.ai (plan 90)', 90.00, date '2026-06-01', NULL),
-  -- 'Otros AEAT/admin' eliminado 25/07: fantasma; los gastos reales entran como eventos conciliados
-  ('Revolut Business cuota', 43.00, NULL, NULL),
-  ('Seguro vida préstamo (Allianz 499,51/año)', 41.63, date '2026-05-01', NULL),
-  ('Seguro RC', 18.25, NULL, NULL),
-  ('Google Workspace', 15.94, NULL, NULL),
-  ('Hostinger', 12.74, NULL, NULL);                                  -- pago anual 152,87 (feb) devengado
+-- SYNC 27/07/2026 — copia exacta de producción (15 líneas; migración 051 desglosó Orange y
+-- marcó es_corporativo, que NO entra al pool prorrateado por piso). Pool no corporativo:
+-- 4.247,18/mes (4.337,18 desde jun) · corporativo fijo desde may: 571,34/mes.
+insert into general_expenses (concepto, importe_mes, desde, hasta, es_corporativo) values
+  ('Sueldo Stag bruto', 3333.33, NULL, NULL, false),
+  ('TGSS RETA Stag', 370.75, NULL, NULL, false),
+  ('Asesor Confisic', 181.50, NULL, NULL, false),
+  ('Orange — móviles corporativos', 137.04, NULL, NULL, false),
+  ('Claude.ai (plan 90)', 90.00, date '2026-06-01', NULL, false),
+  ('iPhone + AirPods a plazos (Orange)', 79.05, NULL, date '2027-10-31', false),
+  ('Revolut Business cuota', 43.00, NULL, NULL, false),
+  ('Apps y servicios de terceros (Apple vía Orange)', 36.63, NULL, NULL, false),
+  ('Apple Watch Ultra a plazos (Orange)', 18.95, NULL, date '2026-12-31', false),
+  ('Seguro RC', 18.25, NULL, NULL, false),
+  ('Google Workspace', 15.94, NULL, NULL, false),
+  ('Hostinger', 12.74, NULL, NULL, false),                           -- pago anual 152,87 (feb) devengado
+  ('Brand Partners (marketing)', 500.00, date '2026-05-01', NULL, true),  -- efectivo/Argentina: no sale en bancos
+  ('Seguro vida préstamo (Allianz 499,51/año)', 41.63, date '2026-05-01', NULL, true),
+  ('Roaming internacional (Orange)', 29.71, NULL, NULL, true);
 
 delete from events;
 insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas) values
@@ -133,7 +145,7 @@ insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, n
   (2026, 6, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
   (2026, 6, '1A_NICA', 'OTROS', 'Forjado pago 1/2', -382.50, 'recibo 24/06'),
   (2026, 6, '3G_MARE', 'RENTA', 'Plan AA + compensación aire acondicionado (renta pagada: 365,50)', 734.50, 'renta efectiva 600'),
-  (2026, 6, '3G_MARE', 'OTROS', 'Refacturación 50% inscripción registral', -218.22, 'a J.L. De La Torre 19/06'),
+  (2026, 6, '3G_MARE', 'OTROS', 'Refacturación 50% inscripción registral', -218.22, 'al dueño de MARE 19/06'),
   (2026, 6, '4B_ALEX', 'OTROS', 'Klarna-Sklum cancelación anticipada mobiliario', -472.28, 'salda jul–oct (4×162,77=651,08) con descuento; confirmado Stag 17/07'),
   (2026, 6, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
   (2026, 6, '4B_ALEX', 'RENTA', 'Termo descuento renta', 199.19, 'termo 2/2 + ajuste técnico -3,83 regularizado; pagado 1.215,03'),
@@ -145,9 +157,10 @@ insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, n
   (2026, 9, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
   (2026, 10, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
   (2026, 11, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
-  (2026, 11, '4B_ALEX', 'RENTA', 'Renta sube Q4', -200.58, '1.614,80 - 1.414,22; desde nov queda 1.614,80 hasta nuevo aviso'),
+  (2026, 10, '4B_ALEX', 'RENTA', 'Renta sube Q4 (fin prorrateo mobiliario) — en transferencia', -200.58, 'Fin del prorrateo del amoblamiento: la transferencia pasa de 1.414,22 a 1.614,80 (pacto VERBAL confirmado por Stag el 27/07/2026: Alberto recibe 1.614,80 en cuenta; base derivada 1.583,14). La 022 habia cargado -232,88 con la lectura literal del contrato (base 1.614,80, transferencia 1.647,10). PENDIENTE la adenda que fije la cifra por escrito: sin ella el contrato permite a Alberto facturar 1.647,10.'),
+  (2026, 11, '4B_ALEX', 'RENTA', 'Renta sube Q4 (fin prorrateo mobiliario) — en transferencia', -200.58, 'Fin del prorrateo del amoblamiento: la transferencia pasa de 1.414,22 a 1.614,80 (pacto VERBAL confirmado por Stag el 27/07/2026: Alberto recibe 1.614,80 en cuenta; base derivada 1.583,14). La 022 habia cargado -232,88 con la lectura literal del contrato (base 1.614,80, transferencia 1.647,10). PENDIENTE la adenda que fije la cifra por escrito: sin ella el contrato permite a Alberto facturar 1.647,10.'),
   (2026, 12, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
-  (2026, 12, '4B_ALEX', 'RENTA', 'Renta sube Q4', -200.58, NULL);
+  (2026, 12, '4B_ALEX', 'RENTA', 'Renta sube Q4 (fin prorrateo mobiliario) — en transferencia', -200.58, 'Fin del prorrateo del amoblamiento: la transferencia pasa de 1.414,22 a 1.614,80 (pacto VERBAL confirmado por Stag el 27/07/2026: Alberto recibe 1.614,80 en cuenta; base derivada 1.583,14). La 022 habia cargado -232,88 con la lectura literal del contrato (base 1.614,80, transferencia 1.647,10). PENDIENTE la adenda que fije la cifra por escrito: sin ella el contrato permite a Alberto facturar 1.647,10.');
 -- ═══ AJUSTES 21/07/2026 — clasificación del bucket de compras (decisión Stag) ═══
 -- 1) Compras hogar/reposición de los pisos → TODO a Nicasio (eventos reales por mes).
 --    Amazon + Día Madrid + Ideal Home + ferretería + Zara Home + El Corte Inglés + etc.
@@ -407,14 +420,19 @@ update avisos
 -- 1.614,80 EN CUENTA → base derivada 1.583,14. Los events del Q4 pasan de −232,88 (lectura literal
 -- del contrato) a −200,58, y el aviso a +237,95/mes de coste (+2.855/año). Modela la lectura más
 -- favorable por instrucción de Stag; la adenda de octubre debe fijar la cifra por escrito.
--- 1) Los events del Q4 pasan a la transferencia pactada: 1.614,80 − 1.414,22 = 200,58.
-update events
-   set importe = -200.58,
-       notas   = 'Fin del prorrateo del amoblamiento: la transferencia pasa de 1.414,22 a 1.614,80 (pacto VERBAL confirmado por Stag el 27/07/2026: Alberto recibe 1.614,80 en cuenta; base derivada 1.583,14). La 022 habia cargado -232,88 con la lectura literal del contrato (base 1.614,80, transferencia 1.647,10). PENDIENTE la adenda que fije la cifra por escrito: sin ella el contrato permite a Alberto facturar 1.647,10.'
- where propiedad_codigo = '4B_ALEX' and anio = 2026 and mes in (10, 11, 12)
-   and categoria = 'RENTA'
-   and concepto = 'Renta sube Q4 (fin prorrateo mobiliario) — en transferencia'
-   and importe = -232.88;
+-- 1) SYNC 27/07/2026: los inserts de events de arriba ya cargan el Q4 en su estado final
+--    (oct+nov+dic, concepto largo, −200,58 y la nota del pacto). El update que vivía acá
+--    era código muerto: filtraba por −232,88, un importe que los datos del seed nunca
+--    tuvieron (esa cadena 022→055 existe solo en apply_all.sql, que sí replica la historia).
+
+-- SYNC 27/07/2026 — nómina de José/Modesto verificada contra banco (migración 052):
+-- ene 11,23 (TGSS 204,33) y feb–dic 11,14 (TGSS 204,86); el seed traía 11,67.
+update events set importe = 11.23
+ where propiedad_codigo = '1A_JACO' and anio = 2026 and mes = 1
+   and concepto = 'Modesto neto (sueldo+TGSS-refactura)';
+update events set importe = 11.14
+ where propiedad_codigo = '1A_JACO' and anio = 2026 and mes between 2 and 12
+   and concepto = 'Modesto neto (sueldo+TGSS-refactura)';
 
 -- 2) El aviso cuenta la misma historia con el mismo número.
 update avisos

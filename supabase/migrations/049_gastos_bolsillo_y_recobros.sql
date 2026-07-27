@@ -3,7 +3,7 @@
 -- Stag pasó el libro "STAG PROPERTIES MGMT - INGRESOS Y FINANZAS.xlsx", que es lo que llevaba a mano
 -- antes del dashboard. Trae dos cosas que el motor no tenía y que se contradicen con él:
 --
---   A) La CUENTA CORRIENTE de Viviana (hoja 2026_JACOBINE_MADRE_INGRESOS), con una columna GASTOS:
+--   A) La CUENTA CORRIENTE de la dueña de JACO (hoja 2026_JACOBINE_MADRE_INGRESOS), con una columna GASTOS:
 --      gastos que Samavi pagó y le DESCONTÓ del saldo. En 2026: febrero 77,00 "compra mini UPS +
 --      instalación" y marzo 130,00 "aspiradora reposición".
 --   B) Cuatro listas de GASTOS DE BOLSILLO 2026, una por piso ("jacobine 2026", "marechal 2026",
@@ -17,7 +17,7 @@
 --
 --   ASPIRADORA · marzo · 129,98 €
 --     Revolut: "Www.amazon* Te5ke0el5" 129,98 del 28/02, liquidado el 01/03 (extracto de marzo).
---     Planilla de Viviana: marzo, GASTOS 130,00, nota "aspiradora reposición".
+--     Planilla de la dueña de JACO: marzo, GASTOS 130,00, nota "aspiradora reposición".
 --     Hoy: dentro de 1A_NICA marzo "Compras hogar/reposición pisos (real bancos)" −162,33.
 --
 --   MINI UPS · febrero · 56,99 €
@@ -70,7 +70,7 @@
 --   en SAMAVI_GEN como comidas de negocio. Misma situación: es criterio ya decidido el 23/07.
 -- · "secadas diciembre" 9,00 € (pagado el 09/01): el devengo es de diciembre de 2025 y el motor está
 --   fijado al año en curso. Se pierde. No hay dónde ponerlo sin mentir.
--- · Todo 2025 de la cuenta corriente de Viviana (cortinas SOOFA 2.044, reparaciones 83, gastos de
+-- · Todo 2025 de la cuenta corriente de la dueña de JACO (cortinas SOOFA 2.044, reparaciones 83, gastos de
 --   diciembre 409,14, arranque 272,25): fuera del alcance del dashboard, y además ya recuperado de
 --   la dueña. Vive en el proyecto de Admin & Fiscal.
 

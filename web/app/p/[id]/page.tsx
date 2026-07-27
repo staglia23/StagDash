@@ -51,12 +51,16 @@ type PickupRow = {
   codigo: string; reservas_7d: number; reservas_15d: number;
   ultima_reserva: string | null; dias_sin_vender: number | null;
 };
-type Freshness = { last_sync: string | null; costes_cargados_hasta: string | null };
+type Freshness = {
+  last_sync: string | null;
+  costes_cargados_hasta: string | null;
+  cierre_hasta: string | null;
+};
 
 const MODELO_LABEL: Record<string, string> = {
   titular: "titular — no paga renta",
   subarriendo: "subarriendo — paga renta",
-  comision: "comisión — ingreso = 30,25 % del bruto",
+  comision: "comisión — ingreso = 25 % del bruto (se factura 30,25 %; el IVA no es ingreso)",
 };
 
 export default async function FichaPropiedad({
@@ -195,7 +199,12 @@ export default async function FichaPropiedad({
           {nombreCorto(codigo)} <span className="tag">{codigo}</span>
         </h1>
         <div className="sub">{MODELO_LABEL[propiedad?.modelo ?? ""] ?? ""} · YTD {anio}</div>
-        <div className="stamp">Sync {fechaLarga(fresh?.last_sync)} · datos reales devengados</div>
+        <div className="stamp">
+          Sync {fechaLarga(fresh?.last_sync)} · devengado real · banco conciliado
+          hasta {fresh?.cierre_hasta
+            ? `${MESES[Number(fresh.cierre_hasta.split("-")[1])]} ${fresh.cierre_hasta.split("-")[0]}`
+            : "—"} (después: costes estimados)
+        </div>
       </header>
 
       <p className="titular titular-ficha">
@@ -303,8 +312,9 @@ export default async function FichaPropiedad({
         <WaterfallChart pasos={pasos} color={propColor(codigo)} />
         {propiedad?.modelo === "comision" && (
           <p className="section-note" style={{ marginTop: 4 }}>
-            Caso aparte: el ingreso Samavi es el 30,25 % del bruto; el primer escalón incluye la
-            comisión de canal y el Pasivo Madre, no es solo comisión.
+            Caso aparte: el ingreso Samavi es el 25 % del bruto (se factura 30,25 %; los 5,25
+            puntos son IVA repercutido, no ingreso); el primer escalón incluye la comisión de
+            canal y el Pasivo Madre, no es solo comisión.
           </p>
         )}
       </div>
@@ -317,7 +327,7 @@ export default async function FichaPropiedad({
         <p className="section-note" style={{ margin: "8px 0 0" }}>
           {verDirecto
             ? "Margen directo = contribución antes del overhead común (si soltás la propiedad, el overhead no desaparece: se redistribuye)."
-            : "Margen neto = con la cuota de overhead prorrateada por peso en el ingreso."}
+            : "Margen neto = con la cuota del overhead común repartida por días bajo gestión (con los 4 pisos activos, un cuarto cada uno)."}
           {" "}Tocá un mes para ir a su fila.
         </p>
       </div>

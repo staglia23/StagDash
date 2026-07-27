@@ -50,25 +50,33 @@ lógica de negocio (única excepción: el simulador, `web/lib/simulador.ts`, hip
 definición). Reglas del motor, validadas contra el Excel histórico y contra bancos:
 
 - Ingreso por modelo: titular (NICA) y subarriendo (ALEX, MARE) → `host_payout`;
-  comisión (JACO) → 30,25 % del bruto. Bruto = fareAccommodation + fareCleaning.
+  comisión (JACO) → 25 % de (host_payout + host_service_fee): se factura 30,25 % IVA
+  incluido y los 5,25 puntos son IVA repercutido, no ingreso (migración 021).
+  Bruto = fareAccommodationAdjusted + fareCleaning (post-promoción, migración 032).
 - Imputación por **devengo/noche**. Guesty Analytics está en "Recognized Revenue =
   Calendar Dates" (mismo prorrateo por noche que el motor) con base `host_payout`, así que
   coincide con nosotros en NICA/ALEX/MARE; la única diferencia real es JACO (mostramos
-  30,25 % del bruto, Guesty Analytics muestra el host_payout bruto). El commission tool de
+  el 25 % neto, Guesty Analytics muestra el host_payout bruto). El commission tool de
   Guesty NO alimenta el dashboard (leemos el dato crudo, no sus reportes).
 - Canceladas excluidas, SALVO cobros retenidos (`v_ingreso_cancelaciones`, línea de
   ingreso separada que nunca toca noches/ADR/ocupación).
-- Overhead (gastos generales) prorrateado por peso en el Ingreso Samavi; los gastos
-  generales tienen vigencia `desde`/`hasta` (null = sin límite).
+- Overhead (gastos generales no corporativos) prorrateado por **días bajo gestión**
+  (`v_dias_gestion`; con los 4 pisos activos todo el mes, 25 % cada uno). OJO: el
+  simulador (`lib/simulador.ts`) y la spec §5.4 aún prorratean por peso en el ingreso —
+  divergencia abierta con Stag. Los gastos generales tienen vigencia `desde`/`hasta`
+  (null = sin límite).
 - `events` = ajustes mensuales por propiedad: importe negativo = gasto, positivo = crédito.
 - Las vistas están fijadas al año en curso (`v_month_spine` + filtros `now()` propios en
   4 vistas YTD): parametrizar el período requiere RPCs, no filtros en cliente (ver §5.2
   de la spec).
 
-**Seguridad — la lección más cara del repo**: los default privileges de Supabase hacen
-legible por `anon` TODA vista nueva de `public`. Cada migración que crea una vista debe
-incluir su `GRANT` explícito (si va al dashboard) o su `REVOKE` (si es interna). En 008
-se cerró una fuga real (`v_reservation_income` exponía `host_payout` por reserva).
+**Seguridad — la lección más cara del repo**: los default privileges de Supabase le
+regalaban a `anon` TODOS los privilegios (lectura Y escritura) sobre cada objeto nuevo de
+`public`. En 008 se cerró una fuga de lectura real (`v_reservation_income` exponía
+`host_payout` por reserva) y en 056 una de escritura (`v_propiedades` era auto-actualizable
+con la anon key: se podía cambiar `renta_base` o insertar pisos fantasma). Desde la 056
+los default privileges están revocados: toda vista nueva nace SIN permisos y necesita su
+`GRANT SELECT` explícito si va al dashboard.
 PII (propietario/NIF/IBAN, nombres de huéspedes) jamás sale a vistas públicas ni al repo
 (en seeds van como 'PENDIENTE').
 

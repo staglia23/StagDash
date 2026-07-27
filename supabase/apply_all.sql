@@ -938,7 +938,7 @@ insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, n
   (2026, 6, '1A_JACO', 'OTROS', 'Modesto neto (sueldo+TGSS-refactura)', 11.67, '484+204,33-700, a favor Samavi'),
   (2026, 6, '1A_NICA', 'OTROS', 'Forjado pago 1/2', -382.50, 'recibo 24/06'),
   (2026, 6, '3G_MARE', 'RENTA', 'Plan AA + compensación aire acondicionado (renta pagada: 365,50)', 734.50, 'renta efectiva 600'),
-  (2026, 6, '3G_MARE', 'OTROS', 'Refacturación 50% inscripción registral', -218.22, 'a J.L. De La Torre 19/06'),
+  (2026, 6, '3G_MARE', 'OTROS', 'Refacturación 50% inscripción registral', -218.22, 'al dueño de MARE 19/06'),
   (2026, 6, '4B_ALEX', 'OTROS', 'Klarna-Sklum cancelación anticipada mobiliario', -472.28, 'salda jul–oct (4×162,77=651,08) con descuento; confirmado Stag 17/07'),
   (2026, 6, '4B_ALEX', 'OTROS', 'Mobiliario Klarna-Sklum', -162.77, NULL),
   (2026, 6, '4B_ALEX', 'RENTA', 'Termo descuento renta', 199.19, 'termo 2/2 + ajuste técnico -3,83 regularizado; pagado 1.215,03'),
@@ -3431,3 +3431,26 @@ update avisos
        impacto_mes = -237.95,
        nota = 'Pacto VERBAL (Stag, 27/07/2026): Alberto recibe 1.614,80 en cuenta -> base 1.583,14. Coste modelado 1.677,65 -> 1.915,60 (+237,95/mes, +2.855/ano, ~73% del margen anual del piso). Modela la lectura MAS FAVORABLE por instruccion de Stag, rompiendo el criterio de peor caso: el contrato literal daria coste 1.953,91 (+38,31/mes mas) y la planilla 1.986,58 (+70,98/mes mas). La adenda de octubre (clausulas 4.3 y 8.2) debe fijar por escrito "transferencia 1.614,80, base 1.583,14, IVA 21%, retencion 19%", formato del contrato de Marechal. Ademas, bajo el pacto verbal el descuento del prorrateo se aplico sobre base equivocada (1.641,80 en vez de 1.583,14): se transfirieron ~59,83/mes de mas desde oct-2025, ~598 en 10 meses — decidir en la adenda si se compensa. El P&L de oct-dic ya cuenta la subida via events (-200,58). En enero de 2027 actualizar listings.renta_base.'
  where codigo = '4B_ALEX' and fecha = date '2026-10-01' and tipo = 'renta';
+
+
+-- 056 — cierre de escrituras con la anon key (auditoría 27/07/2026): v_propiedades era
+-- auto-actualizable y anon tenía INSERT/UPDATE/DELETE por default privileges (el RLS de
+-- listings no aplica vía vista). La 008 cerró lecturas; esto cierra escrituras y deja los
+-- default privileges en cero: toda vista nueva necesita su GRANT SELECT explícito.
+revoke insert, update, delete, truncate, references, trigger
+  on all tables in schema public from anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke all on tables from anon, authenticated;
+do $$ begin
+  execute 'alter default privileges for role supabase_admin in schema public '
+       || 'revoke all on tables from anon, authenticated';
+exception when insufficient_privilege or undefined_object then
+  raise notice 'default ACL de supabase_admin no ajustado (sin permisos); revisar a mano';
+end $$;
+alter table airbnb_tx enable row level security;
+alter table avisos enable row level security;
+alter table bank_deposits enable row level security;
+alter table limpieza_mensual enable row level security;
+alter table suministros_mensual enable row level security;
+update events set notas = replace(notas, 'a J.L. De La Torre 19/06', 'al dueño de MARE 19/06')
+ where notas like '%J.L. De La Torre%';

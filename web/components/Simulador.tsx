@@ -13,14 +13,16 @@ import {
 } from "@/lib/simulador";
 import { BulletBreakeven } from "./BulletBreakeven";
 
-// §8.4 actualizado (Stag, 16/07/2026): la renta de ALEX sube a 1.614,80 €/mes desde nov-2026
-// y queda ahí HASTA NUEVO AVISO (no vuelve a 1.414,22). La proyección usa el run-rate YTD
-// (renta media ~1.359), así que NO incorpora esa subida: se advierte, no se corrige.
+// Pacto verbal renta ALEX (migraciones 053–055, jul 2026): sube el 01/10/2026 a 1.614,80 €/mes
+// de transferencia = 1.915,60 €/mes en coste P&L (factor IVA/retención), hasta nuevo aviso.
+// La proyección usa el run-rate YTD, así que NO incorpora esa subida: se advierte, no se corrige.
+// El slider de renta opera en coste P&L — por eso el número a simular es 1.915,60, no 1.614,80.
 const GOTCHA_2027: Record<string, string> = {
   "4B_ALEX":
-    "La renta sube a 1.614,80 €/mes desde nov-2026 y queda así hasta nuevo aviso. Esta " +
-    "proyección extrapola el ritmo YTD (renta media 1.359 €/mes) y no incorpora la subida: " +
-    "si tu decisión cruza a 2027, simulá con renta 1.614,80 para ver el escenario real.",
+    "La renta sube desde oct-2026: 1.614,80 €/mes de transferencia, que en el coste del P&L " +
+    "(con IVA y retención) son 1.915,60 €/mes. Esta proyección extrapola el ritmo YTD (renta " +
+    "media 1.611 €/mes) y no incorpora la subida: si tu decisión cruza octubre, simulá con " +
+    "renta 1.915,60 para ver el escenario real.",
 };
 
 function SliderRow(props: {
@@ -149,7 +151,7 @@ export function Simulador({ baselines, inicial, real }: {
         <div className="section-title" style={{ margin: "0 0 10px" }}>
           Palancas — {target.modelo === "subarriendo" ? "subarriendo (paga renta)"
             : target.modelo === "titular" ? "titular (no paga renta)"
-            : "comisión (ingreso = 30,25 % del bruto; la renta no aplica)"}
+            : "comisión (ingreso = 25 % del bruto, IVA aparte; la renta no aplica)"}
         </div>
         {target.modelo === "subarriendo" && (
           <SliderRow id="renta" label="Renta mensual" unidad="€/mes"
@@ -185,8 +187,9 @@ export function Simulador({ baselines, inicial, real }: {
           Efecto en las otras 3 <span className="badge badge-sim">simulado</span>
         </div>
         <p className="section-note" style={{ margin: "0 0 10px" }}>
-          El overhead ({eur(resultado.overheadAnual)}/año) no desaparece: se re-prorratea por peso
-          en el Ingreso Samavi simulado.
+          El overhead ({eur(resultado.overheadAnual)}/año) no desaparece: acá se re-prorratea por
+          peso en el Ingreso Samavi simulado. Ojo: esa es la regla de esta pantalla — el dashboard
+          real lo reparte por días bajo gestión (hoy, un cuarto por piso).
         </p>
         <ul className="colateral-lista">
           {resultado.props.filter((x) => x.codigo !== target.codigo).map((x) => {
@@ -222,8 +225,9 @@ export function Simulador({ baselines, inicial, real }: {
           (run-rate YTD). Todo importe de esta pantalla es <strong>simulado</strong>, no real.
         </p>
         {target.modelo === "subarriendo" && target.rentaBaseMes > 0 && (
-          <p>Renta contractual vigente: {eur(target.rentaBaseMes, 2)}/mes (la media YTD cargada
-            es {eur(base.rentaMes)}/mes por eventos puntuales).</p>
+          <p>Renta contractual: {eur(target.rentaBaseMes, 2)}/mes de transferencia, sin el factor
+            de IVA/retención del P&L. El slider opera en coste P&L, y su baseline es la media
+            YTD real: {eur(base.rentaMes)}/mes (créditos y factor incluidos).</p>
         )}
         {GOTCHA_2027[target.codigo] && <p className="warn">⚠ {GOTCHA_2027[target.codigo]}</p>}
       </div>

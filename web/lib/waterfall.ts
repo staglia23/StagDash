@@ -2,7 +2,8 @@
 // v_costes_ytd y devuelve la secuencia bruto → −comisión aparente → ingreso Samavi →
 // −costes directos por línea → margen directo → −overhead → margen neto.
 // Para el modelo comisión (JACO) el primer escalón NO es la comisión de canal: su ingreso
-// es el 30,25 % del bruto y la diferencia incluye el Pasivo Madre → se etiqueta aparte.
+// es el 25 % del bruto (se factura 30,25 %; el IVA repercutido no es ingreso, migración 021)
+// y la diferencia incluye el Pasivo Madre → se etiqueta aparte.
 import type { Modelo } from "./simulador";
 
 export type PasoWaterfall = {
