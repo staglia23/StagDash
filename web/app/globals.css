@@ -328,7 +328,7 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
   min-height: 44px; border-radius: 6px; padding: 2px;
 }
 .minibar:not(.vacio):hover { background: var(--gridline); }
-.minibar-cols { display: grid; grid-template-rows: 1fr 1fr; height: 116px; }
+.minibar-cols { display: grid; grid-template-rows: 1fr 1fr; height: 144px; }
 .minibar-pos, .minibar-neg { position: relative; }
 .minibar-pos .minibar-fill { position: absolute; bottom: 0; left: 15%; right: 15%; border-radius: 3px 3px 0 0; }
 .minibar-neg .minibar-fill { position: absolute; top: 0; left: 15%; right: 15%; border-radius: 0 0 3px 3px; }
@@ -447,7 +447,7 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 .stamp-cuadre.pos { color: var(--good); }
 .stamp-cuadre.neg { color: var(--critical); }
 
-/* etiquetas selectivas de las minibarras (último mes con dato + peor mes negativo) */
+/* importe sobre cada minibarra (todas llevan etiqueta; el valor completo va en aria-label) */
 .minibar-label { position: absolute; left: 50%; transform: translateX(-50%);
   font-size: 0.62rem; font-weight: 700; color: var(--text-secondary);
   white-space: nowrap; z-index: 1; font-variant-numeric: tabular-nums; }
