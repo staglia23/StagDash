@@ -63,7 +63,7 @@ Guesty Open API → Edge Function `guesty-sync` (cron cada 3 h) → Supabase Pos
 | `v_alertas` | Alertas vivas (con `listings.aviso_fecha`/`aviso_nota`) |
 | `v_reservation_nights` | Grano = una fila por noche, con id y source |
 
-Tablas de apoyo: `listings`, `reservations` (RAW Guesty), `general_expenses`, `events`, `sync_state` — todas crudas, inaccesibles desde el cliente. **Restricción crítica:** las vistas están fijadas al año en curso vía `v_month_spine`, y además cuatro vistas (`v_ranking_ytd`, `v_costes_ytd`, `v_breakeven_ytd`, `v_canal_ytd`) llevan filtros `now()` propios — parametrizar el spine solo no basta (plan en §5.2; decisión pendiente en §8).
+Tablas de apoyo: `listings`, `reservations` (RAW Guesty), `general_expenses`, `events`, `sync_state` — todas crudas, inaccesibles desde el cliente. **Actualización (migración 060, 30/07/2026):** el pin al año en curso ya NO es restricción — el motor son funciones `f_*(desde, hasta)` (superficie RPC para el front: `f_ranking`, `f_costes`, `f_breakeven`, `f_canal`, rol `authenticated`) y las 10 vistas son wrappers del caso "año en curso", verificadas idénticas al céntimo. Ver §5.2 (hecho) y §8.2 (resuelta). Las tablas crudas siguen inaccesibles desde el cliente.
 
 ### Datos reales (15/07/2026)
 
@@ -112,7 +112,7 @@ La pantalla de apertura replica el ritual diario del Excel, mejorado:
 
 ### 5.2 Interactividad
 
-- **Selector de periodo.** ⚠️ Requiere trabajo de backend primero: las vistas están fijadas al año en curso (spine + 4 filtros propios). El plan recomendado es crear funciones SQL parametrizadas (`f_ranking`, `f_costes`, `f_breakeven`, `f_canal` sobre un `f_spine(desde, hasta)`) expuestas por RPC, y redefinir las vistas actuales como wrappers para no romper el front. No filtrar en cliente: el prorrateo del overhead en `v_ranking_ytd` se hace a nivel YTD y no se reconstruye sumando meses sin duplicar el motor en JS. Hasta que existan las f_*, el selector ofrece solo meses de 2026 + "YTD", con la etiqueta "2026" explícita en el UI; con un mes seleccionado, los componentes servidos por vistas YTD-only (ranking, bullet de break-even, mix de canal, desglose de costes) caen a YTD con etiqueta "YTD 2026" visible — solo el P&L mensual, el heatmap y las tendencias respetan el mes.
+- **Selector de periodo.** Backend **HECHO (migración 060, 30/07/2026)**: funciones `f_ranking`, `f_costes`, `f_breakeven`, `f_canal` sobre `f_spine(desde, hasta)`, expuestas por RPC a `authenticated`, y las vistas redefinidas como wrappers del año en curso (verificadas idénticas al céntimo contra foto previa). Granularidad: mes completo. No filtrar en cliente: el prorrateo del overhead se hace a nivel del período pedido y no se reconstruye sumando meses sin duplicar el motor en JS. **Falta el selector en el UI** (estado en `?m=`, ver más abajo): con las f_* disponibles, ranking, bullet de break-even, mix de canal y desglose de costes pueden respetar el mes vía RPC; mientras un componente no se migre, cae a YTD con etiqueta "YTD 2026" visible.
 - **Selector de propiedad** (las 4 + "Todas"). Estado en `searchParams` (`?p=ALEX&m=2026-07`) como única fuente de verdad: URLs compartibles, back del móvil siempre funcional, sin modales.
 - **Drill-down por URL:** portfolio (`/`) → propiedad (`/p/[id]`) → mes (`/p/[id]/[mes]`) → lista de reservas del mes (agregando `v_reservation_nights` por id: fechas, noches, ingreso, canal), con fila expandible por reserva vía `?r=[id]`. No existe pantalla de reserva individual: no hay PII que mostrar por diseño. Breadcrumb sticky.
 - **Toggle margen directo / margen neto** en toda vista de rentabilidad. Es más que cosmética: el margen directo (sin overhead prorrateado) es el margen de contribución, y cambia la lectura de ALEX — el overhead no desaparece si soltás la propiedad, se redistribuye entre las otras 3. El toggle convierte "ALEX gana solo 8,4%" en una pregunta mejor: ¿cuánto aporta realmente a cubrir el overhead común?
@@ -139,7 +139,7 @@ Client component con baseline pasado como props desde el server (`v_costes_ytd`,
 
 ### 5.5 Comparativa YoY — solo like-for-like (diferida a v2.1)
 
-**Diferida a v2.1:** requiere datos 2025, hoy inaccesibles porque todas las vistas — incluida `v_trend_mensual` — están fijadas al año en curso. Se desbloquea con la parametrización SQL del §5.2. Las reglas quedan fijadas desde ya:
+**Diferida a v2.1:** la parametrización SQL del §5.2 ya existe (060) y las `f_*` aceptan rangos de 2025 con ingreso/noches reales, pero los COSTES de 2025 no están cargados (las `f_*` los rellenan con el fallback "estimado"): el YoY de margen sigue vetado, y el de ingreso/ocupación/ADR necesita su propia vista/RPC con el flag de comparabilidad. Las reglas quedan fijadas desde ya:
 
 Un YoY de portfolio sería engañoso: el negocio pasó de 1 a 4 propiedades. El diseño lo prohíbe activamente.
 
@@ -176,7 +176,7 @@ P&L waterfall del periodo, 12 mini-barras mensuales tappables, break-even bullet
 
 **Diferido a v2.1 (por simplicidad y por datos):**
 - Curva de pace (on-the-books vs misma foto del año previo): requiere una vista nueva `v_pace` — `reservations` es cruda e inaccesible, el campo es `created_at`, y reconstruir la foto pasada debe especificar cómo trata las 80 canceladas. No alimenta el caso rey ni las 5 preguntas.
-- Comparativa YoY like-for-like (§5.5): requiere parametrización SQL y datos 2025.
+- Comparativa YoY like-for-like (§5.5): requiere datos 2025 (la parametrización SQL ya existe desde la 060).
 
 **OUT (explícitamente):**
 - Login (Supabase Auth): **resuelto el 29/07/2026** (058 allowlist + trigger, 059 candado de anon, middleware + `/login` en el frontend); la URL se puede compartir con quien esté en `auth_email_allowlist`. Sigue fuera del diseño de pantallas: no condiciona ninguna vista.
@@ -189,7 +189,7 @@ P&L waterfall del periodo, 12 mini-barras mensuales tappables, break-even bullet
 ## 8. Cuestiones abiertas
 
 1. **Status `reserved`:** 3 reservas futuras por 3.206 EUR que el motor hoy ignora. Decidir si entran al on-the-books (recomendación de los análisis previos: tratarlas como "ya reservado" con descuento por riesgo de cancelación, calibrado con las 80 canceladas históricas). Hasta decidirlo, mostrarlas separadas y etiquetadas, nunca sumadas en silencio — lo que exige SQL nuevo (columna de status en `v_on_the_books` o vista aparte, §9.4): `v_on_the_books` hoy las ignora y `reservations` es inaccesible.
-2. **Parametrización del periodo:** el pin al año en curso vive en `v_month_spine` **y** en filtros propios de 4 vistas. La ruta recomendada es RPC (§5.2). Sin esto, el selector queda limitado a 2026 y el YoY (§5.5) queda bloqueado.
+2. **Parametrización del periodo: RESUELTA (migración 060, 30/07/2026).** El pin vivía en `v_month_spine` **y** en filtros propios de 4 vistas; hoy el motor son las `f_*(desde, hasta)` y las vistas son wrappers del año en curso. Queda el selector en el UI; para el YoY (§5.5) falta además la decisión sobre los datos 2025.
 3. **Criterio de overhead por defecto:** ¿la vista por defecto muestra margen neto (prorrateado) o directo (contribución)? Afecta directamente cómo se lee ALEX. Decisión de producto pendiente; el diseño debe soportar ambas.
 4. **Gotcha ene-2027:** la renta de ALEX volvería a 1.414,22 EUR en enero porque la subida a 1.614,80 está cargada solo como evento nov–dic 2026. Los eventos viven en `events` (tabla cruda, inaccesible desde el cliente): cualquier proyección o simulación que cruce el año **advierte** con texto estático, no corrige.
 5. **Targets inexistentes:** no hay objetivos definidos. El break-even es el único umbral objetivo disponible para semaforizar; no se fabrican metas.

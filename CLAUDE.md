@@ -45,7 +45,7 @@ npx vitest run tests/headline.test.ts   # un archivo
 ```
 Guesty Open API → Edge Function guesty-sync (cron 3h) → Postgres RAW
   (listings, reservations, general_expenses, events, sync_state)
-    → MOTOR = vistas SQL (migrations 003–011)
+    → MOTOR = funciones f_*(desde, hasta) + vistas wrapper "año en curso" (migración 060)
       → Next.js 14 App Router (login Supabase Auth → server components, JWT authenticated, SOLO vistas)
 ```
 
@@ -70,17 +70,27 @@ definición). Reglas del motor, validadas contra el Excel histórico y contra ba
   piso; las palancas no la mueven). Los gastos generales tienen vigencia `desde`/`hasta`
   (null = sin límite); los corporativos (`es_corporativo`) van fuera del margen por piso.
 - `events` = ajustes mensuales por propiedad: importe negativo = gasto, positivo = crédito.
-- Las vistas están fijadas al año en curso (`v_month_spine` + filtros `now()` propios en
-  4 vistas YTD): parametrizar el período requiere RPCs, no filtros en cliente (ver §5.2
-  de la spec).
+- El período es parametrizable desde la 060: el motor vive en funciones `f_*(desde,
+  hasta)` (`f_spine` → `f_pnl_mensual_propiedad` → `f_ranking`/`f_costes`/`f_breakeven`/
+  `f_canal`, por RPC a `authenticated`) y las vistas son wrappers del año en curso,
+  verificadas idénticas al céntimo. Rango a mes completo. Nada de filtrar en cliente: el
+  prorrateo del overhead no se reconstruye sumando meses. OJO doble con Postgres acá:
+  (1) el EXECUTE de una función usada dentro de una vista se comprueba contra el usuario
+  que consulta → toda `f_` nueva necesita GRANT a authenticated aunque sea "interna";
+  (2) los typmod del `returns table` se descartan → si una vista wrapper necesita
+  `numeric(8,2)`, el cast va en el wrapper.
 
 **Seguridad — la lección más cara del repo**: los default privileges de Supabase le
 regalaban a `anon` TODOS los privilegios (lectura Y escritura) sobre cada objeto nuevo de
 `public`. En 008 se cerró una fuga de lectura real (`v_reservation_income` exponía
 `host_payout` por reserva) y en 056 una de escritura (`v_propiedades` era auto-actualizable
 con la anon key: se podía cambiar `renta_base` o insertar pisos fantasma). Desde la 056
-los default privileges están revocados: toda vista nueva nace SIN permisos y necesita su
-`GRANT SELECT` explícito si va al dashboard. Desde el login (058: `auth_email_allowlist`
+(tablas/vistas) y la 061 (funciones y secuencias) los default privileges de `postgres`
+están revocados: toda vista, función o secuencia nueva nace SIN permisos y necesita su
+GRANT explícito (la 061 existe porque cada función nueva nacía ejecutable por anon vía
+/rpc/ — el candado 056 solo cubría tablas). Limitación conocida: los default privileges
+de `supabase_admin` no se pueden tocar desde migraciones (insufficient_privilege, dos
+intentos); solo afecta a objetos creados por la plataforma, no por nuestras migraciones. Desde el login (058: `auth_email_allowlist`
 + trigger en `auth.users` que rechaza altas ajenas; 059: revoke de lectura a `anon`), ese
 GRANT es **`to authenticated` SOLO — nunca `to anon`**: un `to anon` copiado de una
 migración vieja reabre la lectura sin login y el dashboard no lo delataría (él ya lee
