@@ -2946,7 +2946,44 @@ where not exists (select 1 from general_expenses g where g.concepto = v.concepto
 
 -- 037 — v_costes_ytd expone comision_canal (la que soporta Samavi), para que el simulador
 -- pueda calcular el punto de equilibrio de la captación por canal directo.
--- OJO: el cuerpo de la 037 nunca se copió acá. Ver supabase/migrations/037_*.sql.
+-- (Cuerpo repuesto el 29/07/2026 desde producción — pg_get_viewdef; hasta entonces solo
+-- estaba el comentario y un rebuild desde este archivo dejaba la vista sin comision_canal.)
+
+create or replace view v_costes_ytd as
+with ytd as (
+  select codigo,
+         sum(renta)                 as renta,
+         sum(limpieza)              as limpieza,
+         sum(suministros)           as suministros,
+         sum(comunidad)             as comunidad,
+         sum(otros)                 as otros,
+         sum(total_gastos_directos) as total_directos,
+         sum(ingreso_samavi)        as ingreso,
+         sum(renta_iva)             as renta_iva,
+         sum(comision_canal_samavi) as comision_canal_samavi
+    from v_pnl_mensual_propiedad
+   where anio = extract(year from now())::int
+   group by codigo
+)
+select
+  y.codigo,
+  round(-y.renta, 2)                                 as renta,
+  round(-y.limpieza, 2)                              as limpieza,
+  round(-y.suministros, 2)                           as suministros,
+  round(-y.comunidad, 2)                             as comunidad,
+  round(-y.otros, 2)                                 as otros,
+  round(-y.total_directos, 2)                        as total_directos,
+  round(-r.cuota_samavi_gen, 2)                      as overhead,
+  round(-(y.total_directos + r.cuota_samavi_gen), 2) as total_costes,
+  case when y.ingreso > 0
+       then round((-(y.total_directos + r.cuota_samavi_gen)) / y.ingreso, 4)
+       else 0 end                                    as pct_sobre_ingreso,
+  round(-y.renta_iva, 2)                             as renta_iva,
+  round(y.comision_canal_samavi, 2)                  as comision_canal
+from ytd y
+join v_ranking_ytd r on r.codigo = y.codigo;
+
+grant select on v_costes_ytd to anon, authenticated;
 
 
 -- 038 — el enero de Marechal deja de ser estimado. Las tres facturas de papernest (contrato
@@ -3509,3 +3546,49 @@ select iban,
          as diferencia_acum_ajustada
   from j
  order by iban, anio, mes;
+
+
+-- 058 — login, parte 1 de 2: allowlist de emails para Supabase Auth (aplicada 29/07/2026).
+-- La anon key es pública y GoTrue expone /auth/v1/signup: sin esto, cualquiera podría
+-- registrarse, salir con un JWT de rol authenticated y leer las 24 vistas. El trigger
+-- rechaza en la base cualquier alta (o cambio de email) fuera de la allowlist.
+-- La parte 2 (059, revocar SELECT de anon) se aplica SOLO con el frontend con login ya
+-- desplegado — ver supabase/migrations/059_candado_anon.sql.
+
+create table if not exists public.auth_email_allowlist (
+  email text primary key check (email = lower(email)),
+  nota  text
+);
+-- Sin GRANTs: tabla interna, solo la lee el trigger (security definer).
+
+insert into public.auth_email_allowlist (email, nota) values
+  ('info@stag-properties.com', 'Stag — CEO')
+on conflict (email) do nothing;
+
+create or replace function public.f_auth_bloquear_no_invitados()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.email is null
+     or not exists (select 1 from public.auth_email_allowlist a
+                     where a.email = lower(new.email)) then
+    raise exception 'Alta no permitida para este email';
+  end if;
+  return new;
+end;
+$$;
+
+revoke execute on function public.f_auth_bloquear_no_invitados() from public, anon, authenticated;
+
+drop trigger if exists trg_auth_allowlist_ins on auth.users;
+create trigger trg_auth_allowlist_ins
+  before insert on auth.users
+  for each row execute function public.f_auth_bloquear_no_invitados();
+
+drop trigger if exists trg_auth_allowlist_upd on auth.users;
+create trigger trg_auth_allowlist_upd
+  before update of email on auth.users
+  for each row execute function public.f_auth_bloquear_no_invitados();

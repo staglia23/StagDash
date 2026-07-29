@@ -1,18 +1,34 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { cache } from "react";
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const supabaseConfigured = Boolean(url && key);
 
-// Cliente de solo lectura (anon key). Solo puede leer las VISTAS del dashboard (ver RLS).
+// Cliente por request: lee la sesión de las cookies (@supabase/ssr) y firma cada consulta
+// con el JWT del usuario (rol authenticated). Hasta la 059 las vistas también admiten anon;
+// después del candado, este token es la ÚNICA vía de lectura. setAll es no-op a propósito:
+// un server component no puede escribir cookies — el refresh de sesión lo hace el middleware
+// antes de llegar acá.
+// cache() de React: UN cliente por render, no uno por readView — la portada dispara ~16 en
+// paralelo y 16 clientes sueltos podrían intentar 16 refresh con el mismo refresh token si
+// el access token venciera a mitad de render (el primero lo rota, el resto quema el viejo).
 // cache: "no-store" — sin esto, la Data Cache de Next puede servir respuestas viejas de
 // Supabase incluso con dynamic="force-dynamic" (visto en local: KPIs pre-migración).
-export const supabase = createClient(url ?? "http://localhost:54321", key ?? "public-anon-key", {
-  global: {
-    fetch: (input: RequestInfo | URL, init?: RequestInit) =>
-      fetch(input, { ...init, cache: "no-store" }),
-  },
+const clientePorRequest = cache(function clientePorRequest() {
+  const jar = cookies();
+  return createServerClient(url ?? "http://localhost:54321", key ?? "public-anon-key", {
+    cookies: {
+      getAll: () => jar.getAll(),
+      setAll: () => {},
+    },
+    global: {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { ...init, cache: "no-store" }),
+    },
+  });
 });
 
 export type ViewQuery = {
@@ -33,6 +49,8 @@ export type ViewQuery = {
  */
 export async function readView<T>(view: string, q: ViewQuery = {}, fallback: T[] = []): Promise<T[]> {
   if (!supabaseConfigured) return fallback;
+
+  const supabase = clientePorRequest();
 
   const intentar = async () => {
     let query = supabase.from(view).select("*");

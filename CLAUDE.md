@@ -31,7 +31,9 @@ npx vitest run tests/headline.test.ts   # un archivo
   `apply_all.sql` y `seed/seed.sql` se mantienen sincronizados con producción (secciones
   "SYNC"): tras cambiar datos/esquema en producción, actualizarlos.
 - **Local**: `web/.env.local` (gitignored) con `NEXT_PUBLIC_SUPABASE_URL` y
-  `NEXT_PUBLIC_SUPABASE_ANON_KEY` (la anon key es pública por diseño).
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` (la anon key es pública por diseño). Tras la 059 la
+  anon key sola no lee ninguna vista: ver datos en local o verificar por CDP exige
+  sesión iniciada (usuario de la allowlist, cookie de Supabase Auth).
 - **Verificación visual móvil**: `chrome --headless --window-size` NO emula viewport móvil
   (da capturas engañosas); usar CDP con `Emulation.setDeviceMetricsOverride` a 390×844.
   Hay un helper websocket en scratchpad cuando hace falta (sin dependencias).
@@ -42,7 +44,7 @@ npx vitest run tests/headline.test.ts   # un archivo
 Guesty Open API → Edge Function guesty-sync (cron 3h) → Postgres RAW
   (listings, reservations, general_expenses, events, sync_state)
     → MOTOR = vistas SQL (migrations 003–011)
-      → Next.js 14 App Router (server components, anon key, SOLO vistas)
+      → Next.js 14 App Router (login Supabase Auth → server components, JWT authenticated, SOLO vistas)
 ```
 
 **El motor de negocio vive en SQL, en un solo lugar.** El cliente nunca reconstruye
@@ -76,14 +78,22 @@ regalaban a `anon` TODOS los privilegios (lectura Y escritura) sobre cada objeto
 `host_payout` por reserva) y en 056 una de escritura (`v_propiedades` era auto-actualizable
 con la anon key: se podía cambiar `renta_base` o insertar pisos fantasma). Desde la 056
 los default privileges están revocados: toda vista nueva nace SIN permisos y necesita su
-`GRANT SELECT` explícito si va al dashboard.
+`GRANT SELECT` explícito si va al dashboard. Desde el login (058: `auth_email_allowlist`
++ trigger en `auth.users` que rechaza altas ajenas; 059: revoke de lectura a `anon`), ese
+GRANT es **`to authenticated` SOLO — nunca `to anon`**: un `to anon` copiado de una
+migración vieja reabre la lectura sin login y el dashboard no lo delataría (él ya lee
+como authenticated).
 PII (propietario/NIF/IBAN, nombres de huéspedes) jamás sale a vistas públicas ni al repo
 (en seeds van como 'PENDIENTE').
 
 **Frontend** (`web/`):
-- Server components hacen fetch vía `readView()` (`lib/supabase.ts`) — el cliente fuerza
-  `cache: "no-store"` porque la Data Cache de Next servía respuestas viejas incluso con
-  `force-dynamic`. No quitarlo.
+- La puerta es `web/middleware.ts` (sin sesión → `/login`; también refresca el token y
+  copia las cookies renovadas a los redirects — no simplificarlo: perderlas revoca la
+  sesión entera).
+- Server components hacen fetch vía `readView()` (`lib/supabase.ts`) — un cliente por
+  request (`@supabase/ssr` + React `cache()`) que firma con la sesión de las cookies y
+  fuerza `cache: "no-store"` porque la Data Cache de Next servía respuestas viejas incluso
+  con `force-dynamic`. No quitarlo.
 - La lógica calculable vive como funciones puras testeadas en `lib/`: `headline.ts`
   (cascada del titular, ≤90 chars), `simulador.ts` (anualización run-rate: noche ×365/disp,
   mensual ×12/meses; overhead pool ×12/meses-del-año), `salud.ts` (semáforo forward),

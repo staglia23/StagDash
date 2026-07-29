@@ -12,8 +12,10 @@ Excel (`scripts/validate_model.py` → TOTAL 10.586,82 €).
 ```
 supabase/
   migrations/001_schema.sql   tablas + índices + helper days_in_month
-  migrations/002_rls.sql      RLS (anon no toca tablas; solo lee vistas)
+  migrations/002_rls.sql      RLS de las tablas crudas (y desde la 059, anon no lee NADA:
+                              el dashboard se lee con sesión de Supabase Auth)
   migrations/003_views.sql    motor de cálculo (waterfall, overhead, neto, KPIs)
+  migrations/004–059          evolución del motor + login (058 allowlist / 059 candado)
   functions/guesty-sync/      Edge Function de ingesta (OAuth, upsert idempotente)
   seed/seed.sql               listings/general_expenses/events (generado del Excel)
 scripts/
@@ -27,7 +29,8 @@ web/                          Next.js (App Router): home + detalle por propiedad
 ### 1. Supabase
 ```bash
 supabase link --project-ref <ref>
-supabase db push                     # aplica migrations 001-003
+supabase db push                     # aplica TODAS las migrations — OJO: la 059 (candado
+                                     # de anon) presupone el frontend con login desplegado
 psql "$DATABASE_URL" -f supabase/seed/seed.sql   # o vía SQL editor
 ```
 
@@ -50,6 +53,13 @@ cp ../.env.example .env.local        # completar NEXT_PUBLIC_SUPABASE_URL y ANON
 npm install && npm run dev
 ```
 Deploy en Vercel: importar el repo, root `web/`, setear las dos `NEXT_PUBLIC_*`.
+
+### 4. Auth (login)
+El middleware exige sesión y el seed no puede crear usuarios: creá el usuario en
+Supabase → Authentication → Add user con un email presente en
+`public.auth_email_allowlist` (migración 058) — el trigger rechaza cualquier otro.
+Para emails nuevos: primero `insert` en la allowlist, después el alta. La 059
+(candado: anon sin lectura) se aplica SOLO con este frontend ya desplegado.
 
 ## Pendientes de validar en Fase 2 (con datos reales)
 - **Mapeo de `money`** (qué campo = "Bruto"): reconciliar `reservations` contra `_RAW_INGRESOS_2026`.

@@ -324,6 +324,10 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
             <span className="tile-s">la que más atención pide</span></span>
         </Link>
       </div>
+
+      <form action="/auth/signout" method="post" className="salir">
+        <button type="submit" className="salir-btn">Cerrar sesión</button>
+      </form>
     </main>
   );
 }

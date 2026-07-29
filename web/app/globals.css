@@ -305,7 +305,8 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 .sim-hoy { color: var(--muted); font-size: 0.78rem; margin-left: auto; }
 .sim-num {
   width: 88px; min-height: 44px; padding: 6px 8px; border-radius: 8px;
-  border: 1px solid var(--border); background: var(--page); color: var(--text-primary);
+  /* var(--muted) por AA no-texto — mismo motivo que .login-input */
+  border: 1px solid var(--muted); background: var(--page); color: var(--text-primary);
   font-family: inherit; font-size: 0.95rem; font-variant-numeric: tabular-nums; text-align: right;
 }
 .sim-unidad { color: var(--muted); font-size: 0.82rem; }
@@ -566,3 +567,37 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 /* Puente de capas en la tabla YTD de la portada (migración 025) */
 .ytd-puente th, .ytd-puente td { color: var(--text-secondary); font-weight: 600; }
 .ytd-resultado th, .ytd-resultado td { border-top: 2px solid var(--gridline); }
+
+/* ── Login ── */
+.login-wrap { display: grid; min-height: 78dvh; place-items: center; }
+.login-card { width: 100%; max-width: 380px; }
+.login-card h1 { font-size: 1.2rem; margin: 0; letter-spacing: -0.01em; }
+.login-sub { color: var(--text-secondary); font-size: 0.85rem; margin: 4px 0 18px; }
+.login-form { display: grid; gap: 12px; }
+.login-form label { display: grid; gap: 5px; font-size: 0.85rem; font-weight: 600; }
+.login-input {
+  min-height: 44px; padding: 8px 12px; border-radius: 8px;
+  /* borde var(--muted), no var(--border): al 10 % de alfa el campo da 1,2:1 contra su
+     fondo y desaparece — AA no-texto (WCAG 1.4.11) pide 3:1; muted da ~5:1 en ambos temas */
+  border: 1px solid var(--muted); background: var(--page); color: var(--text-primary);
+  font-family: inherit; font-size: 1rem;
+}
+.login-btn {
+  min-height: 48px; border: none; border-radius: 10px; cursor: pointer;
+  background: var(--accent-bg); color: #ffffff; font-family: inherit;
+  font-size: 0.95rem; font-weight: 700; margin-top: 4px;
+}
+.login-btn:disabled { opacity: 0.6; cursor: default; }
+.login-error {
+  display: flex; gap: 8px; align-items: flex-start;
+  color: var(--critical); font-size: 0.88rem; margin: 0;
+}
+
+/* Cerrar sesión (pie de la portada) */
+.salir { margin-top: 28px; text-align: center; }
+.salir-btn {
+  background: transparent; border: none; color: var(--muted); text-decoration: underline;
+  font-family: inherit; font-size: 0.82rem; cursor: pointer;
+  min-height: 44px; padding: 8px 16px;
+}
+.salir-btn:hover { color: var(--text-primary); }

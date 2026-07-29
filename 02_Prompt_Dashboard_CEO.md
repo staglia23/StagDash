@@ -38,7 +38,7 @@ Actuás como **product designer y arquitecto frontend senior**, especializado en
 
 ### Arquitectura (cerrada)
 
-Guesty Open API → Edge Function `guesty-sync` (cron cada 3 h) → Supabase Postgres (proyecto `enlslwuokresrwbqpyeo`) → motor de cálculo = vistas SQL → Next.js 14 / React 18 / Recharts en Vercel (https://stag-dash.vercel.app). Repo privado `staglia23/StagDash`. El frontend usa la anon key y **solo lee vistas**: RLS bloquea las tablas crudas (datos de huéspedes, IBAN y NIF son inaccesibles desde el cliente). Esa frontera de seguridad no se toca.
+Guesty Open API → Edge Function `guesty-sync` (cron cada 3 h) → Supabase Postgres (proyecto `enlslwuokresrwbqpyeo`) → motor de cálculo = vistas SQL → Next.js 14 / React 18 / Recharts en Vercel (https://stag-dash.vercel.app). Repo privado `staglia23/StagDash`. El frontend entra con login (Supabase Auth: allowlist en la 058, candado en la 059) y **solo lee vistas**, firmando con el JWT de rol `authenticated`; la anon key queda como api key sin objetos legibles, y RLS bloquea las tablas crudas (datos de huéspedes, IBAN y NIF son inaccesibles desde el cliente). Esa frontera de seguridad no se toca.
 
 ### Reglas del motor (cerradas, validadas 1:1 contra el Excel histórico)
 
@@ -179,7 +179,7 @@ P&L waterfall del periodo, 12 mini-barras mensuales tappables, break-even bullet
 - Comparativa YoY like-for-like (§5.5): requiere parametrización SQL y datos 2025.
 
 **OUT (explícitamente):**
-- Login (Supabase Auth): pendiente conocido, **prerequisito antes de compartir la URL**, pero no parte de este diseño.
+- Login (Supabase Auth): **resuelto el 29/07/2026** (058 allowlist + trigger, 059 candado de anon, middleware + `/login` en el frontend); la URL se puede compartir con quien esté en `auth_email_allowlist`. Sigue fuera del diseño de pantallas: no condiciona ninguna vista.
 - Pantalla de edición de costes/eventos: acordada como proyecto aparte.
 - Cualquier escritura en base de datos desde el dashboard.
 - Multi-usuario, roles, exportaciones, informes PDF.
