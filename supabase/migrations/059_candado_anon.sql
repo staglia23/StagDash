@@ -1,9 +1,9 @@
--- 059 — login, parte 2 de 2: el candado. Idempotente.
---
--- ⚠️ NO APLICAR hasta que el deploy con login (middleware + /login + readView con sesión)
--- esté vivo en Vercel y verificado: en cuanto esto corra, la anon key deja de leer las
--- vistas y el frontend viejo se queda sin datos (readView devolvería el fallback [] y el
--- dashboard pintaría ceros, que es peor que un error).
+-- 059 — login, parte 2 de 2: el candado. Idempotente. APLICADA el 30/07/2026, con el
+-- deploy con login ya vivo y verificado (secuencia obligada: en cuanto esto corre, la
+-- anon key deja de leer las vistas, y un frontend sin login se quedaría sin datos —
+-- readView devolvería el fallback [] y el dashboard pintaría ceros, peor que un error).
+-- Verificado tras aplicar: anon → "permission denied" en las 24 vistas; el dashboard
+-- con sesión sigue rindiendo datos completos.
 --
 -- Cierra el último tramo del modelo de seguridad: la 008 tapó la fuga de lectura por
 -- reserva, la 056 las escrituras y los default privileges, y esta quita la lectura

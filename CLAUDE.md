@@ -22,8 +22,10 @@ npx vitest run tests/headline.test.ts   # un archivo
 ```
 
 - **Deploy**: push a `main` → Vercel despliega solo. La terminal no tiene credenciales de
-  GitHub y `gh` no está instalado: el push lo hace el usuario desde VS Code (Source
-  Control → Sync). Las `NEXT_PUBLIC_*` se hornean en el build → si cambian, Redeploy.
+  GitHub y `gh` no está instalado. **El commit lo hace Claude** (con mensaje; regla del
+  30/07: a Stag el editor de mensajes le estorba) y **el push lo hace el usuario** desde
+  VS Code (Source Control → Sync). Las `NEXT_PUBLIC_*` se hornean en el build → si
+  cambian, Redeploy.
 - **SQL**: migraciones numeradas en `supabase/migrations/`. Se aplican con el MCP de
   Supabase (`apply_migration`, proyecto `enlslwuokresrwbqpyeo`) o, si el conector está
   caído, dándole al usuario un bloque para pegar en el SQL Editor — en ese caso el bloque

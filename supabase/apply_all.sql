@@ -3592,3 +3592,13 @@ drop trigger if exists trg_auth_allowlist_upd on auth.users;
 create trigger trg_auth_allowlist_upd
   before update of email on auth.users
   for each row execute function public.f_auth_bloquear_no_invitados();
+
+
+-- 059 — login, parte 2 de 2: el candado (aplicada 30/07/2026, con el deploy con login ya
+-- vivo). Anon pierde toda lectura: el dashboard se lee con sesión (rol authenticated).
+-- Al final del archivo A PROPÓSITO: cierra también los "to anon" que las secciones
+-- anteriores replican, y el rebuild termina en el estado final correcto.
+-- Regla desde ahora: vistas nuevas se GRANTean a authenticated SOLO, nunca a anon.
+
+revoke select on all tables in schema public from anon;
+revoke usage, select on all sequences in schema public from anon;
