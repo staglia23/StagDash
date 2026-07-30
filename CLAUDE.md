@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Dashboard financiero de Samavi Global Vision SL (4 pisos turísticos). El usuario (Stag, CEO,
 no técnico) lo consulta desde el móvil; el idioma del producto y de la colaboración es
-**español (voseo)**. La spec canónica de producto es `02_Prompt_Dashboard_CEO.md` — leerla
+**español (voseo)**. La spec canónica de producto es `prompts/02_Prompt_Dashboard_CEO.md` — leerla
 antes de diseñar pantallas nuevas.
 
 ## Comandos

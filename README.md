@@ -65,7 +65,7 @@ Para emails nuevos: primero `insert` en la allowlist, después el alta. La 059
 - **Mapeo de `money`** (qué campo = "Bruto"): reconciliar `reservations` contra `_RAW_INGRESOS_2026`.
 - **Reservas canceladas**: el modelo hoy las incluye (como el Excel). Ver nota en `003_views.sql`.
 
-## Reglas de negocio clave (ver `01_Prompt_Planificacion_Dashboard.md`)
+## Reglas de negocio clave (ver `prompts/01_Prompt_Planificacion_Dashboard.md`)
 - Ingreso Samavi: titular/subarriendo = host_payout · comisión (JACO) = 30,25 % del bruto.
 - Imputación por **devengo/noche**. Overhead SAMAVI_GEN prorrateado por Ingreso Samavi.
 - Costos y parámetros en tablas editables (portados del Bloque A/B/C del Excel).
