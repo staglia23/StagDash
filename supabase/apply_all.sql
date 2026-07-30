@@ -4096,3 +4096,12 @@ alter function f_costes(date, date)                set search_path = public, pg_
 alter function f_breakeven(date, date)             set search_path = public, pg_temp;
 alter function f_canal(date, date)                 set search_path = public, pg_temp;
 alter function f_auth_bloquear_no_invitados()      set search_path = public, pg_temp;
+
+
+-- 062 — alta de Fede en la allowlist del login (30/07/2026). Idempotente.
+-- Sin este insert el trigger de la 058 rechaza el alta: la allowlist gobierna, no el panel.
+-- El usuario de auth.users NO se puede sembrar por SQL: se crea con signup/panel (ver README §4).
+
+insert into public.auth_email_allowlist (email, nota) values
+  ('fndelpercio@gmail.com', 'Fede — colaborador (automatizaciones)')
+on conflict (email) do nothing;
