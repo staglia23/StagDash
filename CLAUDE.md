@@ -43,8 +43,10 @@ npx vitest run tests/headline.test.ts   # un archivo
 ## Arquitectura
 
 ```
-Guesty Open API → Edge Function guesty-sync (cron 3h) → Postgres RAW
-  (listings, reservations, general_expenses, events, sync_state)
+Guesty Open API → Edge Function guesty-sync (cron 3h) ─┐
+PriceLabs API   → Edge Function pricelabs-sync (cron   ├→ Postgres RAW (listings,
+                  diario 07:10 UTC, migración 063)  ───┘   reservations, general_expenses,
+                                                           events, sync_state, pricelabs_prices)
     → MOTOR = funciones f_*(desde, hasta) + vistas wrapper "año en curso" (migración 060)
       → Next.js 14 App Router (login Supabase Auth → server components, JWT authenticated, SOLO vistas)
 ```
@@ -70,6 +72,14 @@ definición). Reglas del motor, validadas contra el Excel histórico y contra ba
   piso; las palancas no la mueven). Los gastos generales tienen vigencia `desde`/`hasta`
   (null = sin límite); los corporativos (`es_corporativo`) van fuera del margen por piso.
 - `events` = ajustes mensuales por propiedad: importe negativo = gasto, positivo = crédito.
+- `pricelabs_prices` (063) = calendario forward por piso/noche: precio publicado vs
+  recomendado vs override, noche vendida + ADR + fecha de reserva (lead time), demanda
+  y STLY. Dato operativo/forward — NUNCA entra al P&L devengado. Se lee por
+  `f_pricelabs_forward(desde, hasta)` / `v_pricelabs_forward` (próximos 30 días).
+  'Blocked' ≠ reservado ≠ libre. OJO: el STLY de pisos que no gestionábamos el año
+  pasado viene como "no vendido" (ocupación 0 %), no como null — no comparar YoY ahí.
+  El sync necesita el secret `PRICELABS_API_KEY` (PriceLabs → Account Settings → API
+  Details; 1 $/mes por listing).
 - El período es parametrizable desde la 060: el motor vive en funciones `f_*(desde,
   hasta)` (`f_spine` → `f_pnl_mensual_propiedad` → `f_ranking`/`f_costes`/`f_breakeven`/
   `f_canal`, por RPC a `authenticated`) y las vistas son wrappers del año en curso,

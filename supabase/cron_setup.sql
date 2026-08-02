@@ -33,6 +33,28 @@ select cron.schedule(
   $$
 );
 
+-- 4) pricelabs-sync: 1×/día a las 07:10 UTC (PriceLabs refresca sus precios ~06:00 UTC).
+--    YA AGENDADO en producción el 02/08/2026 (igual que guesty-sync-3h, con la anon key
+--    inline como Bearer — es pública por diseño y la función solo exige un JWT válido).
+--    Este bloque queda como referencia por si hay que recrearlo: reemplazá <PROJECT_REF>
+--    y <ANON_KEY> (Settings → API). Requiere el secret PRICELABS_API_KEY en la función.
+select cron.schedule(
+  'pricelabs-sync-daily',
+  '10 7 * * *',
+  $$
+  select net.http_post(
+    url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/pricelabs-sync',
+    headers := jsonb_build_object(
+      'Content-Type',  'application/json',
+      'apikey',        '<ANON_KEY>',
+      'Authorization', 'Bearer <ANON_KEY>'
+    ),
+    body    := '{}'::jsonb,
+    timeout_milliseconds := 150000
+  );
+  $$
+);
+
 -- ── Utilidades ──────────────────────────────────────────────────────────────
 -- Ver jobs agendados:          select jobid, schedule, jobname from cron.job;
 -- Ver últimas ejecuciones:     select * from cron.job_run_details order by start_time desc limit 10;
