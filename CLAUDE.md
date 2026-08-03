@@ -72,14 +72,20 @@ definición). Reglas del motor, validadas contra el Excel histórico y contra ba
   piso; las palancas no la mueven). Los gastos generales tienen vigencia `desde`/`hasta`
   (null = sin límite); los corporativos (`es_corporativo`) van fuera del margen por piso.
 - `events` = ajustes mensuales por propiedad: importe negativo = gasto, positivo = crédito.
-- `pricelabs_prices` (063) = calendario forward por piso/noche: precio publicado vs
-  recomendado vs override, noche vendida + ADR + fecha de reserva (lead time), demanda
-  y STLY. Dato operativo/forward — NUNCA entra al P&L devengado. Se lee por
-  `f_pricelabs_forward(desde, hasta)` / `v_pricelabs_forward` (próximos 30 días).
-  'Blocked' ≠ reservado ≠ libre. OJO: el STLY de pisos que no gestionábamos el año
-  pasado viene como "no vendido" (ocupación 0 %), no como null — no comparar YoY ahí.
-  El sync necesita el secret `PRICELABS_API_KEY` (PriceLabs → Account Settings → API
-  Details; 1 $/mes por listing).
+- `pricelabs_prices` (063, saneada en 064) = calendario forward por piso/noche: precio
+  publicado vs recomendado vs override, noche vendida + ADR + fecha de reserva (lead
+  time), demanda y STLY. Dato operativo/forward — NUNCA entra al P&L devengado. Se lee
+  por `f_pricelabs_forward(desde, hasta)` / `v_pricelabs_forward` (próximos 30 días),
+  que separa bloqueadas (sin palanca) de huérfanas por min-stay (con palanca). La 064
+  arregló dos trampas de origen: el STLY previo a `listings.fecha_inicio` ahora es NULL
+  (PriceLabs manda cadena vacía y parecía "0 % de ocupación"), y la última fecha
+  sincronizada llega "unbookable" por artefacto de borde (el sync pide un día extra y lo
+  descarta; el motor la trata como libre). `pricelabs_fotos` (064) = foto diaria
+  insert-only del calendario, cimiento del pace — no se puede reconstruir hacia atrás.
+  v_freshness delata si el dato de PriceLabs está viejo. El sync necesita el secret
+  `PRICELABS_API_KEY` (PriceLabs → Account Settings → API Details; 1 $/mes por listing).
+  La reconciliación con PriceLabs dio 0 €: sus cifras usan alojamiento SIN limpieza,
+  cuentan bloqueos como ocupados y cortan en hoy — diferencias definicionales, no errores.
 - El período es parametrizable desde la 060: el motor vive en funciones `f_*(desde,
   hasta)` (`f_spine` → `f_pnl_mensual_propiedad` → `f_ranking`/`f_costes`/`f_breakeven`/
   `f_canal`, por RPC a `authenticated`) y las vistas son wrappers del año en curso,
