@@ -147,8 +147,21 @@ function toRow(r: any, codigo: string) {
   };
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
   const supabase = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
+
+  // Puerta (migración 069). Hasta el 04/08/2026 esta función corría con verify_jwt=false y
+  // el handler ignoraba la request: `curl -X POST .../guesty-sync` devolvía 200 desde
+  // cualquier parte de internet y escribía en la base con service_role (reproducido en la
+  // auditoría). verify_jwt NO alcanza como arreglo: el gateway solo valida que el JWT esté
+  // bien firmado, y la anon key —que es exactamente eso— va publicada en el bundle del
+  // dashboard. El secreto compartido lo manda el cron en x-sync-secret y vive cifrado en
+  // Vault: la base solo responde sí/no vía f_sync_secret_ok (ejecutable solo por service_role).
+  const secreto = req.headers.get("x-sync-secret") ?? "";
+  if (secreto.length < 32) return new Response("no autorizado", { status: 401 });
+  const { data: autorizado } = await supabase.rpc("f_sync_secret_ok", { p_secreto: secreto });
+  if (autorizado !== true) return new Response("no autorizado", { status: 401 });
+
   const startedAt = new Date().toISOString();
   try {
     const token = await getToken(supabase);
@@ -196,9 +209,12 @@ Deno.serve(async () => {
 
     return Response.json({ ok: true, upserted, skippedNoMap, since });
   } catch (e) {
+    // el detalle va al log y a sync_state (de donde lo lee v_freshness), NO a la respuesta:
+    // String(e) puede arrastrar el cuerpo crudo de error de Guesty o de Postgres
+    console.error(e);
     await supabase.from("sync_state").update({
       last_run: startedAt, last_error: String(e), updated_at: startedAt,
     }).eq("id", 1);
-    return Response.json({ ok: false, error: String(e) }, { status: 500 });
+    return Response.json({ ok: false }, { status: 500 });
   }
 });

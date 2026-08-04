@@ -1,62 +1,74 @@
--- cron_setup.sql — agenda la ingesta guesty-sync cada 3 horas (pg_cron + pg_net)
+-- cron_setup.sql — agenda los dos syncs (pg_cron + pg_net). Estado real desde el 04/08/2026.
 --
--- ⚠️ NO está en migrations/ a propósito: tiene placeholders. Ejecutalo A MANO en el
---    SQL Editor de Supabase UNA VEZ, después de desplegar la función guesty-sync,
---    reemplazando <PROJECT_REF> y <SERVICE_ROLE_KEY>.
+-- ⚠️ NO está en migrations/ a propósito: `cron.schedule` no es idempotente y la URL lleva
+--    el project ref. Se ejecuta A MANO en el SQL Editor cuando hay que (re)crear los jobs.
+--    Este archivo YA refleja lo aplicado en producción: no hay placeholders que rellenar,
+--    salvo el bootstrap de la anon key (paso 2) si el proyecto fuera otro.
 --
--- Alternativa sin SQL: Dashboard → Integrations → Cron → "Create job" apuntando a la
--- Edge Function guesty-sync con schedule "0 */3 * * *".
+-- ── LA PUERTA (migración 069) ───────────────────────────────────────────────────────
+-- Las dos Edge Functions exigen la cabecera `x-sync-secret`. Antes de la 069 cualquiera
+-- en internet las disparaba: guesty-sync no miraba la request, y en pricelabs-sync el
+-- verify_jwt=true se satisfacía con la anon key, que es pública (va en el bundle del
+-- dashboard). Las funciones corren con service_role, así que un anónimo podía hacerlas
+-- escribir en la base y quemar la cuota de Guesty/PriceLabs.
+--
+-- Ningún token va inline en cron.job: todos salen de Vault. Si se recrean estos jobs,
+-- mantener SIEMPRE la cabecera x-sync-secret o el sync empezará a dar 401 en silencio
+-- (el síntoma sería v_freshness envejeciendo sin error visible en el dashboard).
 
 -- 1) Extensiones (idempotente)
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
 
--- 2) Guardar la service_role key en Vault (no dejarla en texto plano en el job)
---    Reemplazá <SERVICE_ROLE_KEY> por la key de Settings → API. Ejecutar una sola vez.
-select vault.create_secret('<SERVICE_ROLE_KEY>', 'guesty_sync_service_key', 'service_role para invocar guesty-sync');
+-- 2) Bootstrap de secretos en Vault. `sync_shared_secret` lo crea la migración 069.
+--    `anon_key_publica` NO es un secreto real (es pública por diseño); vive en Vault solo
+--    para no dejar el token en texto plano dentro de cron.job. Descomentar y rellenar
+--    únicamente si se está montando el proyecto de cero:
+-- select vault.create_secret('<ANON_KEY>', 'anon_key_publica',
+--   'Anon key publica: la exige el gateway (verify_jwt=true). NO es un secreto real.');
 
--- 3) Agendar cada 3 horas (UTC). Reemplazá <PROJECT_REF> (está en la URL del proyecto).
-select cron.schedule(
-  'guesty-sync-3h',
-  '0 */3 * * *',
-  $$
+-- 3) guesty-sync — cada 3 horas (UTC)
+select cron.unschedule('guesty-sync-3h');
+select cron.schedule('guesty-sync-3h', '0 */3 * * *', $job$
   select net.http_post(
-    url     := 'https://<PROJECT_REF>.functions.supabase.co/guesty-sync',
+    url     := 'https://enlslwuokresrwbqpyeo.supabase.co/functions/v1/guesty-sync',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets
-                                       where name = 'guesty_sync_service_key')
+      'apikey',        (select decrypted_secret from vault.decrypted_secrets where name = 'anon_key_publica'),
+      'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'anon_key_publica'),
+      'x-sync-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'sync_shared_secret')
     ),
     body    := '{}'::jsonb,
     timeout_milliseconds := 150000
   );
-  $$
-);
+$job$);
 
--- 4) pricelabs-sync: 1×/día a las 07:10 UTC (PriceLabs refresca sus precios ~06:00 UTC).
---    YA AGENDADO en producción el 02/08/2026 (igual que guesty-sync-3h, con la anon key
---    inline como Bearer — es pública por diseño y la función solo exige un JWT válido).
---    Este bloque queda como referencia por si hay que recrearlo: reemplazá <PROJECT_REF>
---    y <ANON_KEY> (Settings → API). Requiere el secret PRICELABS_API_KEY en la función.
-select cron.schedule(
-  'pricelabs-sync-daily',
-  '10 7 * * *',
-  $$
+-- 4) pricelabs-sync — 1×/día a las 07:10 UTC (PriceLabs refresca ~06:00 UTC).
+--    Requiere además el secret PRICELABS_API_KEY en la función (pendiente de Stag: sin él
+--    la corrida falla y queda anotada en sync_state.pricelabs_last_error).
+select cron.unschedule('pricelabs-sync-daily');
+select cron.schedule('pricelabs-sync-daily', '10 7 * * *', $job$
   select net.http_post(
-    url     := 'https://<PROJECT_REF>.supabase.co/functions/v1/pricelabs-sync',
+    url     := 'https://enlslwuokresrwbqpyeo.supabase.co/functions/v1/pricelabs-sync',
     headers := jsonb_build_object(
       'Content-Type',  'application/json',
-      'apikey',        '<ANON_KEY>',
-      'Authorization', 'Bearer <ANON_KEY>'
+      'apikey',        (select decrypted_secret from vault.decrypted_secrets where name = 'anon_key_publica'),
+      'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'anon_key_publica'),
+      'x-sync-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'sync_shared_secret')
     ),
     body    := '{}'::jsonb,
     timeout_milliseconds := 150000
   );
-  $$
-);
+$job$);
 
--- ── Utilidades ──────────────────────────────────────────────────────────────
--- Ver jobs agendados:          select jobid, schedule, jobname from cron.job;
--- Ver últimas ejecuciones:     select * from cron.job_run_details order by start_time desc limit 10;
--- Cambiar frecuencia:          select cron.alter_job((select jobid from cron.job where jobname='guesty-sync-3h'), schedule := '0 */6 * * *');
--- Borrar el job:               select cron.unschedule('guesty-sync-3h');
+-- ── COMPROBACIONES ──────────────────────────────────────────────────────────────────
+-- Los dos jobs mandan el secreto y ninguno lleva tokens inline:
+--   select jobname, command like '%x-sync-secret%' as manda_secreto,
+--          command !~ 'Bearer [A-Za-z0-9._-]{20}'  as sin_token_inline
+--     from cron.job;
+--
+-- La puerta rechaza a un anónimo (debe dar 401 en las dos):
+--   curl -s -o /dev/null -w '%{http_code}\n' -X POST https://enlslwuokresrwbqpyeo.supabase.co/functions/v1/guesty-sync
+--
+-- Y deja pasar al cron (debe dar 200 con ok:true): copiar el net.http_post del paso 3 y
+--   select status_code, content from net._http_response order by id desc limit 1;

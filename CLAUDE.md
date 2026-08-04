@@ -112,7 +112,20 @@ lleve su `revoke execute on function … from public, anon` explícito ANTES del
 (patrón 063/064). Las 065/066 lo omitieron y `anon` podía leer los recobros y la cuenta
 de la dueña sin login (las f_ son SECURITY DEFINER: saltan el RLS). El smoke test de
 `anon` debe probar el camino **/rpc/** de cada función nueva, no solo `select` sobre las
-vistas — una f_ abierta no se delata desde la vista. Limitación conocida: los default privileges
+vistas — una f_ abierta no se delata desde la vista.
+
+**Edge Functions — `verify_jwt` NO es una puerta (lección 069, 04/08/2026)**: el gateway
+solo valida que el JWT esté bien *firmado*, y la anon key es exactamente eso, publicada en
+el bundle del dashboard. `verify_jwt=true` sube el listón de "cualquiera del planeta" a
+"cualquiera que abrió el sitio una vez", nada más. La auditoría invocó `guesty-sync` con un
+curl pelado (200, y escribió en la base) y `pricelabs-sync` con la anon key descargada del
+propio sitio. Ambas corren con service_role, o sea que bypassan RLS. Desde la 069 las dos
+exigen la cabecera `x-sync-secret`, que el cron saca de Vault y el handler valida con
+`f_sync_secret_ok` (security definer, EXECUTE solo para `service_role`) **antes de tocar
+nada**. Al tocar esto, el ORDEN importa: primero el secreto y la reprogramación del cron
+(`supabase/cron_setup.sql`), después el deploy de las funciones — al revés el sync se
+rechaza a sí mismo y el dato envejece sin error visible. Y las funciones no devuelven
+`String(e)` al cliente: el detalle va a `sync_state` (que es de donde lo lee `v_freshness`). Limitación conocida: los default privileges
 de `supabase_admin` no se pueden tocar desde migraciones (insufficient_privilege, dos
 intentos); solo afecta a objetos creados por la plataforma, no por nuestras migraciones. Desde el login (058: `auth_email_allowlist`
 + trigger en `auth.users` que rechaza altas ajenas; 059: revoke de lectura a `anon`), ese

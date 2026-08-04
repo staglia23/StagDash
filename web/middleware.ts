@@ -51,6 +51,13 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  // Todo menos estáticos: el HTML de cada página pasa por la puerta.
-  matcher: ["/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)"],
+  // Todo menos los estáticos que sirve Next: el HTML de CADA página pasa por la puerta.
+  //
+  // OJO — no volver a excluir por extensión (`.*\\.(?:svg|png|jpg…)$`). Esa alternativa no
+  // estaba anclada a carpetas de assets, y como `/p/[id]` es un segmento dinámico que acepta
+  // puntos, `/p/1A_NICA.png` caía FUERA del matcher: el middleware no corría y el server
+  // component se renderizaba sin comprobar sesión (verificado en producción el 04/08/2026,
+  // 200 en vez de 307 → /login; también con .svg .jpg .jpeg .webp .ico y en mayúsculas).
+  // No protegía ningún asset real: `web/public/` no existe y `_next/static` ya está excluido.
+  matcher: ["/((?!_next/static|_next/image|favicon\\.ico).*)"],
 };

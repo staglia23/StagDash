@@ -5,4 +5,8 @@ project_id = "stag-dashboard"
 major_version = 15
 
 [functions.guesty-sync]
-verify_jwt = false   # la invoca el cron interno; se protege con el secret de service_role
+# Doble puerta desde la 069: el gateway exige un JWT bien firmado Y el handler exige el
+# secreto compartido x-sync-secret. El comentario anterior ("se protege con el secret de
+# service_role") era FALSO: el handler ignoraba la request y cualquiera en internet la
+# disparaba con un curl pelado — reproducido en la auditoría del 04/08/2026.
+verify_jwt = true

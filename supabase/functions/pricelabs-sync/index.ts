@@ -66,8 +66,19 @@ async function pricelabsPost(key: string, body: unknown, tries = 4): Promise<any
   throw new Error(`PriceLabs agotó reintentos (${last})`);
 }
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
   const supabase = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
+
+  // Puerta (migración 069). verify_jwt=true NO significa "solo usuarios logueados": el
+  // gateway únicamente comprueba que el JWT esté bien firmado, y la anon key es un JWT
+  // válido publicado en el bundle del dashboard — la auditoría del 04/08/2026 invocó esta
+  // función desde fuera con esa key y el cuerpo corrió. El secreto compartido (x-sync-secret,
+  // cifrado en Vault) es lo único que separa al cron de un anónimo.
+  const secreto = req.headers.get("x-sync-secret") ?? "";
+  if (secreto.length < 32) return new Response("no autorizado", { status: 401 });
+  const { data: autorizado } = await supabase.rpc("f_sync_secret_ok", { p_secreto: secreto });
+  if (autorizado !== true) return new Response("no autorizado", { status: 401 });
+
   const startedAt = new Date().toISOString();
   try {
     const key = env("PRICELABS_API_KEY");
@@ -157,9 +168,11 @@ Deno.serve(async () => {
 
     return Response.json({ ok: errores.length === 0, upserted, fotos, desde, hasta, errores });
   } catch (e) {
+    // el detalle va al log y a sync_state (de donde lo lee v_freshness), NO a la respuesta
+    console.error(e);
     await supabase.from("sync_state").update({
       pricelabs_last_run: startedAt, pricelabs_last_error: String(e), updated_at: startedAt,
     }).eq("id", 1);
-    return Response.json({ ok: false, error: String(e) }, { status: 500 });
+    return Response.json({ ok: false }, { status: 500 });
   }
 });
