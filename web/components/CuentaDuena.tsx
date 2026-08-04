@@ -20,16 +20,14 @@ export function CuentaDuena({
   pendientePagos: number;
 }) {
   if (rows.length === 0) return null;
-  const anio = rows[0].anio;
   const r = resumenCuentaDuena(rows);
-  const { cerrados, enCurso } = r;
+  const { cerrados, enCurso, porAnio } = r;
   const hayCerrados = cerrados.length > 0;
   const color = propColor(codigo);
+  const anio = rows[rows.length - 1].anio;
 
   const rango = hayCerrados
-    ? (cerrados.length === 1
-      ? `${MESES[cerrados[0].mes]}`
-      : `${MESES[cerrados[0].mes]}–${MESES[cerrados[cerrados.length - 1].mes]}`)
+    ? `${MESES[cerrados[0].mes]} ${cerrados[0].anio} – ${MESES[cerrados[cerrados.length - 1].mes]} ${cerrados[cerrados.length - 1].anio}`
     : "";
 
   // Proporciones de la barra: sobre lo devengado, cuánto queda para ella y cuánto se va
@@ -41,12 +39,12 @@ export function CuentaDuena({
   return (
     <>
       <div className="section-title" id="cuenta-duena">
-        Cuenta de la dueña · {anio} <span className="badge badge-real">real · devengado</span>
+        Cuenta de la dueña <span className="badge badge-real">real · devengado</span>
       </div>
 
       <div className="card cuenta-card">
         <div className="kpi-label">
-          A favor de la dueña{hayCerrados ? ` · ${rango} ${anio}` : ""}
+          A favor de la dueña{hayCerrados ? ` · ${rango}` : ""}
         </div>
         <div className="kpi-value" style={{ color: hayCerrados ? undefined : "var(--muted)" }}>
           {hayCerrados ? eur(r.neto, 2) : "—"}
@@ -63,6 +61,24 @@ export function CuentaDuena({
               <span className="cb-seg cb-gast" style={{ width: `${anchoGastos}%` }} />
             </div>
 
+            {/* Un bloque por año: la cuenta es acumulativa y 2025 sigue vivo porque no se
+                le ha transferido nada. Sin esto, el total no se sabe de dónde sale. */}
+            {porAnio.length > 1 && (
+              <dl className="recibo recibo-anios">
+                {porAnio.map((a) => (
+                  <div key={a.anio}>
+                    <dt>
+                      Saldo {a.anio}
+                      <span className="recibo-nota">{a.meses} {a.meses === 1 ? "mes" : "meses"}</span>
+                    </dt>
+                    <dd className={a.neto >= 0 ? "pos" : "neg"}>
+                      {a.neto >= 0 ? "+" : "−"}{eur(Math.abs(a.neto), 2)}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            )}
+
             <dl className="recibo">
               <div>
                 <dt>Alquiler devengado</dt>
@@ -75,7 +91,11 @@ export function CuentaDuena({
                 </div>
               )}
               <div>
-                <dt>Limpieza <span className="recibo-nota">{eur(700)}/mes × {cerrados.length}</span></dt>
+                <dt>Limpieza
+                  <span className="recibo-nota">
+                    {cerrados.length} meses · a coste real hasta oct-2025, {eur(700)}/mes desde nov-2025
+                  </span>
+                </dt>
                 <dd className="neg">−{eur(Math.abs(r.limpieza), 2)}</dd>
               </div>
               <div>
@@ -107,9 +127,9 @@ export function CuentaDuena({
         )}
 
         <p className="section-note cuenta-nota">
-          Es lo que le corresponde por las noches del año, no lo que queda por transferirle:
-          esta cuenta no resta los pagos que ya le hiciste. El saldo anterior a {anio} vive en
-          el proyecto de Admin &amp; Fiscal.
+          Acumulado desde que arrancó el piso, imputado por noche dormida. <strong>No resta
+          pagos</strong>: si le transferís algo, hay que registrarlo aparte para que este
+          número deje de ser la deuda entera.
         </p>
       </div>
 

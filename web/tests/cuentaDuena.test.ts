@@ -50,6 +50,34 @@ describe("resumenCuentaDuena", () => {
     expect(r.neto).toBe(0);   // el UI muestra "—", no "0,00 € a favor"
   });
 
+  it("cuenta acumulativa 2025+2026: separa los años y suma el total (datos de producción)", () => {
+    // 2025 real de v_cuenta_duena tras la migración 071 (limpieza a coste real hasta oct).
+    const dosAnios: FilaCuenta[] = [
+      { anio: 2025, mes: 6,  pasivo_alquiler: "463.88",  pasivo_cancelaciones: "0", limpieza: "-299.48", descuentos: "-272.25", neto: "-107.85" },
+      { anio: 2025, mes: 7,  pasivo_alquiler: "1772.57", pasivo_cancelaciones: "0", limpieza: "-592.90", descuentos: "-2044.00", neto: "-864.33" },
+      { anio: 2025, mes: 8,  pasivo_alquiler: "1712.65", pasivo_cancelaciones: "0", limpieza: "-508.20", descuentos: "0", neto: "1204.45" },
+      { anio: 2025, mes: 9,  pasivo_alquiler: "2913.03", pasivo_cancelaciones: "0", limpieza: "-707.85", descuentos: "0", neto: "2205.18" },
+      { anio: 2025, mes: 10, pasivo_alquiler: "3545.53", pasivo_cancelaciones: "0", limpieza: "-592.90", descuentos: "0", neto: "2952.63" },
+      { anio: 2025, mes: 11, pasivo_alquiler: "2695.16", pasivo_cancelaciones: "0", limpieza: "-700.00", descuentos: "-83.00", neto: "1912.16" },
+      { anio: 2025, mes: 12, pasivo_alquiler: "2284.58", pasivo_cancelaciones: "0", limpieza: "-700.00", descuentos: "-409.14", neto: "1175.44" },
+      ...REAL.slice(0, 7),  // ene–jul 2026
+    ];
+    const r = resumenCuentaDuena(dosAnios, AGO);
+    expect(r.porAnio.map((a) => a.anio)).toEqual([2025, 2026]);
+    // el saldo 2025 verificado contra Guesty reserva por reserva
+    expect(r.porAnio[0].neto).toBeCloseTo(8477.68, 2);
+    expect(r.porAnio[0].meses).toBe(7);
+    expect(r.porAnio[1].neto).toBeCloseTo(18878.59, 2);
+    // el total es la deuda entera: a la dueña no se le transfirió nada todavía
+    expect(r.neto).toBeCloseTo(8477.68 + 18878.59, 2);
+  });
+
+  it("con un solo año no genera el desglose por años (no hay nada que desglosar)", () => {
+    const r = resumenCuentaDuena(REAL, AGO);
+    expect(r.porAnio).toHaveLength(1);
+    expect(r.porAnio[0].anio).toBe(2026);
+  });
+
   it("si el mes en curso todavía no existe en el motor, todo cuenta como cerrado", () => {
     // borde real: Madrid ya pasó a septiembre y el spine aún no trae la fila nueva
     const r = resumenCuentaDuena(REAL, { anio: 2026, mes: 9 });

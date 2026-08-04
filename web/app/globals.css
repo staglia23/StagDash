@@ -652,6 +652,12 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
   margin: 0 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 .recibo-nota { display: block; color: var(--muted); font-size: 0.72rem; }
+/* Saldos por año: la cuenta es acumulativa, así que el total necesita su desglose */
+.recibo-anios { margin-top: 12px; padding: 8px 12px; background: var(--page);
+  border: 1px solid var(--gridline); border-radius: 10px; }
+.recibo-anios > div { padding: 5px 0; }
+.recibo-anios > div:last-child { border-bottom: 0; }
+.recibo-anios dt { font-weight: 600; color: var(--text-primary); font-size: 0.83rem; }
 .recibo-total { border-bottom: 0; border-top: 2px solid var(--baseline); padding-top: 10px; }
 .recibo-total dt { color: var(--text-primary); font-weight: 700; font-size: 0.92rem; }
 .recibo-total dd { font-size: 1.05rem; font-weight: 700; }
