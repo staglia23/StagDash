@@ -707,6 +707,51 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 .recobros-hist summary::before { content: "▸"; }
 .recobros-hist[open] summary::before { content: "▾"; }
 
+/* ── /precios: la foto forward de PriceLabs (072) ── */
+.precio-hero { border-left: 3px solid var(--warning); }
+.precio-bloq { display: grid; gap: 10px; }
+.precio-bloq > div { font-size: 0.88rem; }
+.precio-bloq strong { color: var(--warning); font-size: 1.05rem; }
+.precio-bloq-sub { display: block; color: var(--text-secondary); font-size: 0.8rem; margin-top: 2px; }
+.precio-bloq-lista {
+  list-style: none; margin: 12px 0 0; padding: 10px 0 0;
+  border-top: 1px solid var(--gridline); display: grid; gap: 5px;
+  font-size: 0.82rem; color: var(--text-secondary);
+}
+.precio-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.precio-fila {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface-1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 9px 12px; font-size: 0.85rem;
+}
+.precio-fecha { font-weight: 600; white-space: nowrap; }
+.precio-prop { display: block; color: var(--muted); font-size: 0.72rem; font-weight: 400; }
+.precio-cambio { margin-left: auto; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.precio-dif {
+  font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap;
+  border-radius: 999px; padding: 2px 8px; font-size: 0.78rem;
+}
+.precio-dif.u-ya     { background: var(--warning); color: var(--page); }
+.precio-dif.u-pronto { color: var(--warning); border: 1px solid var(--warning); }
+.precio-dif.u-lejos  { color: var(--muted); border: 1px solid var(--baseline); }
+.precio-nota { margin-top: 18px; }
+/* segunda línea dentro de la celda: mete el contexto sin sumar columnas */
+.precio-libres, .precio-stly {
+  display: block; font-size: 0.68rem; font-weight: 500; margin-top: 1px;
+}
+.precio-libres { color: var(--muted); }
+/* table.ranking fuerza min-width:640px (pensada para tablas anchas con scroll). Esta tiene
+   4 columnas y tiene que entrar entera en 390 px: sin esto, "vs 2025" —la señal más
+   fuerte de la pantalla— queda fuera del viewport y nadie la ve. */
+table.ranking.precio-tabla { min-width: 0; font-size: 0.84rem; }
+table.ranking.precio-tabla th,
+table.ranking.precio-tabla td { padding: 9px 6px; white-space: normal; }
+table.ranking.precio-tabla td:first-child { padding-left: 10px; }
+@media (max-width: 400px) {
+  table.ranking.precio-tabla { font-size: 0.78rem; }
+  table.ranking.precio-tabla th { font-size: 0.62rem; }
+}
+
 /* Cerrar sesión (pie de la portada) */
 .salir { margin-top: 28px; text-align: center; }
 .salir-btn {

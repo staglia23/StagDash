@@ -81,7 +81,13 @@ Deno.serve(async (req) => {
 
   const startedAt = new Date().toISOString();
   try {
-    const key = env("PRICELABS_API_KEY");
+    // La API key vive CIFRADA en Vault (migración 072), no como variable de entorno: así
+    // no hay que tocar el panel para rotarla y nunca pasa por el repo. Se mantiene el
+    // fallback a la env var por si algún día se prefiere el camino estándar de Supabase.
+    const { data: keyVault } = await supabase.rpc("f_pricelabs_key");
+    const key = (typeof keyVault === "string" && keyVault.length > 0)
+      ? keyVault
+      : env("PRICELABS_API_KEY");
 
     const { data: listings, error } = await supabase.from("listings")
       .select("codigo, guesty_listing_id, fecha_inicio").not("guesty_listing_id", "is", null);

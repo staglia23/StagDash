@@ -19,6 +19,7 @@ import { resumenCuentaDuena, type FilaCuenta } from "@/lib/cuentaDuena";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { buildHeadline, nombreCorto } from "@/lib/headline";
 import { mtdPorPropiedad, type NocheRow } from "@/lib/mtd";
+import { totalesPrecios, type ResumenPrecioRow } from "@/lib/precios";
 import { cruceRentabilidad, spreadContribucion, type RentRow } from "@/lib/rentabilidad";
 import { estadoSalud, revparEquilibrio } from "@/lib/salud";
 import type { Modelo } from "@/lib/simulador";
@@ -73,7 +74,7 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
 
   const [kpisArr, freshArr, alertas, ranking, breakeven, costes, trend, pnlMes, noches,
     forward, forwardDias, pickup, pnlNetoMesActual, propiedades, cuadre, asegurado, resultadoArr,
-    cuentaDuena] =
+    cuentaDuena, precios] =
     await Promise.all([
       readView<Kpis>("v_kpis"),
       readView<Freshness>("v_freshness"),
@@ -97,10 +98,12 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
       readView<AseguradoRow>("v_margen_asegurado", { order: { col: "mes" } }),
       readView<ResultadoRow>("v_resultado_samavi"),
       readView<CuentaDuenaFila>("v_cuenta_duena", { order: { col: "mes" } }),
+      readView<ResumenPrecioRow>("v_pricelabs_resumen"),
     ]);
 
   const k = kpisArr[0];
   const fresh = freshArr[0];
+  const totalPrecios = totalesPrecios(precios);
   const mtd = mtdPorPropiedad(noches, hoyIso);
 
   // ── Titular generado (cascada §5.1) ──────────────────────────────────────────
@@ -331,6 +334,17 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
           <span><span className="tile-t">{nombreCorto(health[0]?.codigo ?? "1A_NICA")}</span>
             <span className="tile-s">la que más atención pide</span></span>
         </Link>
+        {precios.length > 0 && (
+          <Link href="/precios" className="tile">
+            <span className="tile-ic" aria-hidden="true">💶</span>
+            <span><span className="tile-t">Precios</span>
+              <span className="tile-s">
+                {totalPrecios.noches > 0
+                  ? `${eur(totalPrecios.euros)} en ${totalPrecios.noches} noches por debajo`
+                  : "todo al precio recomendado"}
+              </span></span>
+          </Link>
+        )}
         {cuentaDuena.length > 0 && (
           <Link href={`/p/${encodeURIComponent(cuentaDuena[0].codigo)}#cuenta-duena`} className="tile">
             <span className="tile-ic" aria-hidden="true">🧾</span>
