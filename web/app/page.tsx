@@ -197,6 +197,7 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
       mesLabel: MESES[mes].toLowerCase(),
       reservas7d: Number(pk?.reservas_7d ?? 0),
       diasSinVender: pk?.dias_sin_vender == null ? null : Number(pk.dias_sin_vender),
+      hoyIso,
     };
   }).sort((a, b) => (PESO_SALUD[a.salud.cls] - PESO_SALUD[b.salud.cls])
     || ((a.margenMes ?? 0) - (b.margenMes ?? 0)));

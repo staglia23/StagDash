@@ -19,6 +19,8 @@ export type HealthData = {
   mesLabel: string;          // "jul"
   reservas7d: number;
   diasSinVender: number | null;
+  /** Día de hoy en Europe/Madrid — la tira lo marca (v2 de Salud30) */
+  hoyIso?: string;
 };
 
 export function HealthCard({ h }: { h: HealthData }) {

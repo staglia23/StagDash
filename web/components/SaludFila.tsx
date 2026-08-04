@@ -34,7 +34,7 @@ export function SaludFila({ h }: { h: HealthData }) {
         </span>
       </div>
 
-      <Salud30 dias={h.dias} color={color} />
+      <Salud30 dias={h.dias} color={color} hoyIso={h.hoyIso} />
 
       <div className={"sfila-motivo " + h.salud.cls}>{h.salud.motivo}</div>
     </Link>

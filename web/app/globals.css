@@ -387,19 +387,36 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
 .hcard-head .estado { margin-left: auto; }
 
 /* Tira de 30 días */
-.tira30 { display: flex; gap: 2px; height: 12px; }
-.tira30.grande { height: 30px; gap: 3px; }
+.tira30 { display: flex; gap: 2px; height: 14px; }
+.tira30-wrap.grande .tira30 { height: 30px; gap: 3px; }
 .tira30-celda {
   flex: 1; min-width: 0; border-radius: 2px;
   background: var(--gridline); position: relative;
 }
-.tira30.grande .tira30-celda { border-radius: 4px; }
-.tira30-celda.mes-nuevo { box-shadow: inset 2px 0 0 var(--text-primary); }
-.tira30-num {
-  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-  font-size: 0.62rem; color: var(--muted); padding-top: 3px;
+.tira30-wrap.grande .tira30-celda { border-radius: 4px; }
+/* Cambio de mes: línea de puntos ANTES de la celda, no un borde dentro (así se lee como
+   un corte entre dos meses y no como "esta noche tiene algo especial"). */
+.tira30-celda.mes-nuevo { box-shadow: inset 2px 0 0 var(--muted); }
+.tira30-celda.hoy { outline: 2px solid var(--text-primary); outline-offset: 1px; z-index: 1; }
+
+/* Números de día bajo la tira: mismo grid que las celdas para que caigan alineados */
+.tira30-dias { display: flex; gap: 2px; margin-top: 3px; }
+.tira30-wrap.grande .tira30-dias { gap: 3px; }
+.t30d {
+  flex: 1; min-width: 0; text-align: center;
+  font-size: 0.56rem; line-height: 1.2; color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
-.tira30.grande { margin-bottom: 20px; }
+.tira30-wrap.grande .t30d { font-size: 0.66rem; }
+.t30d.hoy { color: var(--text-primary); font-weight: 700; }
+.t30d.mes { color: var(--text-secondary); font-weight: 600; }
+
+.tira30-pie {
+  display: flex; justify-content: space-between; gap: 8px;
+  font-size: 0.62rem; color: var(--muted); margin-top: 2px;
+}
+.tira30-pie b { color: var(--text-secondary); }
+.t30-mes { color: var(--text-secondary); }
 
 /* Stats de la tarjeta */
 .hstats {
