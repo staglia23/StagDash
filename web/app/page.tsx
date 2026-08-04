@@ -1,9 +1,10 @@
 // Portada = Morning Check (02_Prompt §5.1), variante HÍBRIDA (jul 2026).
 //
-// Orden deliberado: primero el estado de hoy (titular + salud a 30 días), después el dinero
-// que ya está asegurado hasta fin de año, después el año corrido, y solo al final los
-// accesos. Todo lo que era diagnóstico (tendencia, comparativas, ya reservado) se fue a
-// /analisis: la portada responde "¿qué pasa hoy?", no acumula tablas.
+// Orden deliberado (revisado el 05/08/2026 a pedido de Stag): titular → los cuatro números
+// del año (vital signs) → salud a 30 días → el dinero ya asegurado hasta fin de año → el
+// año por propiedad → alertas → accesos. Los vital signs subieron porque vivían debajo de
+// dos tablas y en el móvil no los veía nunca. Todo lo que era diagnóstico (tendencia,
+// comparativas, ya reservado) se fue a /analisis: la portada responde "¿qué pasa hoy?".
 import Link from "next/link";
 import { AlertStack, type AlertaV2 } from "@/components/AlertStack";
 import { AseguradoLeyenda, AseguradoTable } from "@/components/AseguradoTable";
@@ -258,7 +259,12 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
       {/* 1 · el titular ES la respuesta */}
       <p className="titular">{titular}</p>
 
-      {/* 2 · salud: qué pasa en los próximos 30 días, propiedad por propiedad */}
+      {/* 2 · cómo viene el año: los cuatro números del negocio (pedido de Stag 05/08/2026:
+             antes vivían debajo de las tablas y quería verlos primero) */}
+      <div className="section-title">Vital signs · YTD {anio}</div>
+      <KpiStrip items={kpiItems} />
+
+      {/* 3 · salud: qué pasa en los próximos 30 días, propiedad por propiedad */}
       {forward.length > 0 && (<>
         <div className="section-title">Salud · próximos 30 días</div>
         <p className="global-linea">
@@ -274,7 +280,7 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
         </div>
       </>)}
 
-      {/* 3 · el dinero que ya está puesto de aquí a fin de año */}
+      {/* 4 · el dinero que ya está puesto de aquí a fin de año */}
       {tabla.filas.length > 0 && (<>
         <div className="section-title">
           Margen neto asegurado · hasta diciembre
@@ -294,9 +300,6 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
         {cruce ? <p className="cruce">{cruce}</p> : null}
       </>)}
 
-      {/* 4 · vital signs del año corrido */}
-      <div className="section-title">Vital signs · YTD {anio}</div>
-      <KpiStrip items={kpiItems} />
 
       {/* 5 · qué requiere acción */}
       <div className="section-title">Requiere atención</div>
