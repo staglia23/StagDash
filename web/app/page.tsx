@@ -14,6 +14,7 @@ import { YtdPropiedadTable } from "@/components/YtdPropiedadTable";
 import { construirTabla, resumenAsegurado, type AseguradoRow } from "@/lib/asegurado";
 import { propColor } from "@/lib/colors";
 import { stampCuadre, type CuadreRow } from "@/lib/cuadre";
+import { resumenCuentaDuena, type FilaCuenta } from "@/lib/cuentaDuena";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { buildHeadline, nombreCorto } from "@/lib/headline";
 import { mtdPorPropiedad, type NocheRow } from "@/lib/mtd";
@@ -66,10 +67,12 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
   const porIngreso = searchParams.orden === "ingreso";
   const hoyIso = hoyMadrid();
   const [anio, mes] = hoyIso.split("-").map(Number);
+  type CuentaDuenaFila = FilaCuenta & { codigo: string };
   const inicioPrevio = `${anio}-${String(Math.max(mes - 1, 1)).padStart(2, "0")}-01`;
 
   const [kpisArr, freshArr, alertas, ranking, breakeven, costes, trend, pnlMes, noches,
-    forward, forwardDias, pickup, pnlNetoMesActual, propiedades, cuadre, asegurado, resultadoArr] =
+    forward, forwardDias, pickup, pnlNetoMesActual, propiedades, cuadre, asegurado, resultadoArr,
+    cuentaDuena] =
     await Promise.all([
       readView<Kpis>("v_kpis"),
       readView<Freshness>("v_freshness"),
@@ -92,6 +95,7 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
       readView<CuadreRow>("v_cuadre", { order: { col: "orden" } }),
       readView<AseguradoRow>("v_margen_asegurado", { order: { col: "mes" } }),
       readView<ResultadoRow>("v_resultado_samavi"),
+      readView<CuentaDuenaFila>("v_cuenta_duena", { order: { col: "mes" } }),
     ]);
 
   const k = kpisArr[0];
@@ -323,6 +327,15 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
           <span><span className="tile-t">{nombreCorto(health[0]?.codigo ?? "1A_NICA")}</span>
             <span className="tile-s">la que más atención pide</span></span>
         </Link>
+        {cuentaDuena.length > 0 && (
+          <Link href={`/p/${encodeURIComponent(cuentaDuena[0].codigo)}#cuenta-duena`} className="tile">
+            <span className="tile-ic" aria-hidden="true">🧾</span>
+            <span><span className="tile-t">Cuenta de la dueña</span>
+              <span className="tile-s">
+                a favor {eur(resumenCuentaDuena(cuentaDuena).neto)} · {nombreCorto(cuentaDuena[0].codigo)}
+              </span></span>
+          </Link>
+        )}
       </div>
 
       <form action="/auth/signout" method="post" className="salir">

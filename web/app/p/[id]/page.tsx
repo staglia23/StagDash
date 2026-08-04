@@ -15,6 +15,7 @@ import { RevparChart } from "@/components/RevparChart";
 import { Salud30 } from "@/components/Salud30";
 import { WaterfallChart } from "@/components/WaterfallChart";
 import { propColor } from "@/lib/colors";
+import { resumenCuentaDuena } from "@/lib/cuentaDuena";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { nombreCorto } from "@/lib/headline";
 import { revparEquilibrio } from "@/lib/salud";
@@ -169,6 +170,11 @@ export default async function FichaPropiedad({
     return `${n >= 0 ? "+" : "−"}${eur(Math.abs(n))}`;
   };
 
+  // Cuenta de la dueña: el resumen se calcula una vez y lo comparten el atajo de arriba
+  // y la sección de abajo — dos cálculos separados podrían discrepar.
+  const resumenCuenta = resumenCuentaDuena(cuentaRows);
+  const pendienteRecobros = Number(recobrosPendArr[0]?.total ?? 0);
+
   const tieneContrato = alertas.some((a) => a.tipo === "contrato")
     || (propiedad?.modelo === "subarriendo" && propiedad.aviso_fecha != null);
   const ctaLabel = tieneContrato ? "Simular renegociación →" : "Simular escenarios →";
@@ -227,6 +233,21 @@ export default async function FichaPropiedad({
             : "Baseline real precargado · cálculo al instante"}
         </span>
       </Link>
+
+      {/* Atajo a la cuenta de la dueña: sin esto vive al final de la ficha y en el móvil
+          son ~6 pantallas de scroll — Stag no la encontraba. */}
+      {cuentaRows.length > 0 && (
+        <Link href="#cuenta-duena" className="cta-cuenta">
+          <span className="cta-cuenta-ic" aria-hidden="true">🧾</span>
+          <span className="cta-cuenta-txt">
+            <span className="cta-titulo">Cuenta de la dueña →</span>
+            <span className="cta-sub">
+              A favor {eur(resumenCuenta.neto, 2)}
+              {pendienteRecobros > 0 ? ` · ${eur(pendienteRecobros, 2)} por descontarle` : ""}
+            </span>
+          </span>
+        </Link>
+      )}
 
       <div className="toggle" role="group" aria-label="Margen mostrado en la ficha">
         <Link href={`/p/${encodeURIComponent(codigo)}`}
@@ -388,7 +409,8 @@ export default async function FichaPropiedad({
       {/* ── La cuenta con la dueña (solo modelo comisión) + recobros (065/066) ── */}
       <CuentaDuena
         rows={cuentaRows}
-        pendienteTotal={Number(recobrosPendArr[0]?.total ?? 0)}
+        codigo={codigo}
+        pendienteTotal={pendienteRecobros}
         pendientePagos={Number(recobrosPendArr[0]?.pagos ?? 0)}
       />
       <RecobrosCard rows={recobroRows} pend={recobrosPendArr[0]} />
