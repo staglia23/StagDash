@@ -593,6 +593,40 @@ table.ranking tr.total { font-weight: 700; border-top: 2px solid var(--baseline)
   color: var(--critical); font-size: 0.88rem; margin: 0;
 }
 
+/* ── Recobros y cuenta de la dueña (065/066) ── */
+/* badge propio: los recobros NO son "ya reservado" (badge-otb azul); son plata real ya
+   desembolsada fuera del P&L. Neutro para no pisar la taxonomía real/reservado/simulado. */
+.badge-fuera { background: var(--muted); color: var(--page); }
+.cuenta-pend { margin-top: 8px; color: var(--warning); }
+.cuenta-nota { margin: 10px 0 0; }
+.recobros-lista { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
+.recobro {
+  border: 1px solid var(--border); border-left: 3px solid var(--warning);
+  border-radius: 10px; padding: 10px 14px;
+}
+.recobro-resuelto { border-left-color: var(--baseline); }
+.recobro-top { display: flex; align-items: baseline; gap: 8px; }
+.recobro-fecha { color: var(--muted); font-size: 0.78rem; font-variant-numeric: tabular-nums; }
+.recobro-importe { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.recobro-concepto { font-size: 0.88rem; margin: 2px 0 6px; }
+.recobro-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.chip-rec {
+  font-size: 0.72rem; color: var(--text-secondary);
+  border: 1px solid var(--gridline); border-radius: 999px; padding: 1px 8px;
+}
+.recobro-estado { font-size: 0.75rem; font-weight: 600; margin-left: auto; white-space: nowrap; }
+.recobros-hist { margin-top: 12px; }
+.recobros-hist summary {
+  cursor: pointer; color: var(--muted); font-size: 0.85rem; font-weight: 600;
+  min-height: 44px; display: flex; align-items: center; gap: 6px;
+  /* display:flex mata el ::marker nativo → flecha propia, o el estado abierto/cerrado
+     queda sin indicador visual */
+  list-style: none;
+}
+.recobros-hist summary::-webkit-details-marker { display: none; }
+.recobros-hist summary::before { content: "▸"; }
+.recobros-hist[open] summary::before { content: "▾"; }
+
 /* Cerrar sesión (pie de la portada) */
 .salir { margin-top: 28px; text-align: center; }
 .salir-btn {

@@ -440,3 +440,45 @@ update avisos
        impacto_mes = -237.95,
        nota = 'Pacto VERBAL (Stag, 27/07/2026): Alberto recibe 1.614,80 en cuenta -> base 1.583,14. Coste modelado 1.677,65 -> 1.915,60 (+237,95/mes, +2.855/ano, ~73% del margen anual del piso). Modela la lectura MAS FAVORABLE por instruccion de Stag, rompiendo el criterio de peor caso: el contrato literal daria coste 1.953,91 (+38,31/mes mas) y la planilla 1.986,58 (+70,98/mes mas). La adenda de octubre (clausulas 4.3 y 8.2) debe fijar por escrito "transferencia 1.614,80, base 1.583,14, IVA 21%, retencion 19%", formato del contrato de Marechal. Ademas, bajo el pacto verbal el descuento del prorrateo se aplico sobre base equivocada (1.641,80 en vez de 1.583,14): se transfirieron ~59,83/mes de mas desde oct-2025, ~598 en 10 meses — decidir en la adenda si se compensa. El P&L de oct-dic ya cuenta la subida via events (-200,58). En enero de 2027 actualizar listings.renta_base.'
  where codigo = '4B_ALEX' and fecha = date '2026-10-01' and tipo = 'renta';
+
+-- SYNC 04/08/2026 — drift detectado en la auditoría de la 066: el seed traía iva_pct 0.0
+-- para JACO, pero la migración 021 lo puso en 0.21 en producción (IVA de la comisión).
+update listings set iva_pct = 0.21 where codigo = '1A_JACO';
+
+-- SYNC 04/08/2026 — refactura de limpieza a la dueña de JACO (columna de la 066).
+update listings set refactura_limpieza_mes = 700.00 where codigo = '1A_JACO';
+
+-- SYNC 04/08/2026 — recobros (065): el truncate de listings arrastra recobros por la FK,
+-- así que el seed repone el estado 2026 de la columna GASTOS de la cuenta de la dueña.
+insert into recobros (propiedad_codigo, fecha, concepto, importe, pagado_por, pagado_a,
+                      medio, estado, resuelto_fecha, resuelto_nota, notas)
+select v.cod, v.fecha, v.concepto, v.importe, v.pagado_por, v.pagado_a,
+       v.medio, v.estado, v.resuelto_fecha, v.resuelto_nota, v.notas
+from (values
+  ('1A_JACO', date '2026-07-23',
+   'Arreglo muebles de baño y rieles de ducha — mano de obra (1er pago)',
+   40.00, 'STAG_PERSONAL', 'Agustín (manitas Sevilla)', 'bizum',
+   'PENDIENTE', null::date, null,
+   'Bizum desde la cuenta personal de Stag, sin factura. Reportado el 04/08/2026.'),
+  ('1A_JACO', date '2026-08-04',
+   'Arreglo muebles de baño y rieles de ducha — mano de obra (2º pago)',
+   60.00, 'STAG_PERSONAL', 'Agustín (manitas Sevilla)', 'bizum',
+   'PENDIENTE', null::date, null,
+   'Bizum desde la cuenta personal de Stag, sin factura. Faltan las patas de los muebles (recobro aparte).'),
+  ('1A_JACO', date '2026-02-12',
+   'Mini UPS + instalación (reposición)',
+   77.00, 'SAMAVI', 'Amazon + Agustín (instalación)', 'tarjeta',
+   'LIQUIDADO', date '2026-02-28',
+   'Descontado en la cuenta corriente de la dueña: GASTOS feb-2026 (hoja 2026_JACOBINE_MADRE_INGRESOS).',
+   'Amazon 56,99 (Revolut Virtual, 12/02) + 20,00 a Agustin en efectivo = 76,99; descontados 77,00 (redondeo). Ver migracion 049.'),
+  ('1A_JACO', date '2026-02-28',
+   'Aspiradora (reposición)',
+   130.00, 'SAMAVI', 'Amazon', 'tarjeta',
+   'LIQUIDADO', date '2026-03-31',
+   'Descontado en la cuenta corriente de la dueña: GASTOS mar-2026 (hoja 2026_JACOBINE_MADRE_INGRESOS).',
+   'Cargo Revolut 129,98 del 28/02; descontados 130,00. Ver migracion 049.')
+) as v(cod, fecha, concepto, importe, pagado_por, pagado_a, medio, estado, resuelto_fecha, resuelto_nota, notas)
+where not exists (
+  select 1 from recobros r
+   where r.propiedad_codigo = v.cod and r.fecha = v.fecha and r.importe = v.importe
+);

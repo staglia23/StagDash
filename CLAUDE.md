@@ -104,7 +104,15 @@ con la anon key: se podía cambiar `renta_base` o insertar pisos fantasma). Desd
 (tablas/vistas) y la 061 (funciones y secuencias) los default privileges de `postgres`
 están revocados: toda vista, función o secuencia nueva nace SIN permisos y necesita su
 GRANT explícito (la 061 existe porque cada función nueva nacía ejecutable por anon vía
-/rpc/ — el candado 056 solo cubría tablas). Limitación conocida: los default privileges
+/rpc/ — el candado 056 solo cubría tablas). **OJO con las funciones (lección de la 068,
+04/08/2026): el candado 061 NO alcanza.** El default CABLEADO de Postgres da EXECUTE a
+`PUBLIC` en cada función nueva y el `pg_default_acl` de la 061 se SUMA a ese default en
+vez de anularlo — así que toda `f_` nueva nace ejecutable por `anon` vía /rpc/ salvo que
+lleve su `revoke execute on function … from public, anon` explícito ANTES del grant
+(patrón 063/064). Las 065/066 lo omitieron y `anon` podía leer los recobros y la cuenta
+de la dueña sin login (las f_ son SECURITY DEFINER: saltan el RLS). El smoke test de
+`anon` debe probar el camino **/rpc/** de cada función nueva, no solo `select` sobre las
+vistas — una f_ abierta no se delata desde la vista. Limitación conocida: los default privileges
 de `supabase_admin` no se pueden tocar desde migraciones (insufficient_privilege, dos
 intentos); solo afecta a objetos creados por la plataforma, no por nuestras migraciones. Desde el login (058: `auth_email_allowlist`
 + trigger en `auth.users` que rechaza altas ajenas; 059: revoke de lectura a `anon`), ese

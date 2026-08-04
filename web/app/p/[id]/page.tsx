@@ -6,6 +6,8 @@ import { AlertStack, type AlertaV2 } from "@/components/AlertStack";
 import { BulletBreakeven } from "@/components/BulletBreakeven";
 import { CanalTable, type CanalRow } from "@/components/CanalTable";
 import { CostesTable, type CosteRow } from "@/components/CostesTable";
+import { CuentaDuena, type CuentaDuenaRow } from "@/components/CuentaDuena";
+import { RecobrosCard, type RecobroRow, type RecobrosPendRow } from "@/components/RecobrosCard";
 import { KpiCard } from "@/components/KpiCard";
 import { MiniBarrasMes } from "@/components/MiniBarrasMes";
 import { OnTheBooksTable, type OtbRow } from "@/components/OnTheBooksTable";
@@ -75,7 +77,7 @@ export default async function FichaPropiedad({
   const verDirecto = searchParams.margen === "directo";
 
   const [rankAll, beAll, costAll, propAll, canalAll, otbAll, mesesAll, alertAll, freshArr,
-    forwardArr, forwardDias, pickupArr] =
+    forwardArr, forwardDias, pickupArr, cuentaRows, recobroRows, recobrosPendArr] =
     await Promise.all([
       readView<RankRow>("v_ranking_ytd"),
       readView<BreakevenRow>("v_breakeven_ytd"),
@@ -89,6 +91,9 @@ export default async function FichaPropiedad({
       readView<ForwardRow>("v_forward", { eq: { codigo } }),
       readView<ForwardDia>("v_forward_dias", { order: { col: "dia" }, eq: { codigo } }),
       readView<PickupRow>("v_pickup", { eq: { codigo } }),
+      readView<CuentaDuenaRow>("v_cuenta_duena", { order: { col: "mes" }, eq: { codigo } }),
+      readView<RecobroRow>("v_recobros", { eq: { propiedad_codigo: codigo } }),
+      readView<RecobrosPendRow>("v_recobros_pendientes", { eq: { propiedad_codigo: codigo } }),
     ]);
 
   const only = <T extends { codigo: string }>(rows: T[]) => rows.filter((r) => r.codigo === codigo);
@@ -379,6 +384,14 @@ export default async function FichaPropiedad({
 
       <div className="section-title">Desglose de costes · YTD {anio}</div>
       <CostesTable rows={only(costAll)} showTotal={false} />
+
+      {/* ── La cuenta con la dueña (solo modelo comisión) + recobros (065/066) ── */}
+      <CuentaDuena
+        rows={cuentaRows}
+        pendienteTotal={Number(recobrosPendArr[0]?.total ?? 0)}
+        pendientePagos={Number(recobrosPendArr[0]?.pagos ?? 0)}
+      />
+      <RecobrosCard rows={recobroRows} pend={recobrosPendArr[0]} />
     </main>
   );
 }
