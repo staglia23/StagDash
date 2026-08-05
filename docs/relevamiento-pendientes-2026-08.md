@@ -34,7 +34,9 @@ duplicados y verificar cierres.
    (falta el importe); toallas/ropa de cama de 2025 y julio; el importe real del arreglo
    de los daños de junio en Jacobine (se cobraron 98 € por Resolution Center y el motor
    los comisionó — exposición ~73,50 €); y limpieza/suministros de julio de los 3 pisos
-   de Madrid cuando lleguen las facturas. *Bloquea: Stag (extractos) + facturas externas.*
+   de Madrid cuando lleguen las facturas. **ACTUALIZACIÓN 05/08 (tarde): Stag ya subió
+   los extractos y el reporte de Airbnb a Drive — el análisis del cierre quedó lanzado;
+   bloquean solo las facturas externas que faltan (Ecocleans, luz, Movistar/Orange).**
 
 2. **Adenda de Alexander — abrir la negociación ANTES del 01/09** (contrato vence 30/09;
    al abrirse la ventana Alberto puede preavisar la no-prórroga, Samavi no puede irse).
@@ -77,6 +79,8 @@ duplicados y verificar cierres.
    Los 6 primeros son los que vos señalaste como confusos. Acoplamientos que el propio
    doc marca: los renombres #7 y #8 van en el mismo commit, los #5 y #12 exigen
    actualizar tests, y 2 de los 40 viven en `v_alertas` (SQL) → migración (E3).
+   **Decisión de Stag 05/08: el glosario se lleva DENTRO del dashboard (pantalla
+   `/glosario`, ver C8) con los términos propuestos tal cual; él los repasa después.**
 2. **Reservas en estado «reserved»**: 3 futuras por 3.206 € que el motor ignora y hoy no
    se muestran en ningún lado (cifra verificada vigente al céntimo). La spec pide
    mostrarlas separadas y etiquetadas — ¿entran al on-the-books con descuento por riesgo,
@@ -122,13 +126,19 @@ duplicados y verificar cierres.
    actual funcione.
 7. **Automatizar la carga de la conciliación** (agente mensual que lea Drive y cargue
    solo — anotado como opcional en `scripts/RUNBOOK_conciliacion.md`).
+8. **Glosario en el dashboard (`/glosario`)** — pedido por Stag el 05/08: los términos
+   del dashboard con su definición, a mano por si no recuerda alguno. Arranca con los
+   propuestos en B1 tal cual están; él los repasa después. Quick win.
 
 ## D. Flecos de datos — mayormente info que tiene que pasar Stag
 
-1. **Bizums por arreglos de Jacobine**: hay MÁS de los dos cargados (40 € del 23/07 y
-   60 € del 04/08), repartidos entre 2025 y 2026 — pasar fecha + importe + concepto
-   (pediste que te lo recuerde). Además: liquidar los dos cargados con la dueña, y la
-   compra pendiente de las patas de los muebles de baño generará un tercer recobro.
+1. **Bizums por arreglos de Jacobine — CARGADOS el 05/08 (migración 073)**: entraron los
+   3 retro de 2025 (25 + 53 + 30 €) como pendientes; el 4º de la lista (20 € del
+   01/03/26, mini UPS) ya estaba dentro del recobro liquidado de 77 € de feb-2026 (solo
+   se corrigió la nota). Queda: (a) **confirmar con Stag que 53 + 30 = 83 € NO sea el
+   mismo descuento de nov-2025** («lavadora y puerta corredera» — concepto distinto,
+   suma exacta) antes de liquidar esos dos; (b) liquidar los 5 pendientes (208 €); (c)
+   las patas de los muebles, que generarán otro recobro al comprarse.
 2. **Diferencia de 248,97 € de 2025** en la cuenta de la dueña (200,00 agosto + 48,97
    septiembre): ajustes de tu planilla sin respaldo en Guesty — quedaste en revisarlos.
 3. **Derrama IEE de Nicasio**: falta la fecha de la última cuota (preguntar a la
@@ -169,7 +179,9 @@ duplicados y verificar cierres.
    el criterio se reformula.
 3. **Textos de `v_alertas` viven en SQL** (045): cambiarlos exige migración + sync de
    `apply_all.sql`. Se activa si aprobás los 2 términos afectados de B1.
-4. **Seed**: regenerar desde producción para drift fino (ya se pescó un drift real).
+4. **Seed**: regenerar desde producción para drift fino (ya se pescó un drift real; y la
+   071 dejó sin replicar en el seed los recobros liquidados 2025 y `duena_limpieza` —
+   detectado el 05/08 al cargar la 073).
 5. **Comentario obsoleto en `cron_setup.sql:47-48`**: dice que la key de PriceLabs está
    pendiente; está viva desde el 05/08.
 6. **Secretos**: rotar el client_secret de Guesty compartido por chat en julio (nunca
@@ -185,6 +197,11 @@ duplicados y verificar cierres.
    noviembre (Stag en Río nov–ene). Problema conocido: la IA no siempre identifica la
    propiedad antes de la reserva.
 2. **Compensación de Fede**: sin definir desde el 22/07.
+3. **Automatizaciones pedidas por Stag el 05/08** (→ proyecto Automatizaciones, carril
+   Fede/N8N — NO son de este repo, anotadas para que no se pierdan): (a) facturas que
+   llegan por mail (Movistar, Orange, TotalEnergies…) → subida automática a Drive a la
+   carpeta del mes que corresponda; (b) subida automática de los extractos bancarios y
+   del reporte de Airbnb que alimentan el cierre mensual.
 
 ---
 

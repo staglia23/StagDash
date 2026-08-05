@@ -448,8 +448,11 @@ update listings set iva_pct = 0.21 where codigo = '1A_JACO';
 -- SYNC 04/08/2026 — refactura de limpieza a la dueña de JACO (columna de la 066).
 update listings set refactura_limpieza_mes = 700.00 where codigo = '1A_JACO';
 
--- SYNC 04/08/2026 — recobros (065): el truncate de listings arrastra recobros por la FK,
--- así que el seed repone el estado 2026 de la columna GASTOS de la cuenta de la dueña.
+-- SYNC 04/08/2026 — recobros (065) + SYNC 05/08/2026 — bizums retro 2025 (073): el
+-- truncate de listings arrastra recobros por la FK, así que el seed repone el estado.
+-- OJO drift conocido (detectado 05/08): los recobros LIQUIDADOS 2025 de la 071 (272,25 /
+-- 2.044,00 / 83,00 / 409,14) y duena_limpieza NO están replicados acá — quedan para la
+-- regeneración del seed desde producción.
 insert into recobros (propiedad_codigo, fecha, concepto, importe, pagado_por, pagado_a,
                       medio, estado, resuelto_fecha, resuelto_nota, notas)
 select v.cod, v.fecha, v.concepto, v.importe, v.pagado_por, v.pagado_a,
@@ -470,13 +473,28 @@ from (values
    77.00, 'SAMAVI', 'Amazon + Agustín (instalación)', 'tarjeta',
    'LIQUIDADO', date '2026-02-28',
    'Descontado en la cuenta corriente de la dueña: GASTOS feb-2026 (hoja 2026_JACOBINE_MADRE_INGRESOS).',
-   'Amazon 56,99 (Revolut Virtual, 12/02) + 20,00 a Agustin en efectivo = 76,99; descontados 77,00 (redondeo). Ver migracion 049.'),
+   'Amazon 56,99 (Revolut Virtual, 12/02) + 20,00 a Agustin por bizum personal de Stag (01/03; la 065 decia efectivo 02/03, corregido en la 073) = 76,99; descontados 77,00 (redondeo). Ver migracion 049.'),
   ('1A_JACO', date '2026-02-28',
    'Aspiradora (reposición)',
    130.00, 'SAMAVI', 'Amazon', 'tarjeta',
    'LIQUIDADO', date '2026-03-31',
    'Descontado en la cuenta corriente de la dueña: GASTOS mar-2026 (hoja 2026_JACOBINE_MADRE_INGRESOS).',
-   'Cargo Revolut 129,98 del 28/02; descontados 130,00. Ver migracion 049.')
+   'Cargo Revolut 129,98 del 28/02; descontados 130,00. Ver migracion 049.'),
+  ('1A_JACO', date '2025-09-29',
+   'Reparación (sin detalle)',
+   25.00, 'STAG_PERSONAL', 'Agustín (manitas Sevilla)', 'bizum',
+   'PENDIENTE', null::date, null,
+   'Bizum personal de Stag, sin factura. Lista retrospectiva del 05/08/2026 (073).'),
+  ('1A_JACO', date '2025-10-10',
+   'Arreglo de la luz del salón',
+   53.00, 'STAG_PERSONAL', 'Agustín (manitas Sevilla)', 'bizum',
+   'PENDIENTE', null::date, null,
+   'Bizum personal de Stag, sin factura (073). OJO antes de liquidar: 53+30 = 83,00, mismo importe que el descuento LIQUIDADO de nov-2025 — confirmar que no sea la misma plata.'),
+  ('1A_JACO', date '2025-10-15',
+   'Arreglos varios: cables de la caja de conexiones, router y cerradura inteligente',
+   30.00, 'STAG_PERSONAL', 'Agustín (manitas Sevilla)', 'bizum',
+   'PENDIENTE', null::date, null,
+   'Bizum personal de Stag, sin factura (073). OJO antes de liquidar: ver nota del recobro del 10/10.')
 ) as v(cod, fecha, concepto, importe, pagado_por, pagado_a, medio, estado, resuelto_fecha, resuelto_nota, notas)
 where not exists (
   select 1 from recobros r
