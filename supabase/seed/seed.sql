@@ -500,3 +500,35 @@ where not exists (
   select 1 from recobros r
    where r.propiedad_codigo = v.cod and r.fecha = v.fecha and r.importe = v.importe
 );
+
+-- SYNC 10/08/2026 — events del cierre de julio (074). El seed NO replica bank_deposits
+-- ni airbnb_tx (datos bancarios, quedan para la regeneración del seed) ni avisos (drift
+-- conocido). Idempotente por anio/mes/propiedad/concepto.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select v.anio, v.mes, v.cod, v.cat, v.concepto, v.importe, v.notas
+from (values
+  (2026, 7, '1A_NICA', 'OTROS', 'Compras hogar/reposición pisos (real bancos)', -114.88, 'Ver migracion 074.'),
+  (2026, 7, '1A_NICA', 'OTROS', 'DIA Madrid (reparto 1/3 pisos Madrid)', -25.17, 'Regla Stag 10/08/2026: DIA Madrid a los 3 pisos de Madrid. Ver 074.'),
+  (2026, 7, '4B_ALEX', 'OTROS', 'DIA Madrid (reparto 1/3 pisos Madrid)', -25.16, 'Ver 074.'),
+  (2026, 7, '3G_MARE', 'OTROS', 'DIA Madrid (reparto 1/3 pisos Madrid)', -25.16, 'Ver 074.'),
+  (2026, 7, '1A_NICA', 'OTROS', 'IBI (PAC 2026 + fraccionamiento 2025)', -354.96, 'BBVA 06/07: 243,93 + 111,03. Ver 074.'),
+  (2026, 7, '1A_NICA', 'OTROS', 'Comunidad extra', -31.25, 'C.P. Segovia 8, BBVA 03/07. Ver 074.'),
+  (2026, 7, '1A_NICA', 'OTROS', 'Trastero Box2box — alta y desvío vs provisión', -58.80, 'Real 88,80 vs 30 provisionados; aviso dic-2026. Ver 074.'),
+  (2026, 7, '4B_ALEX', 'SUMINISTROS', 'Agua (reembolso a Alberto, recibo 1-765)', -43.72, 'Revolut 05/07. Ver 074.'),
+  (2026, 7, '1A_JACO', 'OTROS', 'Lavandería My Laundry (José Modesto)', -5.00, 'Revolut 18/07. Ver 074.'),
+  (2026, 7, '1A_JACO', 'OTROS', 'Amenities/consumibles Sevilla (DIA, real)', -26.84, 'Dia Sevilla 2271, 18/07. Ver 074.'),
+  (2026, 7, '1A_JACO', 'OTROS', 'Amenities Natura Sevilla Nervión', -20.05, 'Natura Nervion 06/07. Ver 074.'),
+  (2026, 7, '1A_JACO', 'OTROS', 'Toallas/ropa de cama (Fc SM 87)', -140.00, '16 toallas chocolate JACO, partida completa 2025+julio. Ver 074.'),
+  (2026, 7, '1A_JACO', 'OTROS', 'Limpieza puntual vía app (Webel, prueba de suplente)', -28.75, 'Prueba de reemplazo para vacaciones de Jose. Ver 074.'),
+  (2026, 7, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Comidas de negocio (real bancos)', -55.14, 'Ver 074.'),
+  (2026, 7, 'SAMAVI_GEN', 'SAMAVI_GEN', 'Auriculares oficina (Amazon, plazo 2/3)', -145.80, 'Cuota 3/3 en agosto. Ver 074.'),
+  (2026, 7, 'SAMAVI_GEN', 'CORPORATIVO', 'Transporte (real bancos)', -136.34, 'Ver 074.'),
+  (2026, 7, 'SAMAVI_GEN', 'CORPORATIVO', 'Viajes tarjeta (Enterprise + E.S. Alovera)', -470.06, 'Adeudo caera en BBVA agosto y se ignora. Ver 074.'),
+  (2026, 7, 'SAMAVI_GEN', 'CORPORATIVO', 'BLT Law — honorarios (Fc 2025/386)', -1391.50, 'Factura por identificar. Ver 074.'),
+  (2026, 7, 'SAMAVI_GEN', 'CORPORATIVO', 'BLT Law — legalización libros 2024 (Fc 2026/364)', -65.88, 'Ver 074.')
+) as v(anio, mes, cod, cat, concepto, importe, notas)
+where not exists (
+  select 1 from events e
+   where e.anio = v.anio and e.mes = v.mes
+     and e.propiedad_codigo = v.cod and e.concepto = v.concepto
+);

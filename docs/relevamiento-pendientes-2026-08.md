@@ -34,9 +34,11 @@ duplicados y verificar cierres.
    (falta el importe); toallas/ropa de cama de 2025 y julio; el importe real del arreglo
    de los daños de junio en Jacobine (se cobraron 98 € por Resolution Center y el motor
    los comisionó — exposición ~73,50 €); y limpieza/suministros de julio de los 3 pisos
-   de Madrid cuando lleguen las facturas. **ACTUALIZACIÓN 05/08 (tarde): Stag ya subió
-   los extractos y el reporte de Airbnb a Drive — el análisis del cierre quedó lanzado;
-   bloquean solo las facturas externas que faltan (Ecocleans, luz, Movistar/Orange).**
+   de Madrid cuando lleguen las facturas. **CARGADO el 10/08 (migración 074)**: 26
+   depósitos + `airbnb_tx` julio + 19 events con las respuestas de Stag; `cierre_hasta`
+   = julio. Quedan: AEAT 111 (falta desglose), BLT (identificar factura), daños de
+   junio JACO (aclarar), bolsillo julio, y las facturas externas (TotalEnergies,
+   Ecocleans, intereses del préstamo).
 
 2. **Adenda de Alexander — abrir la negociación ANTES del 01/09** (contrato vence 30/09;
    al abrirse la ventana Alberto puede preavisar la no-prórroga, Samavi no puede irse).
