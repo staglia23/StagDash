@@ -87,9 +87,10 @@ duplicados y verificar cierres.
    se muestran en ningún lado (cifra verificada vigente al céntimo). La spec pide
    mostrarlas separadas y etiquetadas — ¿entran al on-the-books con descuento por riesgo,
    se muestran aparte, o se siguen ignorando? Requiere SQL nuevo si se muestran.
-3. **`airbnb_tx` sigue vacía** (0 filas): la conciliación es Guesty↔banco, no
-   Airbnb↔banco. ¿Cargamos el CSV de transacciones de Airbnb para cerrar el triángulo o
-   aceptamos la pata manual (los PDFs reconcilian al céntimo pero a mano)?
+3. ~~`airbnb_tx` vacía~~ **RESUELTO (074+078, 10–11/08)**: cargada dic-2025→jul-2026
+   (464 transacciones de los CSV que pasó Stag). La conciliación Airbnb↔banco ene–jul
+   cierra al céntimo en los dos IBANs y los artefactos acumulados (BBVA −876,07 y
+   Revolut +2.328,86) quedaron explicados como timing puro y CERRADOS.
 4. **Criterio de overhead por defecto (spec §8.3)**: de facto todo abre en margen neto
    con toggle a directo. Falta ratificarlo para cerrar la cuestión abierta en la spec —
    afecta directamente cómo se lee Alexander.
