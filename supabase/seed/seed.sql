@@ -532,3 +532,28 @@ where not exists (
    where e.anio = v.anio and e.mes = v.mes
      and e.propiedad_codigo = v.cod and e.concepto = v.concepto
 );
+
+-- SYNC 11/08/2026 — DIA Madrid retroactivo + retenciones 111 (075). Guardas SIN id
+-- (el seed reasigna identities): matchean por anio/mes/propiedad/importe.
+update events set importe = -15.89 where anio=2026 and mes=1 and propiedad_codigo='1A_NICA' and importe=-50.01;
+delete from events where anio=2026 and mes=3 and propiedad_codigo='1A_NICA' and importe=-32.35;
+update events set importe = -357.49 where anio=2026 and mes=4 and propiedad_codigo='1A_NICA' and importe=-374.41;
+update events set importe = -347.56 where anio=2026 and mes=5 and propiedad_codigo='1A_NICA' and importe=-424.46;
+update events set importe = -627.64 where anio=2026 and mes=6 and propiedad_codigo='1A_NICA' and importe=-667.35;
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select v.anio, v.mes, v.cod, 'OTROS', 'DIA Madrid (reparto 1/3 pisos Madrid)', v.importe, 'Reparto retroactivo 075; regla Stag 10/08/2026.'
+from (values
+  (2026, 1, '1A_NICA', -11.38), (2026, 1, '4B_ALEX', -11.37), (2026, 1, '3G_MARE', -11.37),
+  (2026, 3, '1A_NICA', -10.79), (2026, 3, '4B_ALEX', -10.78), (2026, 3, '3G_MARE', -10.78),
+  (2026, 4, '1A_NICA', -5.64),  (2026, 4, '4B_ALEX', -5.64),  (2026, 4, '3G_MARE', -5.64),
+  (2026, 5, '1A_NICA', -25.64), (2026, 5, '4B_ALEX', -25.63), (2026, 5, '3G_MARE', -25.63),
+  (2026, 6, '1A_NICA', -13.23), (2026, 6, '4B_ALEX', -13.24), (2026, 6, '3G_MARE', -13.24)
+) as v(anio, mes, cod, importe)
+where not exists (select 1 from events e where e.anio=v.anio and e.mes=v.mes and e.propiedad_codigo=v.cod and e.concepto='DIA Madrid (reparto 1/3 pisos Madrid)');
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select v.anio, v.mes, '1A_JACO', 'OTROS', 'IRPF nómina José (modelo 111)', v.importe, '2% del bruto de Jose (528/mes); completa el coste a neto. Ver 075.'
+from (values (2026,1,-10.56),(2026,2,-10.56),(2026,3,-10.55),(2026,4,-10.56),(2026,5,-10.56),(2026,6,-10.55),(2026,7,-10.56)) as v(anio,mes,importe)
+where not exists (select 1 from events e where e.anio=v.anio and e.mes=v.mes and e.propiedad_codigo='1A_JACO' and e.concepto='IRPF nómina José (modelo 111)');
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 7, 'SAMAVI_GEN', 'CORPORATIVO', 'Retenciones profesionales (modelo 111 2T)', -71.86, 'Base 479,02 al 15%. Ver 075.'
+where not exists (select 1 from events e where e.anio=2026 and e.mes=7 and e.propiedad_codigo='SAMAVI_GEN' and e.concepto='Retenciones profesionales (modelo 111 2T)');
