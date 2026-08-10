@@ -564,3 +564,17 @@ update recobros set estado = 'LIQUIDADO', resuelto_fecha = date '2025-11-30',
   resuelto_nota = 'Duplicidad confirmada por Stag 11/08/2026: es el descuento de 83,00 de nov-2025. Samavi le debe 83,00 a Stag (cuenta con socio).'
  where propiedad_codigo = '1A_JACO' and estado = 'PENDIENTE'
    and ((fecha = date '2025-10-10' and importe = 53.00) or (fecha = date '2025-10-15' and importe = 30.00));
+
+-- SYNC 11/08/2026 — mantenimientos Ecocleans (076 junio + 079 julio). Idempotente.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select v.anio, v.mes, v.cod, 'OTROS', v.concepto, v.importe, 'Ver migracion ' || v.mig
+from (values
+  (2026, 6, '4B_ALEX', 'Mantenimiento cerradura (Ecocleans F260507)', -33.88, '076'),
+  (2026, 7, '1A_NICA', 'Mantenimiento Ecocleans (F260610)', -72.60, '079'),
+  (2026, 7, '4B_ALEX', 'Mantenimiento Ecocleans (F260610)', -50.82, '079'),
+  (2026, 7, '3G_MARE', 'Mantenimiento Ecocleans (F260610)', -33.88, '079')
+) as v(anio, mes, cod, concepto, importe, mig)
+where not exists (
+  select 1 from events e
+   where e.anio = v.anio and e.mes = v.mes and e.propiedad_codigo = v.cod and e.concepto = v.concepto
+);
