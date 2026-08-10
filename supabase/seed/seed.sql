@@ -557,3 +557,10 @@ where not exists (select 1 from events e where e.anio=v.anio and e.mes=v.mes and
 insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
 select 2026, 7, 'SAMAVI_GEN', 'CORPORATIVO', 'Retenciones profesionales (modelo 111 2T)', -71.86, 'Base 479,02 al 15%. Ver 075.'
 where not exists (select 1 from events e where e.anio=2026 and e.mes=7 and e.propiedad_codigo='SAMAVI_GEN' and e.concepto='Retenciones profesionales (modelo 111 2T)');
+
+-- SYNC 11/08/2026 — recobros (077): Stag confirmó que los bizums de oct-2025 (53+30)
+-- eran el descuento de 83,00 de nov-2025 → LIQUIDADOS, no se cobran de nuevo.
+update recobros set estado = 'LIQUIDADO', resuelto_fecha = date '2025-11-30',
+  resuelto_nota = 'Duplicidad confirmada por Stag 11/08/2026: es el descuento de 83,00 de nov-2025. Samavi le debe 83,00 a Stag (cuenta con socio).'
+ where propiedad_codigo = '1A_JACO' and estado = 'PENDIENTE'
+   and ((fecha = date '2025-10-10' and importe = 53.00) or (fecha = date '2025-10-15' and importe = 30.00));
