@@ -86,7 +86,30 @@ que es la única forma de detectar que el plan vigente ya no es el que se aplic�
 *Cicatriz 13/08/2026*: el plan del 09/08 (Marechal 93/115/105) había sido reemplazado el 12/08
 a las 08:15 UTC por 84/119 con motivo vacío, y el análisis se estaba haciendo sobre datos falsos.
 
-**2.7 · Personalizaciones por defecto que la API no expone** (confirmadas por capturas, activas de
+**2.7 · `price_type` SIEMPRE `"fixed"`. Nunca `"percent"` — ni en la API ni en la UI.**
+En el formulario de override, el campo de precio tiene un selector fijo/porcentaje. Si queda en
+porcentaje, escribir `149` **no publica 149 €: publica +149 % (×2,49)**.
+*Cicatriz 10–11/08/2026*: se cargaron `99`, `149` y `129` como porcentaje desde el móvil (00:31,
+21:35 y 10:13). Marechal publicó las noches 22–25 a **190–281 €**, entre 1,6 y 1,8 veces el
+percentil 90 del barrio, durante los únicos días en que ese bloque estuvo abierto a la venta.
+Es la tercera aparición del mismo anti-patrón (03/08, 05/08, 10–11/08).
+**Cortafuegos mecánico, no de memoria**: los cuatro pisos tienen `max` = null en PriceLabs, así
+que nada frena un error así. Poner un `max_price` (~2,2× el base) convierte un error de tres días
+de escaparate en un error acotado. Una regla de proceso depende de acordarse a las 00:31 desde el
+móvil, que es justo cuando falla.
+
+**2.8 · Los bloqueos de calendario son invisibles para el motor.**
+`guesty-sync` **no** ingesta bloqueos: la tabla `reservations` solo guarda `canceled`, `closed`,
+`confirmed`, `declined`, `inquiry` y `reserved`. Por eso **"noches libres según Guesty" puede
+mentir**: una noche bloqueada aparece como libre. La única señal es
+`pricelabs_prices.booking_status = 'Blocked'` (o `demanda='Unavailable'` con `reservado=false`).
+Al listar noches libres, excluir siempre las bloqueadas.
+*Cicatriz 13/08/2026*: se planificó, se aplicó precio y se monitorizó durante días un bloque de
+4 noches de Marechal (22–25/08) que estaba **cerrado a la venta**. Ninguna pantalla lo gritó.
+Ojo al contar: hay un artefacto de borde en las 2 últimas fechas sincronizadas del horizonte
+(migración 064) que también aparece como no vendible y no es un bloqueo real.
+
+**2.9 · Personalizaciones por defecto que la API no expone** (confirmadas por capturas, activas de
 fábrica; se cambian solo por UI: Review Prices → Customizations → All Customizations):
 - **Último Minuto** "Market Driven (Balanced)": hasta **−40 %** el mismo día, decreciendo a 0 % a
   los 11 días.
@@ -123,7 +146,16 @@ que no puedo leer por API no se usa en un cálculo hasta que Stag la confirma** 
 hora ≈ −19 %. El suelo debe aguantar el **peor apilamiento posible** y seguir por encima del ADR
 de equilibrio.
 
-**3.3 · Asimetría que decide dónde poner el descuento.** El descuento de Airbnb muestra **precio
+**3.3 · La comisión de canal se cobra también sobre la limpieza.** Verificado al céntimo
+(18,64–19,32 % según piso). Por eso la tarifa de limpieza **no es un ingreso neto** y no sirve
+como palanca de conversión: hoy ya va en pérdida. Coste real por reserva: Marechal y Alexander
+**43,80 €**, Nicasio **53,72 €**. Cobrando 50 € en Marechal entran 40,62 € → **−3,18 € por
+reserva**. Para cubrir coste habría que cobrar ~53,91 € (MARE/ALEX) y ~66,12 € (NICA).
+*Cicatriz 13/08/2026*: PriceLabs recomienda bajar la limpieza a 41 € en los tres pisos de Madrid
+(es una plantilla de mercado que ignora nuestro coste). Aplicarlo habría costado ~2.365 €/año.
+**Descartada con número, no con opinión.**
+
+**3.4 · Asimetría que decide dónde poner el descuento.** El descuento de Airbnb muestra **precio
 tachado** (atrae clics y empuja ranking); el de PriceLabs solo baja el precio, sin señal visual.
 Mismo coste, distinto efecto. Por eso: descuento en Airbnb, suelo en PriceLabs.
 

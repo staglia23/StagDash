@@ -135,7 +135,44 @@ Alexander (90,10 €/noche) sigue en pie.
 tenía el 09/08. Su ocupación a 30 días subió de 67 % a 80 % (mercado 53 %) y el pickup de los
 últimos 15 días es de 4 reservas — pero ninguna de agosto.
 
-**En curso** · Diagnóstico multi-ángulo de Marechal (salud del anuncio, disponibilidad real del
-bloque 22–25, histórico propio, mercado). Anomalía a resolver: las noches 22–25 figuran con
-`reservado=false` y `no_vendible=false` pero `demanda='Unavailable'`, lo que sugiere que podrían
-no ser reservables en el canal — si se confirma, explicaría el cero absoluto sin importar el precio.
+**Diagnóstico de Marechal (7 agentes: 4 lentes + 3 verificadores adversariales)** · La anomalía
+`demanda='Unavailable'` NO era ruido de datos. Resultados:
+
+1. **Las noches 22–25 están BLOQUEADAS**, no libres. `pricelabs_prices.booking_status='Blocked'`
+   en las cuatro (verificado directamente), y la salud del anuncio reporta "5 blocked dates".
+   Marechal es el **único** piso de Madrid con bloqueos (NICA y ALEX: cero).
+   ⚠️ **Contradicción sin resolver**: el calendario de PriceLabs marca 4 noches bloqueadas, pero
+   el feed de reservas del PMS solo declara una entidad de bloqueo (`6a7c472c1c2e60e15e24b19a`,
+   22→23/08, creada el 12/08). Hay una segunda entidad (`6a6a6b1d77ed28e32b2fc91b`, 22→24, creada
+   el 29/07) que llega con `booking_status='available'` y **con huésped asociado**. Hasta abrir
+   Guesty con los ojos, lo recuperable son entre 1 y 4 noches — **no dar los 369 € por buenos**.
+2. **El error que explica el cero del 10 al 12/08**: tres overrides cargados como **porcentaje**
+   (99, 149, 129) publicaron esas noches a **190–281 €**, 1,6–1,8× el p90 del barrio, justo en los
+   únicos días en que el bloque estuvo abierto. → PLAYBOOK §2.7 (nueva) + `max_price` como
+   cortafuegos.
+3. **Las noches 16–18 están sanas y el precio ya está agotado como palanca**: a 84 € publicados el
+   huésped ve 71,40 € = percentil 16–19 del barrio, por debajo del p25 (79,8) y muy por debajo de
+   la mediana **reservada** (94,6–104,1). Cero *inquiries* para esas fechas → no hay demanda
+   latente perdiéndose al final del embudo.
+4. **La tesis "es visibilidad" queda sin sustento**: 87 reservas confirmadas desde dic-2025
+   descartan penalización por anuncio nuevo, y PriceLabs marca a Marechal como
+   *outperforming the market* (ocupación agosto 73,7 % vs 63 % del mercado). El déficit real está
+   concentrado en **ventana corta entre semana** (MPI 0,78 a 7 días; 1,41–1,50 a 15–30 días).
+5. **Booking.com: el "rateplans vacío" no probaba nada** — Nicasio devuelve lo mismo y vendió
+   **10 noches de agosto** por ese canal, incluidas las 16–22/08, exactamente las que Marechal
+   tiene vacías. La demanda existía en el mismo edificio y entró por el canal que Marechal no usa.
+6. **Correcciones de los verificadores que cambian decisiones**: bajar la limpieza a 41 € habría
+   costado ~2.365 €/año (→ PLAYBOOK §3.3); el valor esperado realista de las 7 noches es ~110 €,
+   no 493–584; y **noviembre está 55,88 puntos bajo el equilibrio** con 24 noches libres — 3× el
+   agujero de agosto, decidiéndose ahora porque Marechal vende con 80 días de mediana.
+
+**Deuda técnica detectada** · (a) `guesty-sync` no ingesta bloqueos → PLAYBOOK §2.8; (b)
+`f_pricelabs_oportunidades` (migración 072, línea 66) filtra por `not no_vendible` pero no excluye
+`booking_status='Blocked'`: hoy no se cuela ninguna fila por casualidad (esas noches tienen
+`precio_usuario` null), pero una noche bloqueada con override de precio aparecería en /precios como
+euros sobre la mesa que no existen; (c) el motor no captura la comisión de Booking.com (las 3
+reservas de Nicasio entran con comisión efectiva 0 %) → cada euro de ese canal infla el margen
+15–18 % y el ADR de Booking parece mejor que el de Airbnb cuando corregido queda por debajo.
+
+**Resultado pendiente de medir** · Plan del 13/08 (ver informe): desbloqueo, suelo duro, techo de
+precio y giro a noviembre.
