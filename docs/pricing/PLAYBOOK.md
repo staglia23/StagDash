@@ -93,12 +93,20 @@ porcentaje, escribir `149` **no publica 149 €: publica +149 % (×2,49)**.
 21:35 y 10:13). Marechal publicó las noches 22–25 a **190–281 €**, entre 1,6 y 1,8 veces el
 percentil 90 del barrio, durante los únicos días en que ese bloque estuvo abierto a la venta.
 Es la tercera aparición del mismo anti-patrón (03/08, 05/08, 10–11/08).
-**Cortafuegos mecánico, no de memoria**: los cuatro pisos tienen `max` = null en PriceLabs, así
-que nada frena un error así. Poner un `max_price` (~2,2× el base) convierte un error de tres días
-de escaparate en un error acotado. Una regla de proceso depende de acordarse a las 00:31 desde el
-móvil, que es justo cuando falla.
+**El cortafuegos es la guardia de precios, no un techo.** Se propuso poner un `max_price` y
+**Stag lo rechazó el 14/08/2026**: no quiere topes que aten al algoritmo. En su lugar asumo yo la
+vigilancia — ver §5.7. Los cuatro pisos siguen con `max` = null a propósito.
 
-**2.8 · Los bloqueos de calendario son invisibles para el motor.**
+**2.8 · Un bloqueo rotulado "Control" en Guesty es de Stag. No es un hueco.**
+Stag viaja a inspeccionar los pisos y bloquea esas noches él mismo, rotulándolas **"Control"**.
+Son deliberadas: **no se desbloquean, no se cuentan como noches por vender, no entran en ningún
+cálculo de "euros sobre la mesa"**. Antes de analizar cualquier noche bloqueada, leer su rótulo
+en el calendario de Guesty.
+*Cicatriz 13–14/08/2026*: se dedicó un diagnóstico entero a averiguar por qué no se vendían las
+noches 22–25 de Marechal, se estimaron 369 € recuperables y se le pidió a Stag que abriera
+Guesty — eran su viaje de control. Jacobine 18–20/08 es el mismo caso.
+
+**2.9 · Los bloqueos de calendario son invisibles para el motor.**
 `guesty-sync` **no** ingesta bloqueos: la tabla `reservations` solo guarda `canceled`, `closed`,
 `confirmed`, `declined`, `inquiry` y `reserved`. Por eso **"noches libres según Guesty" puede
 mentir**: una noche bloqueada aparece como libre. La única señal es
@@ -219,6 +227,22 @@ huéspedes extra, tarifas de limpieza o ajustes. Antes de sacar conclusiones, mi
 
 **5.6 · Los cambios de precio se aplican SOLO con confirmación explícita de Stag**, y cada uno
 queda registrado en la bitácora con su motivo y su escalón de reversión.
+
+**5.7 · Guardia de precios: la vigilancia es mía, no de un tope.**
+Stag rechazó el `max_price` (14/08/2026) porque no quiere atar al algoritmo. A cambio, **la
+obligación de detectar un precio irrisorio o disparatado es mía, todos los días**, en los cuatro
+pisos. El monitor diario compara el precio publicado de cada noche libre contra su banda sana y
+avisa; si algo llama la atención, se revisa antes de que salga al canal, y solo se cambia con el
+OK de Stag.
+Banda de alarma por noche (sobre el precio **publicado**, antes de descuentos nativos):
+- **Alarma por bajo**: menos del 70 % del precio recomendado por PriceLabs para esa noche, o por
+  debajo del suelo del anuncio, o por debajo del ADR de equilibrio del piso sin que sea una
+  bajada táctica aprobada y anotada en la bitácora.
+- **Alarma por alto**: más del 140 % del recomendado, o por encima del percentil 90 del comp set.
+  Este es el lado que se llevó el incidente de los porcentajes (§2.7): 190–281 € publicados
+  durante tres días sin que nada avisara.
+Ante una alarma: primero mirar si hay un override raro o un `price_type` en porcentaje, después
+avisar a Stag con el número, la banda y la causa probable.
 
 ---
 

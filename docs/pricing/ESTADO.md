@@ -85,9 +85,15 @@ iguales porque Stag lo confirmó de palabra el 07/08 — no están verificados a
 
 ## 4. Bloqueos deliberados (no son huecos por vender)
 
+**La regla que los identifica**: en el calendario de Guesty, un bloqueo rotulado **"Control"** es
+un viaje de inspección de Stag. Es deliberado — no se desbloquea, no se cuenta como noche por
+vender y no entra en ningún cálculo de euros recuperables. **Antes de analizar una noche
+bloqueada, leer su rótulo en Guesty.**
+
 | Piso | Fechas | Motivo | Fuente |
 |---|---|---|---|
-| Jacobine | 18–20/08/2026 | viaje de control de Stag a Sevilla | Stag, 03/08/2026 |
+| Marechal | **22–25/08/2026** | rotulado "Control": viaje de inspección | Stag, 14/08/2026 |
+| Jacobine | **18–20/08/2026** | rotulado "Control": viaje de inspección a Sevilla | Stag, 03 y 14/08/2026 |
 | Marechal | noches huérfanas sueltas | PriceLabs bloquea automáticamente los huecos de 1 noche; **Stag decidió mantenerlo solo en Marechal** (09/08/2026) | Stag |
 | Nicasio / Alexander | — | min-stay 1 **autorizado** en huecos huérfanos desde el 09/08/2026 | Stag |
 

@@ -174,5 +174,29 @@ euros sobre la mesa que no existen; (c) el motor no captura la comisión de Book
 reservas de Nicasio entran con comisión efectiva 0 %) → cada euro de ese canal infla el margen
 15–18 % y el ADR de Booking parece mejor que el de Airbnb cuando corregido queda por debajo.
 
-**Resultado pendiente de medir** · Plan del 13/08 (ver informe): desbloqueo, suelo duro, techo de
-precio y giro a noviembre.
+---
+
+## 2026-08-14 · Stag resuelve el enigma: el bloqueo era suyo. Y rechaza el techo de precio
+
+**Dos aclaraciones del CEO que cierran el diagnóstico de ayer:**
+
+1. **Las noches 22–25 de Marechal están rotuladas "Control" en Guesty: son su viaje de
+   inspección.** Lo mismo Jacobine 18–20/08. El bloqueo es deliberado y no se toca.
+   → **Los 369 € "recuperables" no existían.** Agosto de Marechal queda con **3 noches vendibles
+   reales** (16, 17 y 18), no 7. La recomendación nº 1 del plan del 13/08 (abrir Guesty y
+   desbloquear) queda **anulada**, y con ella se cae la mitad del valor esperado que se le
+   atribuía al mes.
+   → Regla permanente en PLAYBOOK §2.8. Nace de un diagnóstico de 7 agentes que se podría haber
+   evitado leyendo un rótulo. **La causa raíz no fue el análisis: fue que nadie había escrito
+   nunca qué significan los rótulos del calendario.** Eso es exactamente lo que estos documentos
+   existen para arreglar.
+
+2. **Rechaza poner `max_price`** en PriceLabs: no quiere topes que aten al algoritmo. A cambio,
+   la vigilancia de precios irrisorios o disparatados pasa a ser **obligación diaria mía**, con
+   bandas de alarma explícitas → PLAYBOOK §5.7. El monitor diario incorpora la guardia.
+
+**Lo que queda vivo del plan del 13/08** · Suelo duro (16–18 a 92 €, sin bajar más), la guardia
+de precios en lugar del techo, activar Booking.com en Marechal arreglando antes la captura de
+comisión del motor, y el giro a noviembre (24 noches libres, 55,88 pp bajo equilibrio).
+
+**Resultado pendiente de medir** · Las tres noches de 16–18 y, sobre todo, el plan de noviembre.
