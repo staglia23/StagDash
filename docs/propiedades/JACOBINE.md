@@ -143,6 +143,97 @@ lista que no requiere permiso de la dueña ni negociar nada.
 
 ---
 
+## ESTRATEGIA DE PRECIOS — Semana Santa y Feria 2027 (14/08/2026, pendiente de aprobar)
+
+**Orden acordado con Stag: primero se fijan los precios, después se abre el calendario.**
+
+### La lección de 2026, en una línea
+
+**Vender temprano vale entre +63 % y +171 % sobre vender tarde, en el mismo evento.**
+
+| Cuándo se vendió | ADR conseguido | Ejemplos de 2026 |
+|---|---|---|
+| 43–58 días antes | **604–635 €** | martes/miércoles de Feria, fin de semana pre-Feria |
+| 19–29 días antes | 304–463 € | Viernes Santo, domingo de cierre de Feria |
+| 0–4 días antes | **234–369 €** | Miércoles y **Jueves Santo**, jueves/viernes/sábado de Feria |
+| No se vendió | 0 € | Martes Santo, Lunes de Pascua, **la noche del alumbrao** |
+
+Los dos datos que más duelen: **la Madrugá (Jueves Santo) se vendió a 234,40 € con CERO días de
+antelación**, y **la noche del alumbrao quedó vacía**. Son las dos noches más caras del año en
+Sevilla. No es un problema de precio: es que el calendario cerrado obliga a vender en pánico.
+
+### Semana Santa 2027 · 21 → 28 de marzo (8 noches)
+
+Pascua el 28/03. La Madrugá es la noche del **jueves 25 al viernes 26**.
+
+| Noche | Día litúrgico | 2026 equivalente | p75 mercado | PriceLabs | **Suelo propuesto** |
+|---|---|---|---|---|---|
+| Dom 21/03 | Domingo de Ramos | 243,77 *(4 d)* | 452 | 600 | **450** |
+| Lun 22/03 | Lunes Santo | 243,77 *(4 d)* | 467 | 552 | **450** |
+| Mar 23/03 | Martes Santo | *vacía* | 473 | 551 | **450** |
+| Mié 24/03 | Miércoles Santo | 234,40 *(0 d)* | 508 | 561 | **490** |
+| **Jue 25/03** | **Jueves Santo — Madrugá** | 234,40 *(0 d)* | 559 | 562 | **560** |
+| Vie 26/03 | Viernes Santo | 462,60 *(19 d)* | 510 | 633 | **540** |
+| Sáb 27/03 | Sábado Santo | 462,60 *(19 d)* | 386 | 618 | **470** |
+| Dom 28/03 | Resurrección | 462,60 *(19 d)* | 319 | 509 | **400** |
+
+A suelo: **3.810 €**. A precio PriceLabs: 4.586 €. Real 2026: 2.767,89 € en 8 de 9 noches.
+
+### Feria 2027 · 12 → 18 de abril (7 noches)
+
+⚠️ **Fechas NO confirmadas oficialmente.** El plan asume alumbrao la noche del lunes 12 y feria
+del martes 13 al domingo 18. Re-verificar cuando el Ayuntamiento publique el calendario.
+
+| Noche | Día | 2026 equivalente | p75 mercado | PriceLabs | **Suelo propuesto** |
+|---|---|---|---|---|---|
+| **Lun 12/04** | **Noche del alumbrao** | *vacía* | 472 | 663 | **560** |
+| Mar 13/04 | 1.er día | 634,95 *(58 d)* | 528 | 663 | **560** |
+| Mié 14/04 | | 634,95 *(58 d)* | 527 | 663 | **560** |
+| Jue 15/04 | | 369,47 *(3 d)* | 506 | 642 | **560** |
+| Vie 16/04 | | 369,47 *(3 d)* | 495 | 684 | **560** |
+| Sáb 17/04 | | 369,47 *(3 d)* | 427 | 684 | **500** |
+| Dom 18/04 | cierre, fuegos | 303,66 *(29 d)* | 298 | 539 | **400** |
+
+A suelo: **3.700 €**. A precio PriceLabs: 4.538 €. Real 2026 (7 noches equivalentes): 2.681,97 €.
+
+### Por qué estos números
+
+- **El techo es su propio récord**: 634,95 €/noche, conseguido en 2026 vendiendo con 58 días.
+  No es una extrapolación de mercado, es lo que este piso ya cobró.
+- **El suelo se apoya en el p75 del comp set** — y ese percentil **subestima**: el comp set de
+  PriceLabs es de anuncios de **1 dormitorio** y Jacobine tiene **2 dormitorios y piscina**. Su
+  competencia real es más cara que la que mide el percentil.
+- **Los suelos NO son expectativa de venta inmediata.** Hoy el mercado transacciona esas noches a
+  mediana de 249–308 €; el suelo está ~2× por encima. Es correcto: el comprador que paga el pico
+  llega entre 45 y 60 días antes. El suelo solo impide malvender mientras tanto.
+
+### ⚠️ La trampa que hay que evitar: el STLY de PriceLabs está desalineado
+
+PriceLabs compara con el año pasado **por día de la semana, no por evento**. Como la Semana Santa
+se corre casi tres semanas entre 2026 y 2027, sus columnas de "año pasado" para estas fechas están
+mal: al **20/04/2027** (que ya no es Feria) le asigna 634,95 €, que fue una noche de **Feria 2026**.
+**No usar el STLY de PriceLabs como ancla en estas fechas.** El ancla correcta es la equivalencia
+litúrgica de la tabla de arriba, construida a mano.
+
+### Calendario de revisión (los suelos no se ponen y se olvidan)
+
+| Cuándo | Qué se revisa |
+|---|---|
+| **T−90 días** (dic-26 / ene-27) | Si el pickup es 0: bajar **min-stay** primero, nunca el precio |
+| **T−45 días** | Si sigue en 0: bajar el suelo un escalón (~15 %) |
+| **T−21 días** | Precio de mercado; a esta altura en 2026 ya se vendía a 369 € |
+| **Desde finales de enero** | Activar tarifa no reembolsable (solo elegible dentro de 60 días) |
+
+### Estancia mínima: proteger las dos noches que se perdieron en 2026
+
+PriceLabs ya trae min-stay 4 en Semana Santa y 5 en Feria. Dos correcciones:
+- **Corregir el corrimiento de la Feria**: hoy aplica min-stay 5 del 11 al 17/04, pero el 11 es el
+  domingo previo *sin evento* y el 18 es el domingo de cierre *con fuegos*. Correr a 12–18/04.
+- **Cascada** a medida que se acerca: 5 noches ahora → 4 a los 90 días → 3 a los 30 → 2 dentro de
+  los 15. Es lo que evita repetir el hueco huérfano del alumbrao.
+
+---
+
 ## Identidad
 
 | Campo | Valor |
