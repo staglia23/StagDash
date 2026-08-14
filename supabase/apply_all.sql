@@ -5013,7 +5013,8 @@ as $$
    where p.fecha >= (now() at time zone 'Europe/Madrid')::date
      and p.fecha <  (now() at time zone 'Europe/Madrid')::date + p_dias
      and not p.reservado
-     and not p.no_vendible                       -- las bloqueadas no tienen palanca de precio
+     and not p.no_vendible
+     and coalesce(p.booking_status, '') <> 'Blocked'   -- 080: bloqueada = sin palanca de precio
      and p.precio_usuario is not null
      and p.precio_base   is not null
      and p.precio_base > p.precio_usuario        -- solo lo que deja plata sobre la mesa

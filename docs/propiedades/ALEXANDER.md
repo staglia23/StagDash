@@ -13,6 +13,39 @@ Salvo aviso, el período del motor es **ene–jul 2026 devengado** (`cierre_hast
 
 ---
 
+## DECISIÓN TOMADA — 14/08/2026
+
+**Stag no negocia la cláusula 4.3. Alexander se queda en la cartera y se absorbe la subida.**
+Razón: el piso genera la caja que sostiene la estructura de la empresa, y prescindir de él no
+está sobre la mesa. La renegociación queda **cerrada**, no pendiente. No volver a proponerla.
+
+**Lo que eso significa, en números** (calculado el 14/08/2026 sobre `f_breakeven` ene–ago):
+
+| | Hoy | Desde el 01/10/2026 |
+|---|---|---|
+| Coste fijo anualizado | ~38.100 € | ~40.980 € (+2.855 €) |
+| Ocupación de equilibrio | 84,14 % | **~90,4 %** |
+| Ocupación real | 90,53 % | 90,53 % |
+| **Colchón** | +6,39 pp | **≈ 0 pp** |
+
+**El colchón desaparece.** A partir de octubre, Alexander trabaja justo en su punto de
+equilibrio: cualquier caída de ocupación lo pone en pérdida. Y no hay margen por el lado del
+volumen — 90,5 % ya es de los más altos del portfolio.
+
+**La única palanca es el precio: hacen falta ~+11,4 € por noche publicada (+6,5 % sobre su ADR
+de ~174 €)** para recuperar el colchón que tenía. Equivale a +9,3 € de contribución por noche,
+una vez descontada la comisión de canal (18,69 %).
+
+**La buena noticia**: la subida de mínimo ya planificada para el 01/10 (129 → 145 €, vía Custom
+Seasonal Profile) va exactamente en esa dirección y, si se sostiene, cubre la subida de renta.
+Pero hay que verificar cuántas noches se venden realmente al mínimo antes de darlo por hecho: si
+solo una parte toca suelo, +16 € de mínimo NO son +16 € de ADR. Verificar en la revisión del 01/09.
+
+**Lo que sigue abierto de este piso** (no es la renegociación):
+- Formalizar la adenda de octubre por escrito: transferencia / base / IVA 21 % / retención 19 %.
+- Actualizar `listings.renta_base` en enero-2027: los events de la subida solo llegan a dic-2026.
+- Refacturar el contrato de luz a nombre de Samavi (hoy a nombre personal de Stag).
+
 ## Identidad
 
 | | |
