@@ -10,6 +10,98 @@ son del rango **01/01/2026 – 31/08/2026** salvo que diga otra cosa.*
 
 ---
 
+## DECISIÓN ABIERTA — Semana Santa y Feria 2027 (análisis del 14/08/2026)
+
+**QUÉ HAY QUE DECIDIR** · abrir la ventana de reserva a 365 días
+**ANTES DE** · 21/09/2026 (ese día Semana Santa 2027 se abre sola y llegamos tarde)
+**CUÁNTO VALE** · 9.723 € de bruto → **2.431 € de ingreso para Samavi**, ~4.958 € para la dueña
+
+### El diagnóstico
+
+No hay ningún bloqueo que quitar: es una **ventana de reserva de 180 días** configurada en
+Guesty (su documentación confirma que Guesty la empuja a Airbnb *como un bloqueo de calendario*
+— por eso Airbnb muestra esas fechas como "disponibles" en ajustes y bloqueadas en el
+calendario). Jacobine es el **único** piso que la tiene; los otros tres no.
+
+**Fechas reales 2027**: Semana Santa **21–28 de MARZO** (Pascua el 28/03 — de las más tempranas
+en décadas, cae entera en marzo) y Feria **13–18 de abril**, con el alumbrao la noche del lunes
+12. Son dos operaciones separadas por tres semanas.
+
+**La pared corta demanda real**: de 121 reservas históricas, el lead máximo es **176 días
+exactos** y hay un amontonamiento contra el muro (17,4 % entre 140 y 176 días). Los otros tres
+pisos, sin muro, capturaron 12.082 € de bruto de reservas hechas a más de 176 días. Jacobine: 0 €.
+Pipeline a partir de feb-2027: Nicasio 2.436 €, Alexander 1.232 €, **Jacobine 0 €**.
+
+**El mercado ya está vendiendo esas fechas**: 29,8 % de la semana de Semana Santa y 24,0 % de la
+de Feria ya reservadas en el comp set, contra 4,8–14,3 % de un día normal al mismo horizonte.
+
+**La factura de llegar tarde ya se pagó en 2026**: la Semana Santa se vendió con leads de **0 y
+4 días** a 264 €/noche; solo el tramo de Viernes Santo se vendió con 19 días y sacó 482 €. En
+Feria, un tramo vendido con 58 días de antelación sacó **664,95 €/noche**. El problema no es que
+el sevillano reserve tarde: es que Jacobine llega tarde.
+
+### El balcón — la respuesta corta es no, y por dos razones distintas
+
+**En Feria vale exactamente cero.** El Real está en Los Remedios, cruzando el Guadalquivir, a
+~3 km del piso (coordenadas 37,3965 / −5,9914). Desde ese balcón no se ve nada. En Feria el
+activo es la **cama**, y es la mejor semana del año del piso.
+
+**En Semana Santa pierde plata.** El piso no está sobre la Carrera Oficial (queda ~900 m al sur).
+Un balcón fuera de Carrera Oficial se alquila a **80–300 €/día**; con paso real de hermandad 2–4
+días, son 400–1.200 €. Las 9 noches del piso valen **5.185 €**. Alquilar el balcón *en lugar* del
+piso destruye 4.000–4.800 €.
+
+**Y hay un problema de reparto que decide solo**: en modelo comisión, el alquiler civil de un
+balcón no pasa por Guesty ni Airbnb → **Samavi cobraría 0 €** salvo acuerdo nuevo con la dueña.
+Tampoco se pueden vender los dos a la vez: el balcón es parte del piso, no se puede meter a un
+tercero con huéspedes dentro. Y Airbnb prohíbe cobros fuera de plataforma ligados a una reserva.
+
+**La jugada que sí captura ese valor**: vender el balcón **dentro** de la reserva — reposicionar
+el anuncio como producto de Semana Santa (título, primeras fotos desde el balcón, qué hermandades
+pasan y a qué hora) y dejar que el precio lo absorba. Entra en el 25 % de siempre, no rompe
+ninguna regla y no expone a nadie.
+
+### Por qué NO bloquear preventivamente
+
+Bloquear "hasta decidir" **quita** justo la información que se quiere: una fecha bloqueada no
+recibe visitas, ni listas de deseos, ni consultas, ni ritmo de reserva. En enero se decidiría con
+exactamente los mismos datos de hoy y cinco meses menos de mercado. La táctica documentada de los
+property managers es la contraria: abrir y proteger con **precio y estancia mínima**. Un suelo
+alto es un bloqueo blando que además cobra si alguien lo paga; un bloqueo duro rinde 0 € seguro.
+
+### El plan, en orden (el orden es lo único que puede salir mal)
+
+1. **Preguntar a la dueña** si hay alguna razón para que el calendario esté cerrado (¿se reserva
+   el piso?). Argumento a favor: de cada euro de bruto ella se lleva 50,99 € y Samavi 25,00 €;
+   abril-2026 le dejó 5.584 € netos contra 1.700–2.500 € de un mes normal.
+2. **Suelos de precio en PriceLabs primero** (Claude, por API, con OK explícito): 480 €/noche del
+   20 al 28/03 y 540 €/noche del 12 al 18/04. Si se quiere reservar la opción del balcón para la
+   Madrugá, subir el 25 y 26/03 a 800 € — el precio al que da igual venderlo.
+3. **Después** subir la ventana a **365 días** en Guesty (Listing → Availability → booking
+   window). No 730: PriceLabs solo tarifica 365 días, más allá se vendería sin revenue management.
+4. **Verificar el último eslabón**: que las fechas aparezcan reservables en la ficha pública de
+   Airbnb, no solo en Guesty. Y mirar si Airbnb tiene su propio límite de antelación duplicado.
+5. **Política de cancelación Firme o Estricta solo en las 16 noches de evento** (Airbnb permite
+   aplicarla por rango de fechas). La tarifa no reembolsable no es elegible hasta 60 días antes.
+6. **Corregir el corrimiento de la Feria en PriceLabs**: hoy aplica min-stay 5 del 11 al 17/04,
+   pero el 11 es el domingo previo sin evento y el 18 es el domingo de cierre con fuegos.
+
+### Datos que faltan (10 minutos, y hasta tenerlos no se decide el balcón)
+
+- **A qué calle da el balcón y qué se ve.** No está en la base ni en PriceLabs, y el anuncio se
+  llama *"Stylish Calm Retreat"*, que suele indicar interior o a patio. Se resuelve con una foto.
+- **Dónde está configurada la ventana**: Guesty, Airbnb, o las dos.
+- Los itinerarios oficiales de 2027 se publican a principios de 2027; los verificados son de 2026
+  (por Feria y Alameda pasan la Hiniesta el Domingo de Ramos y la Macarena en la Madrugá).
+
+### Oportunidad lateral que no depende de nadie
+
+En 2026 quedaron sin vender **5 huecos de exactamente 1 noche** entre el 25/03 y el 05/05 por
+2.006 € de bruto — incluida **la noche del alumbrao** (~620 €). Es el único euro de toda esta
+lista que no requiere permiso de la dueña ni negociar nada.
+
+---
+
 ## Identidad
 
 | Campo | Valor |
