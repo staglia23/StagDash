@@ -186,15 +186,27 @@ del martes 13 al domingo 18. Re-verificar cuando el Ayuntamiento publique el cal
 
 | Noche | Día | 2026 equivalente | p75 mercado | PriceLabs | **Suelo propuesto** |
 |---|---|---|---|---|---|
-| **Lun 12/04** | **Noche del alumbrao** | *vacía* | 472 | 663 | **560** |
-| Mar 13/04 | 1.er día | 634,95 *(58 d)* | 528 | 663 | **560** |
-| Mié 14/04 | | 634,95 *(58 d)* | 527 | 663 | **560** |
+| **Lun 12/04** | **Noche del alumbrao** | *vacía* | 472 | 663 | **600** |
+| Mar 13/04 | 1.er día | 634,95 *(58 d)* | 528 | 663 | **600** |
+| Mié 14/04 | | 634,95 *(58 d)* | 527 | 663 | **600** |
 | Jue 15/04 | | 369,47 *(3 d)* | 506 | 642 | **560** |
 | Vie 16/04 | | 369,47 *(3 d)* | 495 | 684 | **560** |
-| Sáb 17/04 | | 369,47 *(3 d)* | 427 | 684 | **500** |
+| Sáb 17/04 | | 369,47 *(3 d)* | 427 | 684 | **520** |
 | Dom 18/04 | cierre, fuegos | 303,66 *(29 d)* | 298 | 539 | **400** |
 
-A suelo: **3.700 €**. A precio PriceLabs: 4.538 €. Real 2026 (7 noches equivalentes): 2.681,97 €.
+A suelo: **3.840 €**. A precio PriceLabs: 4.538 €. Real 2026 (7 noches equivalentes): 2.681,97 €.
+
+*Corrección del 14/08*: la primera versión ponía suelo 560 € en el 13 y 14/04, **por debajo de los
+634,95 € que esas noches ya cobraron en 2026**. Un suelo nunca debe estar bajo un precio ya
+demostrado. Subidos a 600 €.
+
+### Cobertura de la incertidumbre de la Feria — cuesta 0 €
+
+La Pascua de 2027 (28/03) es astronómica y firme; la Feria va tradicionalmente dos semanas
+después → 13–18/04. El único escenario alternativo realista es que se corra una semana
+(20–25/04). **Se cubre poniendo suelos en las DOS semanas candidatas**: un suelo no cuesta nada
+si no se vende, solo impide malvender. Cuando el Ayuntamiento confirme, se retira el de la semana
+que no era. Semana alternativa (19–25/04), suelo 520 €/noche.
 
 ### Por qué estos números
 
