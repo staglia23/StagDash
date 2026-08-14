@@ -237,9 +237,18 @@ así que las cifras de 2026 son limpias y comparables con el *objetivo*, no con 
 4. `max` del anuncio = null → nada limita hacia arriba.
 5. Verificación posterior: releído el rango 01/01→31/12/2027 completo, 23 overrides correctos.
 
-**Resultado pendiente de medir** · Nada se puede verificar en el canal hasta que Stag suba la
-ventana de reserva a 365 días en Guesty: PriceLabs **ignora las fechas bloqueadas** y no las
-tarifica. El orden es deliberado — suelos primero, apertura después.
+**Resultado — VERIFICADO el mismo día (14/08, 14:50)** · Stag abrió la ventana en Guesty a 365
+días minutos después de cargarse los suelos. Verificación en vivo con test de control:
+- Las noches "Control" de agosto (18–20/08) **siguen `Blocked`** con dato de las 12:47 UTC →
+  el dato es fresco y los bloqueos deliberados no se tocaron. ✓
+- **Semana Santa 2027 entera con `booking_status` vacío (= disponible)** y demanda leída en vivo:
+  "High Demand" del 20 al 28/03 — antes decía "Unavailable". ✓
+- Suelos mordiendo: Madrugá 620 (suelo exacto), y el algoritmo POR ENCIMA del suelo donde ve
+  demanda: 21/03 a 633 (suelo 500), 26/03 a 665 (suelo 600), alumbrao a 698 (suelo 665). ✓
+- `last_date_pushed` **12:29 UTC** = 5 minutos después de cargarse los suelos → hubo push al
+  canal con los suelos ya puestos. Mi refresh posterior (12:47) recalculó fino; el sync diario
+  de mañana (~06:50) empuja la última pasada. ✓
+- Falta solo el eslabón final: búsqueda en Airbnb como huésped (pendiente de Stag).
 
 **Escalones acordados** · T−90 (dic-26): si el pickup es 0, bajar **min-stay** antes que precio.
 T−45: bajar el suelo un escalón (~15 %). T−21: precio de mercado. Desde finales de enero-2027,
