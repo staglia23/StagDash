@@ -200,3 +200,51 @@ de precios en lugar del techo, activar Booking.com en Marechal arreglando antes 
 comisión del motor, y el giro a noviembre (24 noches libres, 55,88 pp bajo equilibrio).
 
 **Resultado pendiente de medir** · Las tres noches de 16–18 y, sobre todo, el plan de noviembre.
+
+---
+
+## 2026-08-14 · Jacobine 2027: suelos cargados para Semana Santa y Feria (APLICADO)
+
+**Hipótesis** · La ventana de reserva de 180 días obliga a Jacobine a vender sus dos semanas más
+caras en pánico. En 2026, vender con 43–58 días dio 604–635 €/noche y vender con 0–4 días dio
+234–369 €; la Madrugá se vendió a 234,40 € con CERO días y la noche del alumbrao quedó vacía.
+Poniendo suelos ANTES de abrir el calendario, se captura el segmento anticipado sin riesgo de
+malvender.
+
+**Aplicado** · 23 overrides de `min_price` (tipo `fixed`, EUR) en el listing de Jacobine, más una
+corrección de `min_stay`. Ninguno lleva `price` fijo: son **suelos**, dejan que PriceLabs suba.
+
+| Bloque | Fechas | Suelos publicados |
+|---|---|---|
+| Semana Santa | 21–28/03/2027 | 500 · 500 · 500 · 545 · **620** · 600 · 520 · 445 |
+| Feria (probable) | 12–18/04/2027 | **665** · 665 · 665 · 620 · 620 · 575 · 445 |
+| Feria (cobertura) | 19–25/04/2027 | 500 ×6 · 445 |
+| Corrección min-stay | 11/04/2027 | 5 → **3** (domingo previo sin evento) |
+
+**LA CALIBRACIÓN — el paso que casi se me escapa** · Los suelos publicados NO son el precio
+objetivo: son **objetivo ÷ 0,90**, porque el descuento de **reserva anticipada de Airbnb (−10 %,
+≥3 meses)** está activo y muerde toda reserva hecha desde ahora hasta ~21/12/2026. Sin calibrar,
+un suelo de 450 € habría dejado al huésped pagando 405 €.
+Verificado antes de aplicar: **ninguna de las 11 reservas de las fiestas de 2026 llevó descuento**
+(`fareAccommodation` = `fareAccommodationAdjusted`, `fareAccommodationDiscount` = 0 en las once),
+así que las cifras de 2026 son limpias y comparables con el *objetivo*, no con el suelo publicado.
+→ PLAYBOOK §3.1 y §3.2.
+
+**Chequeos previos** (checklist del PLAYBOOK §1, los cuatro pasaron):
+1. Overrides preexistentes en el rango: **cero** → sin riesgo de merge silencioso (§2.3).
+2. Descuentos nativos: calibrado ÷0,90 (arriba).
+3. Herramienta correcta: `min_price`, no `price` fijo — se quiere suelo, no techo (§2.2).
+4. `max` del anuncio = null → nada limita hacia arriba.
+5. Verificación posterior: releído el rango 01/01→31/12/2027 completo, 23 overrides correctos.
+
+**Resultado pendiente de medir** · Nada se puede verificar en el canal hasta que Stag suba la
+ventana de reserva a 365 días en Guesty: PriceLabs **ignora las fechas bloqueadas** y no las
+tarifica. El orden es deliberado — suelos primero, apertura después.
+
+**Escalones acordados** · T−90 (dic-26): si el pickup es 0, bajar **min-stay** antes que precio.
+T−45: bajar el suelo un escalón (~15 %). T−21: precio de mercado. Desde finales de enero-2027,
+activar tarifa no reembolsable (solo elegible dentro de 60 días).
+
+**A retirar cuando se confirme el calendario oficial de la Feria 2027**: los 7 suelos de cobertura
+del 19–25/04. Están puestos porque la Feria no está confirmada y el coste de equivocarse es
+asimétrico (un suelo de más solo retrasa una venta; un suelo de menos la malvende para siempre).
