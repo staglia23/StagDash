@@ -13,8 +13,11 @@ son del rango **01/01/2026 – 31/08/2026** salvo que diga otra cosa.*
 ## DECISIÓN ABIERTA — Semana Santa y Feria 2027 (análisis del 14/08/2026)
 
 **QUÉ HAY QUE DECIDIR** · abrir la ventana de reserva a 365 días
-**ANTES DE** · 21/09/2026 (ese día Semana Santa 2027 se abre sola y llegamos tarde)
-**CUÁNTO VALE** · 9.723 € de bruto → **2.431 € de ingreso para Samavi**, ~4.958 € para la dueña
+**ANTES DE** · 22/09/2026 (ese día Semana Santa 2027 se abre sola y perdemos el adelanto)
+**CUÁNTO VALE** · **~+1.100 € de ingreso incremental para Samavi** (ver "Los números, corregidos")
+
+> ⚠️ **Corrección del 14/08/2026**: la primera versión de este análisis decía "9.723 € de bruto,
+> 2.431 € para Samavi". El auditor adversarial lo desmontó y tiene razón. Ver abajo.
 
 ### El diagnóstico
 
@@ -32,8 +35,38 @@ exactos** y hay un amontonamiento contra el muro (17,4 % entre 140 y 176 días).
 pisos, sin muro, capturaron 12.082 € de bruto de reservas hechas a más de 176 días. Jacobine: 0 €.
 Pipeline a partir de feb-2027: Nicasio 2.436 €, Alexander 1.232 €, **Jacobine 0 €**.
 
-**El mercado ya está vendiendo esas fechas**: 29,8 % de la semana de Semana Santa y 24,0 % de la
-de Feria ya reservadas en el comp set, contra 4,8–14,3 % de un día normal al mismo horizonte.
+### Los números, corregidos (esto es lo que hay que creer)
+
+El auditor adversarial encontró cuatro errores apilados en la primera versión. Quedan así:
+
+- **El "24–30 % del mercado ya vendido" es un artefacto de medición, no demanda.** La curva de
+  ocupación del vecindario se rompe exactamente a los 180 días: 4,3 % a 178 días → **57,5 % a
+  190 días, y el 20/02/2027 es un sábado corriente sin ningún evento**. PriceLabs cuenta como
+  "ocupado" todo lo que no está disponible, y más allá de ~180 días casi todos los calendarios
+  del barrio están cerrados. El propio PriceLabs lo confirma por el otro lado: a esta altura del
+  año pasado esas fechas figuraban al 0–2 % y terminaron al 89–93 %.
+- **El pace anticipado real existe, pero es delgado y paga la mitad**: 10–13 reservas sobre 63
+  anuncios del comp set, a mediana **216–308 €**, contra los 576 € que PriceLabs pide. Hay
+  demanda temprana, pero no es la que paga el precio pico.
+- **Los 9.723 € no son una pérdida.** (a) La ventana avanza sola: Semana Santa sale a la venta
+  entre el 22 y el 29/09/2026 y la Feria entre el 14 y el 20/10/2026 → lo que está en juego son
+  **5–9 semanas de adelanto**, no el importe entero. (b) La ventana de 9 noches metía el sábado
+  previo al Domingo de Ramos; el núcleo vendible (21–27/03) son 4.077 €. (c) Asumía lleno al
+  100 %. (d) Usaba precios 45–72 % por encima de lo que el piso cobró de verdad.
+- **Comparar 2.431 € de comisión contra 2.744 € de margen neto mezcla ingreso con margen** — y
+  esconde que esas noches **ya producen comisión hoy**: 1.329,52 € en 2026. El delta correcto
+  contra el escenario de PriceLabs es **~+1.100 €**, no 2.431 €.
+- **Las fechas de la Feria 2027 NO están cerradas.** La cita del acuerdo del Pleno no dice lo que
+  se afirmó y dos medios discrepan sobre qué es el 14/04. Semana Santa sí es firme (Pascua el
+  28/03 es astronómica): **21–28 de marzo**.
+- **El "tercer pico" de Copa del Rey (23–24/04) es casi con seguridad un fantasma**: PriceLabs no
+  le aplica tratamiento de evento (min-stay 3, igual que un día normal) y su STLY es literalmente
+  la noche de Feria de 2026. No contar con él.
+
+**Sigue en pie**: la pared corta demanda real (lead máximo 176 días exactos en 121 reservas,
+con amontonamiento contra el muro), Jacobine tiene 0 € de pipeline para 2027 mientras Nicasio
+tiene 2.436 € y Alexander 1.232 €, y en 2026 la Semana Santa se vendió con **0 y 4 días** de
+antelación a 264 €/noche.
 
 **La factura de llegar tarde ya se pagó en 2026**: la Semana Santa se vendió con leads de **0 y
 4 días** a 264 €/noche; solo el tramo de Viernes Santo se vendió con 19 días y sacó 482 €. En
@@ -46,10 +79,16 @@ el sevillano reserve tarde: es que Jacobine llega tarde.
 ~3 km del piso (coordenadas 37,3965 / −5,9914). Desde ese balcón no se ve nada. En Feria el
 activo es la **cama**, y es la mejor semana del año del piso.
 
-**En Semana Santa pierde plata.** El piso no está sobre la Carrera Oficial (queda ~900 m al sur).
-Un balcón fuera de Carrera Oficial se alquila a **80–300 €/día**; con paso real de hermandad 2–4
-días, son 400–1.200 €. Las 9 noches del piso valen **5.185 €**. Alquilar el balcón *en lugar* del
-piso destruye 4.000–4.800 €.
+**En Semana Santa el balcón SÍ ve procesiones — y aun así no compensa.** Dato nuevo del auditor:
+geocodificando la coordenada que devuelve PriceLabs (37,3965 / −5,99141) contra OpenStreetMap, el
+piso cae en **Calle Feria**, y por Calle Feria pasan **dos hermandades**: La Hiniesta el Domingo
+de Ramos y La Macarena en la Madrugá. O sea que la pregunta tiene respuesta y es "sí, se ve algo".
+
+Pero son **dos días al año, no ocho**. Fuera de Carrera Oficial la banda verificada es
+**80–300 €/día** (Colegio de Administradores de Fincas vía prensa; los 6.000–9.000 €/semana que
+circulan son de Carrera Oficial con catering, y el piso queda ~900 m al norte de ella). Dos días
+× esa banda = **160–600 €**, y ese ingreso es **100 % de la dueña**: en modelo comisión un
+alquiler civil no pasa por Guesty ni Airbnb, así que Samavi cobraría 0 € salvo acuerdo nuevo.
 
 **Y hay un problema de reparto que decide solo**: en modelo comisión, el alquiler civil de un
 balcón no pasa por Guesty ni Airbnb → **Samavi cobraría 0 €** salvo acuerdo nuevo con la dueña.
@@ -74,9 +113,11 @@ alto es un bloqueo blando que además cobra si alguien lo paga; un bloqueo duro 
 1. **Preguntar a la dueña** si hay alguna razón para que el calendario esté cerrado (¿se reserva
    el piso?). Argumento a favor: de cada euro de bruto ella se lleva 50,99 € y Samavi 25,00 €;
    abril-2026 le dejó 5.584 € netos contra 1.700–2.500 € de un mes normal.
-2. **Suelos de precio en PriceLabs primero** (Claude, por API, con OK explícito): 480 €/noche del
-   20 al 28/03 y 540 €/noche del 12 al 18/04. Si se quiere reservar la opción del balcón para la
-   Madrugá, subir el 25 y 26/03 a 800 € — el precio al que da igual venderlo.
+2. **Suelos de precio en PriceLabs primero** (Claude, por API, con OK explícito): ~480 €/noche
+   del 21 al 27/03 (el núcleo, no las 9 noches) y ~540 €/noche en Feria. OJO: el pace real del
+   mercado paga mediana 216–308 € a este horizonte, así que un suelo de 480 € probablemente no
+   venda hasta acercarse la fecha — es un suelo defensivo, no una expectativa. Si se quiere
+   reservar la opción del balcón para la Madrugá, subir el 25 y 26/03 a 800 €.
 3. **Después** subir la ventana a **365 días** en Guesty (Listing → Availability → booking
    window). No 730: PriceLabs solo tarifica 365 días, más allá se vendería sin revenue management.
 4. **Verificar el último eslabón**: que las fechas aparezcan reservables en la ficha pública de
