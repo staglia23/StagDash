@@ -14,6 +14,8 @@
 // v7: bruto POST-promoción (fareAccommodationAdjusted) → ADR/RevPAR reales. Ver migración 032.
 // v5: getToken reintenta en 429. v6: cachea el token en sync_state (dura 24h) → no lo pide
 //     en cada corrida, evitando el rate-limit del endpoint de token. (todo 24/07/2026)
+// v8: ingiere también los bloqueos de calendario con su rótulo → guesty_bloqueos
+//     (migración 081, 15/08/2026). Pata independiente: si falla, no tumba las reservas.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -147,6 +149,63 @@ function toRow(r: any, codigo: string) {
   };
 }
 
+// ── v8: bloqueos de calendario con rótulo (migración 081) ──────────────────────────────
+// Los bloqueos manuales eran invisibles para el motor (solo se ingerían reservas) y la señal
+// de PriceLabs ('Blocked') no trae el rótulo. El calendario minified con view=full devuelve
+// en una sola llamada cada día con sus blockIds y un mapa top-level days.blocks con type y
+// note. Se excluyen los bloques de reservas (r/b: ya viven en reservations) y se descarta el
+// objeto reservation anidado (PII de huéspedes). Ventana hoy → hoy+365, borrar y reinsertar
+// por piso: un bloqueo quitado en Guesty debe desaparecer también de la tabla.
+const DIAS_BLOQUEOS = 365;
+
+async function syncBloqueos(supabase: any, token: string, listingMap: Map<string, string>) {
+  const desde = new Date().toISOString().slice(0, 10);
+  const hasta = new Date(Date.now() + DIAS_BLOQUEOS * 86_400_000).toISOString().slice(0, 10);
+  let filas = 0;
+  for (const [guestyId, codigo] of listingMap) {
+    const cal = await guestyGet(
+      `/v1/availability-pricing/api/calendar/listings/minified/${guestyId}?startDate=${desde}&endDate=${hasta}&view=full`,
+      token,
+    );
+    // OJO: la respuesta real viene envuelta en {status, message, data:{days:{...}}} aunque el
+    // spec de la doc la muestra sin envoltorio (verificado en vivo 15/08/2026, causó bloqueos:0
+    // silencioso en la primera corrida). Se toleran ambas formas.
+    const days = cal?.data?.days ?? cal?.days ?? {};
+    const dias = days.calendar ?? [];
+    const bloques = days.blocks ?? {};
+    const rows: any[] = [];
+    for (const dia of dias) {
+      for (const blockId of dia.blockIds ?? []) {
+        const b = bloques[blockId];
+        if (!b || b.type === "r" || b.type === "b") continue; // reservas: ya viven en reservations
+        const { reservation: _r, reservationId: _rid, ...sinReserva } = b;
+        rows.push({
+          codigo,
+          fecha: dia.date,
+          block_id: blockId,
+          tipo: b.type ?? "?",
+          nota: b.note ?? null,
+          desde: b.startDate ?? null,
+          hasta: b.endDate ?? null,
+          created_by: b.createdBy ?? null,
+          raw: sinReserva,
+        });
+      }
+    }
+    // refresco de ventana: borrar y reinsertar (un bloqueo quitado debe desaparecer)
+    const del = await supabase.from("guesty_bloqueos")
+      .delete().eq("codigo", codigo).gte("fecha", desde).lte("fecha", hasta);
+    if (del.error) throw del.error;
+    for (let i = 0; i < rows.length; i += 500) {
+      const { error } = await supabase.from("guesty_bloqueos").insert(rows.slice(i, i + 500));
+      if (error) throw error;
+    }
+    filas += rows.length;
+    await sleep(150); // holgura de rate limit
+  }
+  return filas;
+}
+
 Deno.serve(async (req) => {
   const supabase = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"));
 
@@ -203,11 +262,25 @@ Deno.serve(async (req) => {
       await sleep(150); // holgura de rate limit
     }
 
+    // v8: bloqueos con rótulo — pata independiente: si falla, no tumba la corrida de reservas
+    let bloqueos: number | null = null;
+    try {
+      bloqueos = await syncBloqueos(supabase, token, listingMap);
+      await supabase.from("sync_state").update({
+        bloqueos_last_run: startedAt, bloqueos_last_error: null,
+      }).eq("id", 1);
+    } catch (e) {
+      console.error(e);
+      await supabase.from("sync_state").update({
+        bloqueos_last_run: startedAt, bloqueos_last_error: String(e),
+      }).eq("id", 1);
+    }
+
     await supabase.from("sync_state").update({
       last_sync: startedAt, last_run: startedAt, last_error: null, updated_at: startedAt,
     }).eq("id", 1);
 
-    return Response.json({ ok: true, upserted, skippedNoMap, since });
+    return Response.json({ ok: true, upserted, skippedNoMap, bloqueos, since });
   } catch (e) {
     // el detalle va al log y a sync_state (de donde lo lee v_freshness), NO a la respuesta:
     // String(e) puede arrastrar el cuerpo crudo de error de Guesty o de Postgres

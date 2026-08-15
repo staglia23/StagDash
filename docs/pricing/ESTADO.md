@@ -47,6 +47,15 @@ Si `last_date_pushed` es anterior, **el canal sigue con el precio viejo**.
 
 **e) Frescura general del dato**: `select * from v_freshness;`
 
+**f) Por qué está bloqueada una noche (con su rótulo)** — desde el 15/08/2026 (081):
+
+```sql
+select codigo, fecha, tipo, nota from v_bloqueos order by codigo, fecha;
+```
+
+(tipo `m` = bloqueo manual de Stag y la nota dice el motivo — convención §4; `bw`/`an` =
+bloqueos técnicos de Guesty. Lo refresca guesty-sync cada 3 h.)
+
 **Regla**: si (b) y (c) no cuadran entre sí, parar y averiguar por qué antes de tocar nada.
 
 ---
@@ -94,7 +103,7 @@ bloqueada, leer su rótulo en Guesty.**
 |---|---|---|---|
 | Marechal | **22–25/08/2026** | rotulado "Control": viaje de inspección | Stag, 14/08/2026 |
 | Jacobine | **18–20/08/2026** | rotulado "Control": viaje de inspección a Sevilla | Stag, 03 y 14/08/2026 |
-| Jacobine | **13–14/11/2026** | personal: casamiento de amigos de Stag (⚠️ la noche del 15/11 quedó LIBRE a la venta — confirmar si también va bloqueada; rótulo "Personal — casamiento" pendiente de poner en Guesty) | Stag, 15/08/2026 (por chat) |
+| Jacobine | **13–14/11/2026** | personal: casamiento de amigos de Stag — confirmado que son SOLO 2 noches, la del 15/11 va a la venta (rótulo "Personal — casamiento" pendiente de poner en Guesty) | Stag, 15/08/2026 (por chat, ×2) |
 | Marechal | noches huérfanas sueltas | PriceLabs bloquea automáticamente los huecos de 1 noche; **Stag decidió mantenerlo solo en Marechal** (09/08/2026) | Stag |
 | Nicasio / Alexander | — | min-stay 1 **autorizado** en huecos huérfanos desde el 09/08/2026 | Stag |
 

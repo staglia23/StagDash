@@ -122,6 +122,12 @@ Al listar noches libres, excluir siempre las bloqueadas.
 4 noches de Marechal (22–25/08) que estaba **cerrado a la venta**. Ninguna pantalla lo gritó.
 Ojo al contar: hay un artefacto de borde en las 2 últimas fechas sincronizadas del horizonte
 (migración 064) que también aparece como no vendible y no es un bloqueo real.
+*Actualización 15/08/2026 (guesty-sync v8 + migración 081)*: los bloqueos YA NO son invisibles —
+guesty-sync ingesta el calendario de Guesty con sus bloqueos y **su rótulo** → tabla
+`guesty_bloqueos` / vista `v_bloqueos` (refresco cada 3 h, ventana 365 días). Ante una noche
+'Blocked', el primer reflejo es `select tipo, nota from v_bloqueos where codigo=… and fecha=…`:
+tipo m = manual de Stag (la nota dice por qué), bw = ventana de reserva, an = antelación mínima.
+La señal de PriceLabs queda como contraste, no como única fuente.
 
 **2.9 · Personalizaciones por defecto que la API no expone** (confirmadas por capturas, activas de
 fábrica; se cambian solo por UI: Review Prices → Customizations → All Customizations):

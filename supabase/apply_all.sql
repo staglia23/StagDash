@@ -5913,3 +5913,36 @@ where not exists (
   select 1 from events e
    where e.anio = v.anio and e.mes = v.mes and e.propiedad_codigo = v.cod and e.concepto = v.concepto
 );
+
+-- ═══════════════════════════════════════════════════════════════════════════════
+-- 081 — Bloqueos de calendario de Guesty, con su rótulo (15/08/2026). Idempotente.
+-- Los bloqueos manuales eran invisibles para el motor; guesty-sync v8 los ingiere
+-- (ventana hoy→hoy+365, delete+insert por piso, sin bloques de reservas ni PII).
+-- Convención de rótulos (PLAYBOOK §2.8): "Control" / "Personal — <motivo>".
+-- ═══════════════════════════════════════════════════════════════════════════════
+
+create table if not exists guesty_bloqueos (
+  codigo     text not null references listings(codigo),
+  fecha      date not null,
+  block_id   text not null,
+  tipo       text not null,
+  nota       text,
+  desde      timestamptz,
+  hasta      timestamptz,
+  created_by text,
+  raw        jsonb,
+  synced_at  timestamptz not null default now(),
+  primary key (codigo, fecha, block_id)
+);
+
+alter table guesty_bloqueos enable row level security;
+grant select, insert, update, delete on guesty_bloqueos to service_role;
+
+alter table sync_state add column if not exists bloqueos_last_run timestamptz;
+alter table sync_state add column if not exists bloqueos_last_error text;
+
+create or replace view v_bloqueos as
+  select codigo, fecha, block_id, tipo, nota, desde, hasta, synced_at
+  from guesty_bloqueos;
+
+grant select on v_bloqueos to authenticated;
