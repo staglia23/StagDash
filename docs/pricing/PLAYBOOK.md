@@ -105,6 +105,12 @@ en el calendario de Guesty.
 *Cicatriz 13–14/08/2026*: se dedicó un diagnóstico entero a averiguar por qué no se vendían las
 noches 22–25 de Marechal, se estimaron 369 € recuperables y se le pidió a Stag que abriera
 Guesty — eran su viaje de control. Jacobine 18–20/08 es el mismo caso.
+*Ampliación 15/08/2026*: los bloqueos personales (amigos, familia) se rotulan **"Personal —
+<motivo>"** y Stag avisa por chat; se registran en ESTADO §4. Un bloqueo sin reserva y sin rótulo
+conocido se PREGUNTA antes de analizarlo o tocarlo.
+*Cicatriz 15/08/2026*: Jacobine 13–14/11 aparecieron bloqueadas sin reserva la misma tarde en que
+se aplicaba el min-stay de esa semana — eran un casamiento de amigos de Stag; el min 7 recién
+escrito dejó el hueco 8–12 invendible hasta reajustarlo a 5.
 
 **2.9 · Los bloqueos de calendario son invisibles para el motor.**
 `guesty-sync` **no** ingesta bloqueos: la tabla `reservations` solo guarda `canceled`, `closed`,

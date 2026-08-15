@@ -94,6 +94,7 @@ bloqueada, leer su rótulo en Guesty.**
 |---|---|---|---|
 | Marechal | **22–25/08/2026** | rotulado "Control": viaje de inspección | Stag, 14/08/2026 |
 | Jacobine | **18–20/08/2026** | rotulado "Control": viaje de inspección a Sevilla | Stag, 03 y 14/08/2026 |
+| Jacobine | **13–14/11/2026** | personal: casamiento de amigos de Stag (⚠️ la noche del 15/11 quedó LIBRE a la venta — confirmar si también va bloqueada; rótulo "Personal — casamiento" pendiente de poner en Guesty) | Stag, 15/08/2026 (por chat) |
 | Marechal | noches huérfanas sueltas | PriceLabs bloquea automáticamente los huecos de 1 noche; **Stag decidió mantenerlo solo en Marechal** (09/08/2026) | Stag |
 | Nicasio / Alexander | — | min-stay 1 **autorizado** en huecos huérfanos desde el 09/08/2026 | Stag |
 

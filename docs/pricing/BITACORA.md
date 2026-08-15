@@ -287,3 +287,13 @@ huecos (en JACO 15/11 el override guarda 7 y el `pricing_array` muestra 3): el m
 **efectivo** se lee en el `pricing_array`, no en el override. (2) Una escritura de min-stay puede
 volver unbookable un hueco entero si el calendario cambió entre la lectura y la escritura —
 releer disponibilidad en la misma pasada de verificación, como acá.
+
+**Addendum 15/08 (noche)** · Rótulo resuelto por chat: el bloqueo 13–14/11 de Jacobine es de Stag
+(casamiento de amigos). Nace la convención de rótulos: bloqueo personal = **"Personal — <motivo>"**
+(inspección sigue siendo "Control") → PLAYBOOK §2.8 y ESTADO §4. Aplicado JACO 8–12/11 min 7→**5**
+(hueco de una pieza: entrada 8 → salida 13, justo cuando entra el casamiento); verificado
+`unbookable: 0` y precios solo con deriva diaria (±2 €). ⚠️ La noche del 15/11 sigue LIBRE a la
+venta (189 €) — avisado Stag por si el casamiento la necesita. Push de Stag 19:09 verificado en
+los 4 (`last_date_pushed`), pero el min 5 de JACO es de las 19:20 → **falta un push más de
+Jacobine**. Verificación en Airbnb pendiente (WebFetch da 403; la hace Stag simulando una reserva
+corta). Escalones 21/09 y 25/10 sin cambio (en JACO: 5→3→2).
