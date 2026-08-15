@@ -106,3 +106,6 @@ bloqueada, leer su rótulo en Guesty.**
 | 01/09/2026 | Recalcular foto forward y decidir promos de Airbnb vivas antes de octubre |
 | 01/10/2026 | Subida estructural de mínimos vía Custom Seasonal Profile (PLAYBOOK §6). **No antes.** |
 | A las 2 semanas de aplicarla | Revisar y, si el pickup no responde, apagar el perfil |
+| **21/09/2026** | Escalón 2 del min-stay "semana despedida" (bitácora 15/08): bajar 7→**3** (NICA 4→3) en llegadas 7–15/11 (JACO 8–15/11) |
+| **25/10/2026** | Escalón 3: bajar a min-stay **2** en la misma ventana |
+| Al responder PriceLabs (mail a support@pricelabs.co) | Configurar cierre de llegadas 06/11 y 15/11 (4 pisos) y de salidas 19/01/2027 (NICA/MARE/JACO) + verificar en Airbnb; NUNCA mezclar con restricciones manuales en Guesty |

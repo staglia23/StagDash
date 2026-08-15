@@ -257,3 +257,33 @@ activar tarifa no reembolsable (solo elegible dentro de 60 días).
 **A retirar cuando se confirme el calendario oficial de la Feria 2027**: los 7 suelos de cobertura
 del 19–25/04. Están puestos porque la Feria no está confirmada y el coste de equivocarse es
 asimétrico (un suelo de más solo retrasa una venta; un suelo de menos la malvende para siempre).
+
+---
+
+## 2026-08-15 · Min-stay decay para la semana sin supervisión (despedida de Río)
+
+**Hipótesis** · Del 7 al 15/11 Stag está en Río (despedida de soltero) y quiere mínimos
+movimientos que supervisar. Sus propios datos lo permiten sin regalar nada: las estadías de 6+
+noches reservan con mediana 107 días de antelación (mínimo observado en 12 meses: 48 días; 14 de
+15 con 67+) y las de 3–5 noches de otoño con mediana 44 → se puede exigir "semana entera" sin
+coste real hasta ~48 días antes del check-in, y abrir por escalones a tiempo para la demanda
+corta. (Aparte, los días de vuelo 6/11 y 15/11 llevarán cierre de llegadas vía sync de
+restricciones de PriceLabs — mail a support@pricelabs.co pendiente de envío; decisión de Stag de
+gestionarlo por PriceLabs y no a mano en Guesty.)
+**Aplicado** · Overrides de `min_stay` (sin tocar precio) con `reason` fechado, 15/08 ~18:54 UTC:
+ALEX y MARE min 7 en llegadas 07–15/11; JACO min 7 en 08–15/11; NICA min 4 en 07–10/11 (su hueco
+es de 4 noches: 11–17/11 ya vendido). Escalones comprometidos al aplicar: **21/09 → min 3**
+(NICA 4→3) y **25/10 → min 2**. Verificado `overrides_after_update` limpio (solo min_stay+reason,
+nada mergeado) y `pricing_array` sin movimiento de precios en la ventana. Pendiente: push de Stag
+("Sincronizar Ahora" ×4) y verificación del último eslabón en Airbnb.
+**Resultado** · Sin medir (se mide en cada escalón y al cierre de la semana). Sorpresa en la
+lectura post-aplicación: **Jacobine 13–14/11 aparecen bloqueadas sin reserva** (`num_bookings: 0`,
+y get_pms_reservations vacío 08–18/11) cuando a las 07:10 UTC estaban libres a 283/307 € con Good
+Demand — bloqueo de hoy en Guesty, rótulo pendiente de leer. Con ese bloqueo, el min 7 deja
+8–12/11 **unbookable** (hueco de 5 noches < 7). Decisión en espera del rótulo: bloqueo deliberado
+→ bajar 8–12 a min 5 (vender el hueco de una pieza); error → desbloquear y el min 7 sigue.
+**Aprendizaje** · (1) El motor puede quedar por debajo de un `min_stay` de override para encajar
+huecos (en JACO 15/11 el override guarda 7 y el `pricing_array` muestra 3): el min-stay
+**efectivo** se lee en el `pricing_array`, no en el override. (2) Una escritura de min-stay puede
+volver unbookable un hueco entero si el calendario cambió entre la lectura y la escritura —
+releer disponibilidad en la misma pasada de verificación, como acá.
