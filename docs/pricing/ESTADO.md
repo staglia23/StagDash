@@ -121,6 +121,6 @@ bloqueada, leer su rótulo en Guesty.**
 | 01/09/2026 | Recalcular foto forward y decidir promos de Airbnb vivas antes de octubre |
 | 01/10/2026 | Subida estructural de mínimos vía Custom Seasonal Profile (PLAYBOOK §6). **No antes.** |
 | A las 2 semanas de aplicarla | Revisar y, si el pickup no responde, apagar el perfil |
-| **21/09/2026** | Escalón 2 del min-stay "semana despedida" (bitácora 15/08): bajar 7→**3** (NICA 4→3) en llegadas 7–15/11 (JACO 8–15/11). ⚠️ En el 15/11 REENVIAR los 3 campos CICO o se pierde el cierre de llegadas |
-| **25/10/2026** | Escalón 3: bajar a min-stay **2** en la misma ventana (misma advertencia del 15/11) |
-| Cuanto antes | Stag: activar Stay Restrictions → Check In/Check Out en **ALEX y JACO** (7 días permitidos en ambas filas) + Sync Now ×4; después verificar `cta`/`ctd` en Guesty y probar en Airbnb (bitácora 17/08) |
+| **21/09/2026 07:00 UTC** | Escalón 2 del min-stay "semana despedida": 7→**3** (NICA 4→3) en llegadas 7–15/11 (JACO 8–15/11). ⚠️ En el 15/11 REENVIAR los 3 campos CICO o se pierde el cierre de llegadas. **AUTOMATIZADO** → routine `trig_013aGy9oHDKkwSaB4h5UVyFp` (agente en la nube; avisa por mail a info@). Si se desprograma, hacerlo a mano |
+| **25/10/2026 08:00 UTC** | Escalón 3 (último): min-stay **2** en la misma ventana, misma advertencia del 15/11. **AUTOMATIZADO** → routine `trig_01EdEUADEk3iFTs6gN7JMwe4`. Cierra el experimento en la bitácora |
+| Pendiente sin fecha | Único eslabón sin verificar de los cierres del 17/08: probar en **Airbnb** como huésped que rebota una llegada el 06/11 y una salida el 19/01 (PriceLabs y Guesty ya verificados) |

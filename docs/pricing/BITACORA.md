@@ -337,3 +337,18 @@ NICA está vendido: donde muerde de verdad es en JACO, cuyo min-stay efectivo de
    escribió piso por piso, no los 4 en una llamada.
 5. **Al bajar el min-stay en los escalones del 21/09 y 25/10 hay que REENVIAR los campos CICO**
    del 15/11, o el cierre de llegadas se pierde. Está escrito en el propio `reason` del override.
+
+**Addendum 17/08 (madrugada)** · Cadena verificada hasta Guesty y escalones automatizados.
+Stag activó el default de Stay Restrictions en ALEX y JACO (pasaron de `-1` a `1111111` en el
+`pricing_array`, sin tocar ninguna fecha) y sincronizó los 4. El calendario de Guesty ya devuelve
+**`cta: true` el 06/11 y el 15/11 en los cuatro pisos** y **`ctd: true` el 19/01 en NICA, MARE y
+JACO** (ALEX en `false`, correcto: su salida del 19/01 es una reserva confirmada). Queda un solo
+eslabón sin verificar, el que manda: probar en Airbnb como huésped. Nota útil para el futuro: la
+doc de Guesty avisa que las restricciones puestas vía PriceLabs "no se ven en Guesty", pero eso
+vale para su UI — **la Open API sí las expone** en `days.calendar[].cta/.ctd` del endpoint
+minified, que es como se auditó esto.
+Los dos escalones dejaron de depender de que alguien se acuerde: se programaron como agentes en
+la nube de una sola ejecución (21/09 07:00 UTC y 25/10 08:00 UTC), con el playbook y esta bitácora
+en su contexto, la instrucción explícita de reenviar los campos CICO del 15/11, y aviso por mail
+a info@ al terminar. El del 25/10 además cierra el experimento midiendo cuántas noches de la
+semana se vendieron en cada escalón.
