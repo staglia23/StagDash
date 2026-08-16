@@ -701,7 +701,8 @@ contra `v_cuadre` no está cargado.
   veredicto y trade-offs en euros, no solo datos (regla del 06/08/2026).
 - **Qué se deriva a otro proyecto**: lo fiscal, societario y administrativo va a *Samavi —
   Administración & Fiscal*; las automatizaciones (mail → Drive, IA de huéspedes, N8N) van a
-  *Stag Automatizaciones*; la captación de propietarios va a *Stag Captacion*. **Excepción
+  *Stag Automatizaciones*; la captación de propietarios y el marketing van a *Stag Marketing*
+  (ex *Stag Captacion*, renombrado 16/08/2026). **Excepción
   decidida el 06/08/2026**: pricing y revenue management **sí** viven en este repo, porque acá
   están los datos y el MCP de PriceLabs.
 - **Convención del usuario**: una conversación = un tema.
