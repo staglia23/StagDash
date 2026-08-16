@@ -297,3 +297,43 @@ venta (189 €) — avisado Stag por si el casamiento la necesita. Push de Stag 
 los 4 (`last_date_pushed`), pero el min 5 de JACO es de las 19:20 → **falta un push más de
 Jacobine**. Verificación en Airbnb pendiente (WebFetch da 403; la hace Stag simulando una reserva
 corta). Escalones 21/09 y 25/10 sin cambio (en JACO: 5→3→2).
+
+---
+
+## 2026-08-17 · CTA/CTD por fecha: cierre de llegadas y salidas en los días sin cobertura
+
+**Hipótesis** · Stag supervisa llegadas/salidas desde el móvil; en tres momentos del viaje queda
+sin cobertura justo en la franja crítica (06/11 vuelo BCN→MAD→Río, offline 12–23 h Madrid;
+15/11 vuelo Río→Buenos Aires, offline 15–20 h; 19/01 cruce del Atlántico, la mañana de salidas).
+Un CTA/CTD por fecha cierra el movimiento SIN matar la noche: la estadía que pasa de largo se
+sigue vendiendo. PriceLabs (Erika, ticket 941403, 15/08) confirmó que la función ya está
+habilitada para la cuenta y los 4 listings de Guesty.
+**Aplicado** · Ensayo previo en fecha invendible (JACO 15/07/2027, fuera de ventana de reserva):
+guardó y se reflejó en el `pricing_array`; borrado después. Luego, overrides reales 17/08 ~01:13
+Madrid, sin tocar precio: **CTA 06/11 y 15/11 en los 4 pisos; CTD 19/01/2027 en NICA, MARE y
+JACO** (ALEX no: su checkout del 19/01 es una reserva ya confirmada, 10→19/01). En el 15/11 de
+ALEX/MARE/JACO se reenvió el objeto COMPLETO (min_stay 7 + CICO) para no pisar el min-stay.
+Verificado en los 4: las 3 fechas con su máscara y las otras 538 del horizonte neutras.
+**Resultado** · Sin medir. Pendiente: (a) activar el default de CICO en ALEX y JACO — ver
+aprendizaje 2; (b) Sync Now ×4; (c) verificar en Guesty (`cta`/`ctd` del calendario) y en Airbnb.
+Coste esperado del CTA del 06/11: ~300 € (viernes de buena demanda en NICA 297 € y ALEX 261 €;
+JACO y MARE ya están ocupados esa noche). El 15/11 aporta poco en ALEX/MARE (ya tenían min 7) y
+NICA está vendido: donde muerde de verdad es en JACO, cuyo min-stay efectivo del 15/11 es 3.
+**Aprendizaje** ·
+1. **Los campos de la API son `check_in_check_out_enabled` ("0"/"1"), `check_in` y `check_out`**,
+   estos dos como string binario de 7 chars **lunes→domingo, 1 = PERMITIDO, 0 = prohibido** —
+   al revés de lo intuitivo. Hay que mandar SIEMPRE los tres. No existen `cta`/`ctd` en PriceLabs.
+   Máscaras usadas: viernes cerrado `1111011`, domingo `1111110`, martes `1011111`.
+2. **El default de Stay Restrictions a nivel listado es requisito y NO se puede tocar por API**
+   (`update_listing_data` solo acepta min/base/max/tags; el endpoint de customizations no expone
+   CICO). Se lee indirectamente en el `pricing_array`: `1111111` = función activa y neutra;
+   `-1` = función sin activar. Hoy NICA y MARE están en `1111111` y **ALEX y JACO en `-1`** →
+   esos dos necesitan el toggle por UI. Que NICA/MARE convivan con los 7 días permitidos prueba
+   que "todo permitido" es un estado válido y neutro (la doc no lo dice; se dedujo del dato real).
+3. **Un override parcial NO pisa el resto**: reenviando `min_stay` + `reason` junto a los campos
+   CICO, el min-stay sobrevivió intacto en los 3 pisos donde ya existía (verificado en
+   `overrides_after_update`). Aun así la doc no documenta el merge → seguir reenviando completo.
+4. **Fallo atómico**: un override inválido tumba el lote entero (400, nada se guarda). Por eso se
+   escribió piso por piso, no los 4 en una llamada.
+5. **Al bajar el min-stay en los escalones del 21/09 y 25/10 hay que REENVIAR los campos CICO**
+   del 15/11, o el cierre de llegadas se pierde. Está escrito en el propio `reason` del override.

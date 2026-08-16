@@ -86,6 +86,19 @@ que es la única forma de detectar que el plan vigente ya no es el que se aplic�
 *Cicatriz 13/08/2026*: el plan del 09/08 (Marechal 93/115/105) había sido reemplazado el 12/08
 a las 08:15 UTC por 84/119 con motivo vacío, y el análisis se estaba haciendo sobre datos falsos.
 
+**2.6-bis · CTA/CTD: la máscara es al revés de lo intuitivo, y `1` significa PERMITIDO.**
+Los campos son `check_in_check_out_enabled` ("0"/"1"), `check_in` y `check_out` — los dos últimos,
+string binario de 7 caracteres **lunes→domingo**, donde **`1` = permitido y `0` = cerrado**. Para
+cerrar las llegadas de un viernes se manda `1111011`. Hay que enviar SIEMPRE los tres campos.
+Requisito previo: la función tiene que estar activada a nivel listado (Stay Restrictions →
+Check In/Check Out), y eso **solo se hace por UI** — `update_listing_data` solo acepta
+min/base/max/tags. Se comprueba en el `pricing_array`: `1111111` = activa y neutra, `-1` = sin
+activar. Al reescribir un override que ya tenía `min_stay`, reenviar el objeto COMPLETO
+(min_stay + reason + los tres campos CICO) o se pierde lo que no se manda.
+*Cicatriz 17/08/2026*: se aplicaron los cierres de los días de vuelo de Stag (06/11, 15/11 y
+19/01) y se descubrió que ALEX y JACO tenían la función sin activar mientras NICA y MARE ya
+estaban en `1111111` — el override se guarda igual, así que el fallo sería silencioso.
+
 **2.7 · `price_type` SIEMPRE `"fixed"`. Nunca `"percent"` — ni en la API ni en la UI.**
 En el formulario de override, el campo de precio tiene un selector fijo/porcentaje. Si queda en
 porcentaje, escribir `149` **no publica 149 €: publica +149 % (×2,49)**.

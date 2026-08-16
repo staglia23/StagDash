@@ -41,6 +41,11 @@ order by fecha;
 `get_listing_date_overrides(listing_id, pms="guesty", start_date, end_date)`.
 Mirar `reason` (vacío = edición manual desde la UI) y `updated_at`.
 
+**c-bis) Restricciones de check-in/check-out (CTA/CTD)** — desde el 17/08/2026:
+en `refresh_listing_pricing` → `pricing_array`, campos `check_in` / `check_out`. String binario
+de 7 chars **lunes→domingo, 1 = permitido, 0 = cerrado**. `1111111` = función activa y neutra ·
+`-1` = función SIN activar en ese listado (requisito previo, solo se activa por UI).
+
 **d) Si el precio llegó al canal**
 `get_listing_data(listing_id)` → comparar `last_date_pushed` con la hora del último cambio.
 Si `last_date_pushed` es anterior, **el canal sigue con el precio viejo**.
@@ -116,6 +121,6 @@ bloqueada, leer su rótulo en Guesty.**
 | 01/09/2026 | Recalcular foto forward y decidir promos de Airbnb vivas antes de octubre |
 | 01/10/2026 | Subida estructural de mínimos vía Custom Seasonal Profile (PLAYBOOK §6). **No antes.** |
 | A las 2 semanas de aplicarla | Revisar y, si el pickup no responde, apagar el perfil |
-| **21/09/2026** | Escalón 2 del min-stay "semana despedida" (bitácora 15/08): bajar 7→**3** (NICA 4→3) en llegadas 7–15/11 (JACO 8–15/11) |
-| **25/10/2026** | Escalón 3: bajar a min-stay **2** en la misma ventana |
-| Al responder PriceLabs (mail a support@pricelabs.co) | Configurar cierre de llegadas 06/11 y 15/11 (4 pisos) y de salidas 19/01/2027 (NICA/MARE/JACO) + verificar en Airbnb; NUNCA mezclar con restricciones manuales en Guesty |
+| **21/09/2026** | Escalón 2 del min-stay "semana despedida" (bitácora 15/08): bajar 7→**3** (NICA 4→3) en llegadas 7–15/11 (JACO 8–15/11). ⚠️ En el 15/11 REENVIAR los 3 campos CICO o se pierde el cierre de llegadas |
+| **25/10/2026** | Escalón 3: bajar a min-stay **2** en la misma ventana (misma advertencia del 15/11) |
+| Cuanto antes | Stag: activar Stay Restrictions → Check In/Check Out en **ALEX y JACO** (7 días permitidos en ambas filas) + Sync Now ×4; después verificar `cta`/`ctd` en Guesty y probar en Airbnb (bitácora 17/08) |
