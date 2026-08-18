@@ -173,7 +173,9 @@ en ella quedaron marcados con ⚑ en `events.notas` para que nadie los lea como 
   event de julio (470,06 €). No se carga dos veces.
 - **AEAT modelo 111** (retenciones): tratamiento fijado el 11/08/2026 con el PDF del 2T. La
   retención de la nómina de Stag **no** genera event (ya vive dentro de la provisión "Sueldo
-  Stag bruto", 3.333,33 €/mes, verificada hoy en `general_expenses`); la del empleado de
+  Stag bruto", 3.333,33 €/mes; **verificada contra banco el 18/08/2026**: 3.333,33 × 0,90 =
+  3.000,00 netos exactos, que son los que salen de Revolut cada mes como "Retribución
+  administrador" — ver [RETRIBUCION_CEO.md](RETRIBUCION_CEO.md)); la del empleado de
   Sevilla **sí** (event mensual en JACO de −10,56 €, −10,55 € al cierre de trimestre); las
   retenciones de profesionales van como event `CORPORATIVO` en el mes del pago (julio 2026:
   −71,86 €, verificado hoy).

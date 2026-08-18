@@ -32,6 +32,7 @@ histórico, se parte y su cuerpo se muda acá.
 | Archivo | Qué cubre |
 |---|---|
 | [operativa/CASUISTICAS.md](operativa/CASUISTICAS.md) | Cierre mensual y conciliación, facturas y proveedores, recobros, bloqueos de calendario, cancelaciones, frescura del dato, seguridad al crear objetos SQL, y el ritual de trabajo con Stag. |
+| [operativa/RETRIBUCION_CEO.md](operativa/RETRIBUCION_CEO.md) | Qué cobra Stag (verificado contra banco), qué costaría subirlo a 3.500 € netos, y los tres hallazgos fiscales que destapó: la retención del 10 %, el RETA como retribución en especie y la subida automática de la cuota en 2026. |
 
 ## Relevamientos puntuales (foto de un momento, no se mantienen)
 
