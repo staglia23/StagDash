@@ -5994,3 +5994,15 @@ update events
    set notas = 'Indicado por Stag el 18/08/2026: gratificacion por las 5 estrellas conseguidas en el anuncio de Jacobine. PAGADO EN EFECTIVO, no por banco: Stag cobro una reserva en efectivo por fuera y de ese dinero le da 250 a Jose; el resto se lo queda el. NO tiene ni va a tener respaldo bancario, por diseno (mismo caso que los demas pagos en efectivo, CASUISTICAS 1.4). El efectivo cobrado queda en poder de Stag -> cuenta con el socio (mismo carril que la reserva directa de JACO de julio, 520, migracion 074); pagar con el un gasto de Samavi baja ese saldo en 250. Lo asume Samavi y no se refactura a la duena, igual que amenities, lavanderia y toallas de Sevilla. PENDIENTE: identificar la reserva y su importe (084).'
  where anio = 2026 and mes = 8 and propiedad_codigo = '1A_JACO'
    and concepto = 'Gratificación a José por reseñas de 5 estrellas';
+
+-- ── 085_gratificacion_jose_reserva.sql (18/08/2026) ──────────────────────────────────
+-- Se ata la gratificación de José a la reserva que la financió: GY-yPcHaPx6 (1A_JACO,
+-- 24–27/07/2026, 520 € en efectivo; nota de Guesty "Entregado a Jose en mano"). El pago SÍ
+-- es visible por API: vive en reservations.money_raw->'payments'. El ingreso de esa reserva
+-- ya está devengado en julio (130,00 Samavi + 27,30 IVA + 362,70 pasivo madre), así que no
+-- falta ninguna pata: el ingreso cae en julio y el gasto en agosto, correcto por devengo.
+
+update events
+   set notas = 'Indicado por Stag el 18/08/2026: gratificacion por las 5 estrellas conseguidas en el anuncio de Jacobine. PAGADO EN EFECTIVO, no por banco. ORIGEN IDENTIFICADO (085): reserva GY-yPcHaPx6 de 1A_JACO, 24-27/07/2026, 3 noches, source manual, bruto 520,00 cobrado en efectivo; en Guesty el pago figura con la nota "Entregado a Jose en mano" (23/07/2026, metodo de cobro fuera de pasarela). De esos 520: 250 para Jose y 270 se los queda Stag -> cuenta con el socio. El INGRESO de esa reserva ya esta devengado en JULIO (ingreso Samavi 130,00 + IVA repercutido 27,30 + pasivo madre 362,70): el gasto cae en agosto y el ingreso en julio, correcto por devengo. NO tiene ni va a tener respaldo bancario, por diseno (CASUISTICAS 1.4). Lo asume Samavi y no se refactura a la duena.'
+ where anio = 2026 and mes = 8 and propiedad_codigo = '1A_JACO'
+   and concepto = 'Gratificación a José por reseñas de 5 estrellas';

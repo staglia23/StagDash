@@ -159,6 +159,22 @@ Cuatro agujeros estructurales, todos descubiertos con casos reales:
    Stag → cuenta con el socio. Precedente: una reserva directa de 3 noches de julio-2026, 520 €. En el
    cuadre esa reserva nunca va a tener respaldo bancario y **eso es normal, no un agujero**.
 
+   **Cómo se identifican sin preguntar** (hallazgo del 18/08/2026): el sync guarda el objeto
+   `money` de Guesty entero en `reservations.money_raw`, y ahí vive `payments[]` con la nota,
+   el importe, la fecha y el método de cada cobro. El `paymentMethodId`
+   `58a1931c0000000000000e87` es el que Guesty usa para todo lo cobrado **fuera de la
+   pasarela**; qué fue exactamente lo dice la nota que escribe Stag ("Pago en efectivo",
+   "Entregado a Jose en mano", "Cash Claudio", "CA USD Galicia"…). No hay campo tipado: la
+   nota es la fuente. Antes de dar por descuadrado un ingreso sin depósito, correr esto:
+
+   ```sql
+   select r.codigo, r.confirmation_code, r.checkin_local, r.bruto,
+          p->>'note' as nota_pago, (p->>'amount')::numeric as importe, p->>'paidAt' as pagado_el
+     from reservations r, jsonb_array_elements(r.money_raw->'payments') p
+    where p->>'paymentMethodId' = '58a1931c0000000000000e87'
+    order by r.checkin_local desc;
+   ```
+
 La procedencia de las fuentes también tiene regla (Stag, 26/07/2026): **la planilla manual es
 cómo se manejaba antes del dashboard y puede tener errores** — se contrasta contra
 documentación real o contra confirmación suya, nunca se asume. Los apuntes que descansan solo
