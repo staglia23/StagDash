@@ -5946,3 +5946,24 @@ create or replace view v_bloqueos as
   from guesty_bloqueos;
 
 grant select on v_bloqueos to authenticated;
+
+-- ── 082_sueldo_ceo.sql (18/08/2026) ──────────────────────────────────────────────────
+-- El sueldo de Stag pasa de 3.000 a 3.500 € netos desde agosto. La provisión vieja quedó
+-- verificada contra banco (3.333,33 × 0,90 = 3.000,00 netos exactos, "Retribución
+-- administrador" en Revolut el 03/05, 01/06 y 01/07) y julio NO fueron 3.500: por eso la
+-- vigencia nueva arranca en agosto. Bruto 4.320,99 = 3.500 / 0,81 (retención 19 % del
+-- art. 101.2 LIRPF; pendiente que Confisic confirme el INCN 2025 — si llegó a 100.000 €
+-- el tipo es 35 % y el bruto pasa a 5.384,62). Detalle: docs/operativa/RETRIBUCION_CEO.md
+
+update general_expenses
+   set hasta = date '2026-07-31'
+ where concepto = 'Sueldo Stag bruto'
+   and importe_mes = 3333.33
+   and hasta is null;
+
+insert into general_expenses (concepto, importe_mes, desde, hasta, es_corporativo)
+select 'Sueldo Stag bruto', 4320.99, date '2026-08-01', null, false
+where not exists (
+  select 1 from general_expenses
+   where concepto = 'Sueldo Stag bruto'
+     and desde = date '2026-08-01');

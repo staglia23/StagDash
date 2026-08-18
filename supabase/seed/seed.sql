@@ -84,11 +84,14 @@ update listings set renta_factura_desde = date '2026-06-01',
   renta_iva_pct = 0.21, renta_retencion_pct = 0.19 where codigo = '3G_MARE';
 
 delete from general_expenses;
--- SYNC 27/07/2026 — copia exacta de producción (15 líneas; migración 051 desglosó Orange y
+-- SYNC 18/08/2026 — copia exacta de producción (16 líneas; migración 051 desglosó Orange y
 -- marcó es_corporativo, que NO entra al pool prorrateado por piso). Pool no corporativo:
 -- 4.247,18/mes (4.337,18 desde jun) · corporativo fijo desde may: 571,34/mes.
+-- La 082 partió el sueldo de Stag en dos vigencias: 3.333,33 hasta julio (neto 3.000,
+-- verificado contra banco) y 4.320,99 desde agosto (neto 3.500). Pool desde ago: 5.324,84.
 insert into general_expenses (concepto, importe_mes, desde, hasta, es_corporativo) values
-  ('Sueldo Stag bruto', 3333.33, NULL, NULL, false),
+  ('Sueldo Stag bruto', 3333.33, NULL, date '2026-07-31', false),
+  ('Sueldo Stag bruto', 4320.99, date '2026-08-01', NULL, false),
   ('TGSS RETA Stag', 370.75, NULL, NULL, false),
   ('Asesor Confisic', 181.50, NULL, NULL, false),
   ('Orange — móviles corporativos', 137.04, NULL, NULL, false),

@@ -43,23 +43,25 @@ histórico, se parte y su cuerpo se muda acá.
 
 ## Las cuatro, de un vistazo
 
-Datos del motor (`f_breakeven`) para el YTD 01/01 → 14/08/2026. **Estas cifras caducan**: la
-consulta que las regenera está en [pricing/ESTADO.md](pricing/ESTADO.md).
+Datos del motor (`f_breakeven`) para el YTD 01/01 → 18/08/2026, **ya con el sueldo del CEO a
+3.500 € netos** (migración 082: el pool de overhead pasa a 5.324,84 €/mes desde agosto, y cada
+piso carga 246,92 €/mes más). **Estas cifras caducan**: la consulta que las regenera está en
+[pricing/ESTADO.md](pricing/ESTADO.md).
 
 | | Nicasio | Alexander | Marechal | Jacobine |
 |---|---|---|---|---|
 | Modelo | titular | subarriendo | subarriendo | comisión 25 % + IVA |
 | Bajo gestión desde | jun-2024 | oct-2025 | dic-2025 | jun-2025 |
 | Ciudad | Madrid | Madrid | Madrid | Sevilla |
-| Contribución / noche | **153,94 €** | 124,12 € | 106,83 € | 64,66 € |
-| Ocupación de equilibrio | 48,8 % | 84,1 % | 83,1 % | 64,0 % |
-| Ocupación real | 90,1 % | 90,5 % | 88,5 % | 81,5 % |
-| **Colchón** | **+41,35 pp** | +6,39 pp | **+5,37 pp** | +17,47 pp |
+| Contribución / noche | **153,03 €** | 124,12 € | 106,14 € | 64,66 € |
+| Ocupación de equilibrio | 49,7 % | 85,0 % | 84,6 % | 65,6 % |
+| Ocupación real | 90,1 % | 90,5 % | 89,7 % | 81,5 % |
+| **Colchón** | **+40,40 pp** | +5,57 pp | **+5,11 pp** | +15,90 pp |
 | Limpieza: cuesta | 53,72 € | 43,80 € | 43,80 € | — (la paga la dueña) |
 
 **Cómo se lee esta tabla**: los tres de Madrid están en el mismo edificio y venden parecido, pero
-su economía no tiene nada que ver. Nicasio aguanta caer 41 puntos de ocupación antes de perder
-dinero; **Alexander y Marechal aguantan 6 y 5**. Por eso una bajada de precio que en Nicasio es
+su economía no tiene nada que ver. Nicasio aguanta caer 40 puntos de ocupación antes de perder
+dinero; **Alexander y Marechal aguantan 5,6 y 5,1**. Por eso una bajada de precio que en Nicasio es
 táctica, en los otros dos es estructural — y por eso los experimentos de precio arriesgados se
 hacen en Nicasio, no en ellos.
 

@@ -2,8 +2,9 @@
 
 > Relevamiento del **18/08/2026**, a pedido de Stag ("el sueldo de julio fueron 3.500 € netos y a
 > partir de ahora ese va a ser mi sueldo"). Verificado contra extractos bancarios, contra el
-> modelo 111 del 2T y contra el motor. **Las cifras de escenarios caducan**: las consultas que las
-> regeneran están al pie.
+> modelo 111 del 2T y contra el motor. **Resuelto**: julio fueron 3.000 (§1) y la subida se aplicó
+> desde agosto (§4, migración 082). **Las cifras caducan**: las consultas que las regeneran están
+> al pie.
 
 ---
 
@@ -41,7 +42,7 @@ nómina o del 111.
 El bruto necesario depende del **tipo de retención**, y ahí hay un problema previo (§3). Con el
 RETA fuera de la nómina (el autónomo societario no tiene cuota obrera), `bruto = neto / (1 − tipo)`:
 
-| Hipótesis de retención | Bruto/mes | Bruto/año | Coste Samavi/año | Δ vs hoy | **Resultado Samavi 2026** |
+| Hipótesis de retención | Bruto/mes | Bruto/año | Coste Samavi/año | Δ vs hoy | **Resultado Samavi a 12 meses** |
 |---|---|---|---|---|---|
 | *(hoy: 3.000 netos, 10 %)* | 3.333,33 € | 40.000 € | 44.449 € | — | **11.996 €** |
 | 10 % (el que aplican hoy) | 3.888,89 € | 46.667 € | 51.116 € | +6.667 € | 5.329 € |
@@ -49,8 +50,11 @@ RETA fuera de la nómina (el autónomo societario no tiene cuota obrera), `bruto
 | 35 % administrador (INCN ≥ 100 k) | 5.384,62 € | 64.615 € | 69.064 € | +24.615 € | −12.620 € |
 | Para que le queden 3.500 € **limpios tras la declaración** | 4.531,86 € | 54.382 € | 58.831 € | +14.382 € | −2.387 € |
 
+Esa última columna es el **run-rate de 12 meses**: qué queda si el sueldo nuevo corre el año
+entero. En 2026 el golpe es menor porque sólo aplica de agosto a diciembre (§4).
+
 **El número que manda**: el resultado Samavi proyectado para 2026 (año completo, con lo reservado
-hoy) es **11.996 €**. Subir el neto de 3.000 a 3.500 con la retención correcta del 19 % cuesta
+hoy) era **11.996 €**. Subir el neto de 3.000 a 3.500 con la retención correcta del 19 % cuesta
 **11.852 €/año**. O sea:
 
 > **El aumento consume, casi al euro, el beneficio anual entero de la sociedad.**
@@ -64,9 +68,9 @@ sería ~3.142 €/mes. Para que le queden 3.500 € limpios de verdad hace falta
 
 ### Efecto sobre el punto de equilibrio de cada piso
 
-El sueldo es **el 84 % del pool de overhead** (29.633 € de 35.323 € YTD), y el overhead se
-prorratea por días bajo gestión: cada piso absorbe un cuarto. Escenario 19 %, a run-rate de año
-completo (cada piso carga 2.963 €/año más):
+El sueldo es **el 84 % del pool de overhead** YTD (30.620 € de 36.311 €) y **el 88 % del pool
+desde agosto** (4.691,74 de 5.324,84), y el overhead se prorratea por días bajo gestión: cada piso
+absorbe un cuarto. Escenario 19 %, a run-rate de año completo (cada piso carga 2.963 €/año más):
 
 | | Nicasio | Alexander | Marechal | Jacobine |
 |---|---|---|---|---|
@@ -151,18 +155,39 @@ cuando llegue el cargo.
 
 ---
 
-## 4. Qué hacer
+## 4. Qué se hizo y qué queda
 
-1. **Confirmar de qué mes arranca el sueldo nuevo.** Julio está cerrado y verificado en 3.000 €
-   netos: no se toca. Lo antes posible es **agosto**.
-2. **Preguntarle a Confisic el INCN 2025** — es el único dato que decide si el bruto es 4.320,99 €
-   (19 %) o 5.384,62 € (35 %). Entre uno y otro hay 12.763 €/año de diferencia para el mismo neto.
-3. **Recién entonces** aplicar la migración: cerrar la vigencia de `Sueldo Stag bruto` 3.333,33 y
-   abrir la nueva. El motor lo absorbe solo (§5).
-4. **Decisión de negocio, que es de Stag**: 3.500 € netos deja el resultado de Samavi en cero. Es
-   una decisión legítima —el CEO puede decidir que el beneficio de la sociedad sea su sueldo— pero
-   conviene tomarla sabiendo que eso es lo que hace, y que arrastra tres pisos bajo su punto de
-   equilibrio.
+**Decisión de Stag del 18/08/2026, tomada con esta tabla delante: sí, 3.500 € netos, desde
+agosto, con el bruto del escenario 19 %.** Aplicado en la migración `082_sueldo_ceo.sql`:
+`Sueldo Stag bruto` queda partido en dos vigencias — 3.333,33 hasta el 31/07 y **4.320,99 desde
+el 01/08**. Julio no se tocó.
+
+Efecto medido en el motor tras aplicar:
+
+| | Antes | Después |
+|---|---|---|
+| Pool de overhead (ago–dic) | 4.337,18 €/mes | **5.324,84 €/mes** |
+| Cuota por piso | 1.084,30 €/mes | **1.331,21 €/mes** |
+| Resultado Samavi YTD | 11.400,42 € | **10.412,75 €** |
+| Resultado Samavi 2026 (año completo) | 11.995,62 € | **7.057,32 €** |
+| Colchón Marechal (YTD) | +6,06 pp | **+5,11 pp** |
+| Colchón Alexander (YTD) | +6,39 pp | **+5,57 pp** |
+
+En 2026 el golpe es parcial (5 meses). **A run-rate de 12 meses son 11.852 €/año** — el beneficio
+anual entero. Es una decisión legítima: el CEO puede decidir que el resultado de la sociedad sea
+su sueldo. Pero está tomada sabiendo eso.
+
+**Lo que queda abierto:**
+
+1. **El INCN 2025, a Confisic.** Es el único dato que decide si el bruto correcto es 4.320,99 €
+   (retención 19 %) o 5.384,62 € (35 %). Entre uno y otro hay **12.763 €/año** para el mismo neto.
+   Si sale 35 %, hay que rehacer la 082 y Samavi entra en pérdidas.
+2. **La retención del 10 % sigue mal** hasta que Confisic la corrija (§3.1). El bruto de 4.320,99
+   ya asume el 19 %: si el 3T se presenta al 10 %, a Stag le llegarían **3.888,89 € netos** en vez
+   de 3.500 y el desfase se lo comería la declaración de junio.
+3. **Verificar agosto contra banco** cuando Stag suba el extracto: debe aparecer una salida de
+   3.500,00 € con el concepto "Retribución administrador".
+4. **Provisionar la subida del RETA** (§3.3) cuando Confisic confirme el importe.
 
 ---
 
