@@ -581,3 +581,13 @@ where not exists (
   select 1 from events e
    where e.anio = v.anio and e.mes = v.mes and e.propiedad_codigo = v.cod and e.concepto = v.concepto
 );
+
+-- SYNC 18/08/2026 — gratificación a José por las 5 estrellas de Jacobine (083). Idempotente.
+-- ⚑ Sin respaldo bancario todavía (el pago es del 18/08 y el cierre llega hasta julio).
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 8, '1A_JACO', 'OTROS', 'Gratificación a José por reseñas de 5 estrellas', -250.00,
+       'Gratificacion por las 5 estrellas del anuncio de Jacobine; la asume Samavi. Pendiente de verificar contra el extracto de agosto y de instrumentar por nomina (cotiza). Ver 083.'
+where not exists (
+  select 1 from events e
+   where e.anio = 2026 and e.mes = 8 and e.propiedad_codigo = '1A_JACO'
+     and e.concepto = 'Gratificación a José por reseñas de 5 estrellas');

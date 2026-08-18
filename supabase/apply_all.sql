@@ -5967,3 +5967,19 @@ where not exists (
   select 1 from general_expenses
    where concepto = 'Sueldo Stag bruto'
      and desde = date '2026-08-01');
+
+-- ── 083_gratificacion_jose.sql (18/08/2026) ──────────────────────────────────────────
+-- Gratificación de 250 € a José por las 5 estrellas del anuncio de Jacobine (indicado por
+-- Stag). Coste directo de 1A_JACO en agosto; lo asume Samavi, no se refactura a la dueña.
+-- ⚑ Sin respaldo bancario todavía: verificar contra el extracto de agosto.
+-- ⚠ José está en régimen general: una gratificación es salario (art. 26.1 ET) y cotiza
+--   (art. 147 LGSS) — debería ir por nómina. Pendiente de Confisic.
+
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 8, '1A_JACO', 'OTROS',
+       'Gratificación a José por reseñas de 5 estrellas', -250.00,
+       'Indicado por Stag el 18/08/2026: gratificacion por las 5 estrellas conseguidas en el anuncio de Jacobine. Pago anunciado para hoy desde Revolut. Lo asume Samavi (precedente: amenities, lavanderia y toallas de Sevilla), no se refactura a la duena. ⚑ PENDIENTE de verificar contra el extracto de agosto: debe haber una salida de 250,00 hacia Jose Modesto. ⚠ Jose esta en regimen general: una gratificacion es salario (art. 26.1 ET) y cotiza (art. 147 LGSS) - deberia ir por nomina. Si se regulariza, el coste real sube a ~325 con la SS a cargo de empresa. Consultar a Confisic.'
+where not exists (
+  select 1 from events e
+   where e.anio = 2026 and e.mes = 8 and e.propiedad_codigo = '1A_JACO'
+     and e.concepto = 'Gratificación a José por reseñas de 5 estrellas');
