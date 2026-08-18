@@ -5983,3 +5983,14 @@ where not exists (
   select 1 from events e
    where e.anio = 2026 and e.mes = 8 and e.propiedad_codigo = '1A_JACO'
      and e.concepto = 'Gratificación a José por reseñas de 5 estrellas');
+
+-- ── 084_gratificacion_jose_efectivo.sql (18/08/2026) ─────────────────────────────────
+-- La gratificación de José se paga en EFECTIVO, no por banco: Stag cobró una reserva en
+-- efectivo por fuera y de ese dinero le da 250 € a José; el resto se lo queda él. Se retira
+-- la marca de "pendiente de verificar contra banco" de la 083 — ese pago no tiene respaldo
+-- bancario por diseño. El efectivo queda en poder de Stag → cuenta con el socio (Confisic).
+
+update events
+   set notas = 'Indicado por Stag el 18/08/2026: gratificacion por las 5 estrellas conseguidas en el anuncio de Jacobine. PAGADO EN EFECTIVO, no por banco: Stag cobro una reserva en efectivo por fuera y de ese dinero le da 250 a Jose; el resto se lo queda el. NO tiene ni va a tener respaldo bancario, por diseno (mismo caso que los demas pagos en efectivo, CASUISTICAS 1.4). El efectivo cobrado queda en poder de Stag -> cuenta con el socio (mismo carril que la reserva directa de JACO de julio, 520, migracion 074); pagar con el un gasto de Samavi baja ese saldo en 250. Lo asume Samavi y no se refactura a la duena, igual que amenities, lavanderia y toallas de Sevilla. PENDIENTE: identificar la reserva y su importe (084).'
+ where anio = 2026 and mes = 8 and propiedad_codigo = '1A_JACO'
+   and concepto = 'Gratificación a José por reseñas de 5 estrellas';

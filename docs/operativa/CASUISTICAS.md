@@ -143,7 +143,9 @@ Cuatro agujeros estructurales, todos descubiertos con casos reales:
    un tercero del edificio en Marechal, dos NRUA (32,73 + 28,67) y 82,22 € de bolsillo en Jacobine. Solo
    aparecen en las listas de gastos de bolsillo de Stag (el libro privado de ingresos y
    finanzas en Drive, cuatro columnas, una por piso, con fecha + importe +
-   concepto).
+   concepto). Precedente del 18/08/2026: la gratificación de 250 € a José, pagada con el
+   efectivo de una reserva cobrada por fuera (migración 084). **Un gasto marcado como pagado en
+   efectivo no se busca en el extracto**: que no aparezca es lo esperado.
 2. **Hay que abrir SIEMPRE los dos bancos.** Del BBVA salen cosas que no están en el Revolut:
    TGSS, comunidad, TotalEnergies, Telefónica, Orange, Ayuntamiento/IBI, los adeudos de la
    tarjeta, el préstamo y transferencias sueltas. El 26/07/2026 se descubrió que dos cargos
@@ -179,14 +181,14 @@ en ella quedaron marcados con ⚑ en `events.notas` para que nadie los lea como 
   Sevilla **sí** (event mensual en JACO de −10,56 €, −10,55 € al cierre de trimestre); las
   retenciones de profesionales van como event `CORPORATIVO` en el mes del pago (julio 2026:
   −71,86 €, verificado hoy).
-- **Pagos extra a José (gratificaciones, bonus).** Van como event `OTROS` en `1A_JACO` por el
-  importe que sale del banco, y **los asume Samavi** — no se refacturan a la dueña, igual que
-  amenities, lavandería y toallas; lo único que la dueña paga en Jacobine son los 700 €/mes de
-  limpieza. Precedente: 250 € el 18/08/2026 por las 5 estrellas del anuncio (migración 083).
-  **Trampa**: José está en régimen general, así que una gratificación es **salario** (art. 26.1
-  ET) y base de cotización (art. 147 LGSS) — debería ir por nómina, cotizar y retener. Pagada
-  como transferencia suelta no aparece en el 111/190 y el coste real de Samavi es ~30 % mayor
-  que el importe transferido. Pendiente de que Confisic diga cómo se instrumenta.
+- **Pagos extra a José (gratificaciones, bonus).** Van como event `OTROS` en `1A_JACO` y **los
+  asume Samavi** — no se refacturan a la dueña, igual que amenities, lavandería y toallas; lo
+  único que la dueña paga en Jacobine son los 700 €/mes de limpieza. Precedente: 250 € el
+  18/08/2026 por las 5 estrellas del anuncio (migraciones 083 y 084). **Ojo con el medio de
+  pago**: ése se pagó **en efectivo**, de una reserva que Stag cobró por fuera (le dio 250 € a
+  José y el resto se lo quedó), así que **no tiene respaldo bancario y no debe buscarse en el
+  extracto** — ver §1.4, punto 1. El efectivo cobrado queda en poder de Stag → cuenta con el
+  socio, y pagar con él un gasto de Samavi baja ese saldo.
 - **Booking no descuenta su comisión.** Booking es "payment by the property": el motor ve el
   bruto y no la comisión, así que la cuenta como ingreso y nunca la resta. Verificado hoy: las
   dos reservas de Booking de Nicasio de agosto tienen `host_payout = bruto` (1.054,52 € del

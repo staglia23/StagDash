@@ -582,11 +582,11 @@ where not exists (
    where e.anio = v.anio and e.mes = v.mes and e.propiedad_codigo = v.cod and e.concepto = v.concepto
 );
 
--- SYNC 18/08/2026 — gratificación a José por las 5 estrellas de Jacobine (083). Idempotente.
--- ⚑ Sin respaldo bancario todavía (el pago es del 18/08 y el cierre llega hasta julio).
+-- SYNC 18/08/2026 — gratificación a José por las 5 estrellas de Jacobine (083 + 084).
+-- Pagada EN EFECTIVO: no tiene respaldo bancario por diseño, no es un agujero del cuadre.
 insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
 select 2026, 8, '1A_JACO', 'OTROS', 'Gratificación a José por reseñas de 5 estrellas', -250.00,
-       'Gratificacion por las 5 estrellas del anuncio de Jacobine; la asume Samavi. Pendiente de verificar contra el extracto de agosto y de instrumentar por nomina (cotiza). Ver 083.'
+       'Gratificacion por las 5 estrellas del anuncio de Jacobine; la asume Samavi. PAGADA EN EFECTIVO de una reserva que Stag cobro por fuera (le da 250 a Jose, el resto se lo queda el): sin respaldo bancario por diseno. El efectivo queda en cuenta con el socio. Ver 083 y 084.'
 where not exists (
   select 1 from events e
    where e.anio = 2026 and e.mes = 8 and e.propiedad_codigo = '1A_JACO'
