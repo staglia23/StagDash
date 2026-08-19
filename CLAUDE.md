@@ -166,7 +166,14 @@ necesita su propia revisión de seguridad.
   mensual ×12/meses; overhead pool ×12/meses-del-año), `salud.ts` (semáforo forward),
   `waterfall.ts`, `mtd.ts`. Los tests (`web/tests/`) usan fixtures con datos reales de
   producción — al cambiar reglas de negocio, actualizar ambos.
-- Client components solo donde hay interacción o Recharts (`Simulador`, charts).
+- Client components solo donde hay interacción o Recharts (`Simulador`, charts, `NotaForm`).
+- **Nada de web app manifest** (cicatriz del 19/08/2026): con un manifiesto enlazado, iOS
+  abre el acceso de la pantalla de inicio en su `start_url` en vez de en la página desde la
+  que se creó — el icono de "Anotar" caía en la portada. Darle a `/anotar` un manifiesto
+  propio con el `start_url` correcto TAMPOCO lo arregló. Sin manifiesto, Safari graba la URL
+  actual y funciona. Los iconos y los nombres salen de `appleWebApp` y de los
+  `apple-icon.tsx` por ruta, que no dependen de él; van en la lista de rutas públicas del
+  middleware porque iOS los pide al instalar y no siempre manda la cookie.
 - Nombres de display: mapa `NOMBRES` en `lib/headline.ts` (Nicasio, Alexander, Marechal,
   Jacobine). Los códigos (`1A_NICA`, `4B_ALEX`, `3G_MARE`) son piso+puerta: los tres de
   Madrid están en el mismo edificio (Calle Segovia 8); Jacobine está en Sevilla.
@@ -184,6 +191,13 @@ necesita su propia revisión de seguridad.
 
 ## Operativa con el usuario
 
+- **Al empezar cada sesión, mirar `v_notas_inbox`** (`estado = 'SIN_PROCESAR'`). Stag dicta
+  los gastos en `/anotar` desde un icono del iPhone, en el momento en que ocurren; si nadie
+  las convierte en `event`/`recobro`, quedan colgadas y el circuito no sirve de nada. Al
+  procesarlas, dejarlas `REGISTRADA` con `resultado` apuntando a lo que salió, o `DESCARTADA`
+  con el motivo. Una nota es un BORRADOR dirigido a Claude, no un registro contable: la
+  transcripción no tiene que estar perfecta y no hay que pedirle que la corrija a mano —
+  lo único que hay que verificar es el importe, contra el extracto.
 - Ritual de cierre mensual: Stag sube extractos (Revolut/BBVA/tarjeta) a Google Drive
   (`Confisic → SAMAVI GLOBAL VISION SL → <año> → "MM - Mes" → BANCOS EXTRACTOS`); se
   concilian contra el modelo y las diferencias se cargan como `events`. Las reglas de
