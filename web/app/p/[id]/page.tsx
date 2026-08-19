@@ -173,7 +173,9 @@ export default async function FichaPropiedad({
   // Cuenta de la dueña: el resumen se calcula una vez y lo comparten el atajo de arriba
   // y la sección de abajo — dos cálculos separados podrían discrepar.
   const resumenCuenta = resumenCuentaDuena(cuentaRows);
-  const pendienteRecobros = Number(recobrosPendArr[0]?.total ?? 0);
+  // Solo el carril que SÍ se le descuenta en su cuenta (089). Lo que Stag arregla con
+  // ella mano a mano no puede anunciarse como "por descontarle": no pasa por Samavi.
+  const pendienteRecobros = Number(recobrosPendArr[0]?.total_cuenta ?? 0);
 
   const tieneContrato = alertas.some((a) => a.tipo === "contrato")
     || (propiedad?.modelo === "subarriendo" && propiedad.aviso_fecha != null);
@@ -411,7 +413,7 @@ export default async function FichaPropiedad({
         rows={cuentaRows}
         codigo={codigo}
         pendienteTotal={pendienteRecobros}
-        pendientePagos={Number(recobrosPendArr[0]?.pagos ?? 0)}
+        pendientePagos={Number(recobrosPendArr[0]?.pagos_cuenta ?? 0)}
       />
       <RecobrosCard rows={recobroRows} pend={recobrosPendArr[0]} />
     </main>

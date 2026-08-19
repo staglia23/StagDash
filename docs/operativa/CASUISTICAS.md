@@ -398,8 +398,18 @@ ingreso que no existe. Precedentes de la migración 049: mini UPS 77 € (feb-20
    el 19/08/2026 que hace tiempo que no la actualiza. Los `descuentos` cargados vienen de
    cuando sí se llevaba; de ahí en adelante **el registro es el dashboard**, no la planilla.
 2. Si es un adelanto nuevo, se registra en la tabla **`recobros`** (`propiedad_codigo, fecha,
-   concepto, importe, pagado_por, pagado_a, medio, estado, resuelto_fecha, resuelto_nota,
-   notas`), estado `PENDIENTE`.
+   concepto, importe, pagado_por, pagado_a, medio, estado, liquidacion, resuelto_fecha,
+   resuelto_nota, notas`), estado `PENDIENTE`.
+2b. **Y se elige carril** (`liquidacion`, migración 089 — decisión de Stag del 19/08/2026):
+   · **`CUENTA_DUENA`** si lo pagó Samavi → se le descuenta en su cuenta corriente. El dinero
+     salió de la sociedad y vuelve a la sociedad: circuito cerrado.
+   · **`DIRECTO_FAMILIA`** si salió del bolsillo de Stag → lo arreglan él y su madre entre
+     ellos (efectivo o compensación). **No toca `v_cuenta_duena` ni el P&L.**
+   Por qué importa: mezclarlos hacía que Samavi se quedara con dinero que había puesto Stag
+   y quedara debiéndoselo. Pasó con los 83,00 de la 077 y él los dio por saldados: 83 €
+   perdidos de verdad. **El carril se elige por quién puso la plata, salvo que ya se le haya
+   descontado a la dueña de hecho** — que es justamente el caso de esos 83,00, que siguen
+   en `CUENTA_DUENA` porque así ocurrió.
 3. El recobro pasa a `LIQUIDADO` **cuando se emite la liquidación a la dueña** — no cuando
    alguien lo anota en una planilla, porque esa planilla ya no se lleva. Estados posibles:
    `PENDIENTE`, `LIQUIDADO`, `INCOBRABLE` (este último exige nota).

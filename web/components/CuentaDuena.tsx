@@ -122,7 +122,8 @@ export function CuentaDuena({
         {pendienteTotal > 0 && (
           <div className="cuenta-pend">
             ⏳ <strong>{eur(pendienteTotal, 2)}</strong> más por descontarle cuando liquides
-            los {pendientePagos === 1 ? "el recobro pendiente" : `${pendientePagos} recobros pendientes`} de abajo
+            {pendientePagos === 1 ? " el recobro pendiente" : ` los ${pendientePagos} recobros pendientes`}
+            {" "}de abajo que pagó Samavi
           </div>
         )}
 

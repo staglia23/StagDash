@@ -626,3 +626,10 @@ insert into guesty_payment_methods (metodo_id, nombre, familia, nota) values
   ('58a48a4f0000000000000873', 'Cobro previsto Booking (sin identificar)', 'PREVISTO', 'PENDIENTE de nombrar: nunca cobro nada.')
 on conflict (metodo_id) do update
   set nombre = excluded.nombre, familia = excluded.familia, nota = excluded.nota;
+
+-- SYNC 19/08/2026 — carriles de recobro (089). La columna nace en CUENTA_DUENA por defecto;
+-- los adelantos del bolsillo de Stag que siguen pendientes se cobran DIRECTO a su madre.
+-- OJO: por `pagado_por` y `estado`, NO por pagado_por a secas — los bizums de oct-2025 los
+-- pagó él pero se descontaron de verdad en la cuenta de la dueña (077) y ya están LIQUIDADOS.
+update recobros set liquidacion = 'DIRECTO_FAMILIA'
+ where pagado_por = 'STAG_PERSONAL' and estado = 'PENDIENTE';
