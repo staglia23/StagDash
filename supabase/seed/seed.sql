@@ -591,3 +591,27 @@ where not exists (
   select 1 from events e
    where e.anio = 2026 and e.mes = 8 and e.propiedad_codigo = '1A_JACO'
      and e.concepto = 'Gratificación a José por reseñas de 5 estrellas');
+
+-- SYNC 19/08/2026 — recobros (086): patas ajustables de los muebles de baño (47,98, 14/08)
+-- y trona (47,11, 18/08), las dos de Amazon con tarjeta de SAMAVI y a cuenta de la dueña.
+-- ⚑ Van a aparecer en el extracto de agosto: NO cargarlas como events (son neutras).
+insert into recobros (propiedad_codigo, fecha, concepto, importe, pagado_por, pagado_a,
+                      medio, estado, resuelto_fecha, resuelto_nota, notas)
+select v.cod, v.fecha, v.concepto, v.importe, v.pagado_por, v.pagado_a,
+       v.medio, v.estado, v.resuelto_fecha, v.resuelto_nota, v.notas
+from (values
+  ('1A_JACO', date '2026-08-14',
+   'Patas ajustables para los muebles de los 2 baños',
+   47.98, 'SAMAVI', 'Amazon', 'tarjeta',
+   'PENDIENTE', null::date, null,
+   'Indicado por Stag el 19/08/2026 (086). Cierra la compra que la 065 dejo pendiente y completa la mano de obra de Agustin. Cargo de Amazon en el extracto de agosto: no cargarlo como event.'),
+  ('1A_JACO', date '2026-08-18',
+   'Trona (equipamiento del piso)',
+   47.11, 'SAMAVI', 'Amazon', 'tarjeta',
+   'PENDIENTE', null::date, null,
+   'Indicado por Stag el 19/08/2026 (086): gasto de la propietaria. Mismo criterio que la aspiradora y el mini UPS. Cargo de Amazon en el extracto de agosto: no cargarlo como event.')
+) as v(cod, fecha, concepto, importe, pagado_por, pagado_a, medio, estado, resuelto_fecha, resuelto_nota, notas)
+where not exists (
+  select 1 from recobros r
+   where r.propiedad_codigo = v.cod and r.fecha = v.fecha and r.importe = v.importe
+);

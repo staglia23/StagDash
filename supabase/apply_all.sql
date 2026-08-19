@@ -6006,3 +6006,35 @@ update events
    set notas = 'Indicado por Stag el 18/08/2026: gratificacion por las 5 estrellas conseguidas en el anuncio de Jacobine. PAGADO EN EFECTIVO, no por banco. ORIGEN IDENTIFICADO (085): reserva GY-yPcHaPx6 de 1A_JACO, 24-27/07/2026, 3 noches, source manual, bruto 520,00 cobrado en efectivo; en Guesty el pago figura con la nota "Entregado a Jose en mano" (23/07/2026, metodo de cobro fuera de pasarela). De esos 520: 250 para Jose y 270 se los queda Stag -> cuenta con el socio. El INGRESO de esa reserva ya esta devengado en JULIO (ingreso Samavi 130,00 + IVA repercutido 27,30 + pasivo madre 362,70): el gasto cae en agosto y el ingreso en julio, correcto por devengo. NO tiene ni va a tener respaldo bancario, por diseno (CASUISTICAS 1.4). Lo asume Samavi y no se refactura a la duena.'
  where anio = 2026 and mes = 8 and propiedad_codigo = '1A_JACO'
    and concepto = 'Gratificación a José por reseñas de 5 estrellas';
+
+-- ── 086_recobros_patas_y_trona.sql (19/08/2026) ──────────────────────────────────────
+-- Dos compras de Amazon para Jacobine que son gasto de la PROPIETARIA, no de Samavi
+-- (indicado por Stag): patas ajustables 47,98 (14/08) para sostener los muebles de lavabo
+-- de los dos baños — cierran el trabajo de Agustín de julio, la 065 ya las dejó anotadas
+-- como pendientes — y trona 47,11 (18/08), equipamiento del piso (mismo criterio que la
+-- aspiradora de mar-2026 y el mini UPS de feb-2026).
+-- ⚑ Las pagó SAMAVI con tarjeta: a diferencia de los bizums de Agustín, estos dos cargos
+-- SÍ van a aparecer en el extracto de agosto y NO se cargan como `events` — un recobro es
+-- neutro (CASUISTICAS §3, cicatriz 049). Pendientes tras la 086: 5 pagos, 220,09 €
+-- (125,00 de la cuenta personal de Stag + 95,09 de la de Samavi).
+
+insert into recobros (propiedad_codigo, fecha, concepto, importe, pagado_por, pagado_a,
+                      medio, estado, resuelto_fecha, resuelto_nota, notas)
+select v.cod, v.fecha, v.concepto, v.importe, v.pagado_por, v.pagado_a,
+       v.medio, v.estado, v.resuelto_fecha, v.resuelto_nota, v.notas
+from (values
+  ('1A_JACO', date '2026-08-14',
+   'Patas ajustables para los muebles de los 2 baños',
+   47.98, 'SAMAVI', 'Amazon', 'tarjeta',
+   'PENDIENTE', null::date, null,
+   'Indicado por Stag el 19/08/2026. Soporte inferior de los muebles de lavabo de los dos banos, que se descolgaban de la pared. Cierra la compra que la 065 dejo anotada como pendiente ("faltan las patas, generara otro recobro") y completa la mano de obra de Agustin (recobros de 40,00 del 23/07 y 60,00 del 04/08). Pagado por SAMAVI con tarjeta: el cargo de Amazon CAE EN EL EXTRACTO DE AGOSTO - no cargarlo como event, es neutro (CASUISTICAS 3).'),
+  ('1A_JACO', date '2026-08-18',
+   'Trona (equipamiento del piso)',
+   47.11, 'SAMAVI', 'Amazon', 'tarjeta',
+   'PENDIENTE', null::date, null,
+   'Indicado por Stag el 19/08/2026: gasto de la propietaria, no lo asume Samavi. Mismo criterio que la aspiradora (130,00, mar-2026) y el mini UPS (77,00, feb-2026), ambos descontados en la cuenta corriente de la duena. Pagado por SAMAVI con tarjeta: el cargo de Amazon CAE EN EL EXTRACTO DE AGOSTO - no cargarlo como event, es neutro (CASUISTICAS 3).')
+) as v(cod, fecha, concepto, importe, pagado_por, pagado_a, medio, estado, resuelto_fecha, resuelto_nota, notas)
+where not exists (
+  select 1 from recobros r
+   where r.propiedad_codigo = v.cod and r.fecha = v.fecha and r.importe = v.importe
+);

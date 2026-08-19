@@ -624,12 +624,18 @@ La liquidación de 2.000 € de mayo salió del Revolut como *"Retiro de socio"*
 pasivo — caja y `pasivo_madre` corren por rieles distintos. **Eso vive en el proyecto Admin &
 Fiscal, no acá.**
 
-### 9. Recobros pendientes — 125,00 € en 3 pagos
+### 9. Recobros pendientes — 220,09 € en 5 pagos
 
-`v_recobros_pendientes` (hoy): 3 pagos, **125,00 €**, el más viejo del **29/09/2025** (319 días).
-Los tres salieron de la **cuenta personal de Stag**, no de Samavi. Son **neutros para Samavi**:
-nunca entran a `events` ni al P&L. Trabajos: refuerzo de los muebles de los dos baños y repegado
-de los rieles de las duchas.
+`v_recobros_pendientes` (19/08/2026): 5 pagos, **220,09 €**, el más viejo del **29/09/2025**
+(324 días). **125,00 €** salieron de la cuenta personal de Stag (bizums a Agustín) y **95,09 €**
+de la de Samavi (las dos compras de Amazon de agosto, migración 086). Son **neutros para
+Samavi**: nunca entran a `events` ni al P&L. Trabajos: refuerzo de los muebles de los dos baños
+(mano de obra 40,00 + 60,00 y **patas ajustables 47,98** del 14/08), repegado de los rieles de
+las duchas, y **trona 47,11** del 18/08 como equipamiento del piso.
+
+> ⚑ Las dos compras de agosto las pagó **Samavi con tarjeta**, así que —a diferencia de los
+> bizums— **sí aparecen en el extracto de agosto**. Al conciliar, esos dos cargos de Amazon no
+> se cargan como `events`: si entran, el P&L cuenta un coste que Samavi no tuvo.
 
 ### 10. Política de resoluciones de Airbnb — decidida hacia adelante, retroactividad abierta
 
@@ -649,8 +655,9 @@ mano — cobro → recobro a la dueña; devolución → crédito a ella. Madrid 
    +68,36 € (los 98 € de junio) y absorbió −153,05 € (su 69,75 % del reembolso de febrero) → neto
    **+84,69 € a favor de ella**. Lo recomendado el 11/08 fue aplicar solo hacia adelante y dejar
    febrero y junio como están. **Esperando el OK de Stag.**
-3. **[05/08/2026] Patas de los muebles de baño**: compra pendiente, generará otro recobro.
-4. **[11/08/2026] Liquidar los 3 recobros (125,00 €)** cuando se le liquide el mes a la dueña.
+3. ~~**[05/08/2026] Patas de los muebles de baño**~~ **CERRADO el 19/08/2026**: compradas en
+   Amazon el 14/08 por 47,98 €, cargadas como recobro (migración 086).
+4. **[11/08/2026] Liquidar los 5 recobros (220,09 €)** cuando se le liquide el mes a la dueña.
 5. **[26/07/2026] Fijar la regla de tarifa de limpieza en las reservas directas** antes de empujar
    canal directo.
 6. **[05/08/2026] Diferencia de 248,97 € de 2025** (200,00 en agosto + 48,97 en septiembre):

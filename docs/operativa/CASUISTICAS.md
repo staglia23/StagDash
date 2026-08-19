@@ -402,8 +402,8 @@ ingreso que no existe. Precedentes de la migración 049: mini UPS 77 € (feb-20
 5. En la UI: `web/components/CuentaDuena.tsx` y `RecobrosCard.tsx`, al final de la ficha de la
    propiedad.
 
-**Estado verificado el 14/08/2026**: **3 recobros PENDIENTES por 125,00 €** y 8 LIQUIDADOS por
-3.098,39 €.
+**Estado verificado el 19/08/2026**: **5 recobros PENDIENTES por 220,09 €** (125,00 € pagados
+desde la cuenta personal de Stag + 95,09 € desde la de Samavi) y 8 LIQUIDADOS por 3.098,39 €.
 
 ### Trampas
 
@@ -411,6 +411,11 @@ ingreso que no existe. Precedentes de la migración 049: mini UPS 77 € (feb-20
   pagados desde la cuenta **personal** de Stag no aparecen en ningún extracto de Samavi: la
   conciliación mensual no los va a detectar sola. Mismo patrón que los pagos en efectivo
   (§1.4).
+- **Y la trampa simétrica: el recobro pagado con tarjeta de Samavi SÍ aparece en el extracto**,
+  y ahí parece un gasto corriente. Si se carga como `event`, el P&L se come un coste que Samavi
+  no tuvo. Antes de clasificar un cargo de Jacobine, mirar `v_recobros`. Casos vivos: las dos
+  compras de Amazon de agosto de 2026 — patas de los muebles de baño 47,98 (14/08) y trona
+  47,11 (18/08), migración 086.
 - **Riesgo de doble descuento.** Un recobro cuyo concepto en la planilla no coincide con el
   del bizum puede ser el mismo dinero que un descuento ya aplicado. Pasó: dos bizums de
   octubre 2025 (53 + 30 = 83 €) eran el mismo dinero que un descuento de noviembre 2025
@@ -750,7 +755,7 @@ copiar la versión vieja.
 | 1 | `bloqueos-calendario-deliberados.md` (06/08): Stag decidió **abrir** Marechal 22–23/08 | El brief operativo del 14/08 dice que Marechal 22–25/08 está bloqueado como "Control" | **La regla del 14/08.** Es posterior y es una regla general, no una decisión de una fecha |
 | 2 | Los bloqueos deliberados se ven en `/precios` como "bloqueadas a mano" | Ni `reservations` ni `pricelabs_prices` marcan hoy Jacobine 18–20/08 ni Marechal 22–25/08: `reservado = false`, `no_vendible = false`, y no hay reserva que las cubra | **El dato.** `guesty-sync` solo lee `/v1/reservations`; los bloqueos son otra entidad de Guesty y no entran. Hay que descontarlos a mano |
 | 3 | Misma memoria: Jacobine tiene **187 noches bloqueadas** del 31/01/2027 al 05/08/2027 | En ese rango, `pricelabs_prices` no tiene para Jacobine **ninguna** noche `reservado` ni `no_vendible` | **El dato.** Antes de razonar sobre 2027, verificar |
-| 4 | El índice `MEMORY.md` dice "5 recobros pendientes / 208 €" | Tabla `recobros`: **3 PENDIENTES / 125,00 €** (y 8 liquidados / 3.098,39 €) | **El dato**, que coincide con el cuerpo de la memoria de recobros tras la migración 077. El índice quedó viejo |
+| 4 | El índice `MEMORY.md` dice "5 recobros pendientes / 208 €" | Tabla `recobros`: **3 PENDIENTES / 125,00 €** (y 8 liquidados / 3.098,39 €) *(el 19/08 pasaron a 5 / 220,09 € con la migración 086 — coincidencia de número, importe distinto)* | **El dato**, que coincide con el cuerpo de la memoria de recobros tras la migración 077. El índice quedó viejo |
 | 5 | `clasificacion-bancaria-reglas.md` mantiene un ⚠️: "el transporte del día a día no lo cubre nada: ~1.390 € de ene–jun sin cargar" | Hay events `CORPORATIVO` "Transporte (real bancos)" de feb a jul 2026; feb–jun suma **1.389,84 €**, el importe exacto de la advertencia | **El dato.** Se cargó (migración 051 según `auditoria-pisos-pendientes.md`); el ⚠️ es texto residual |
 | 6 | `conciliacion-airbnb-tx-vacia.md` abre diciendo que el histórico dic-2025 → jun-2026 "sigue sin cargar" (nota del 10/08) | `airbnb_tx` tiene **464 filas desde el 02/12/2025**; el propio pie de esa memoria lo da por cerrado el 11/08 (migración 078) | **El dato y el pie.** El encabezado de esa memoria es la versión vieja |
 | 7 | `supabase/cron_setup.sql` comenta que la `PRICELABS_API_KEY` está "pendiente de Stag" | La key está viva desde el 05/08/2026 y `pricelabs_last_error` es `null` con corrida de hoy | **El dato.** El comentario es obsoleto (item E5 del relevamiento, todavía abierto) |
