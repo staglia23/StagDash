@@ -904,3 +904,4 @@ table.cobros-tabla { min-width: 480px; font-size: 0.82rem; }
 .nota-accion:hover { color: var(--text-primary); border-color: var(--muted); }
 .nota-accion-borrar:hover { color: var(--critical); border-color: var(--critical); }
 .nota-editandose { border-left-color: var(--accent-bg); background: var(--surface-1); }
+.nota-secundarios { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

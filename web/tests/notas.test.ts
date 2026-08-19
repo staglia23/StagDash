@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { autorCorto, cuandoCorto, puedeEditar, resumenInbox, validarNota, type NotaRow } from "../lib/notas";
+import {
+  autorCorto, componerDictado, corregirDictado, cuandoCorto, puedeEditar,
+  resumenInbox, unirSegmentos, validarNota, type NotaRow,
+} from "../lib/notas";
 
 const nota = (o: Partial<NotaRow>): NotaRow => ({
   id: 1, texto: "x", autor: "info@stag-properties.com",
@@ -79,6 +82,87 @@ describe("resumenInbox", () => {
   it("bandeja vacía invita a dictar en vez de cantar un cero", () => {
     expect(resumenInbox([]).texto).toBe("dictá un gasto y lo registro");
     expect(resumenInbox([nota({})]).texto).toBe("1 nota esperando que la registre");
+  });
+});
+
+// Los cuatro trozos que devolvió el reconocedor en la PRIMERA prueba real de Stag
+// (19/08/2026, captura del iPhone). El texto salía "pruebaPara… viejaLa propietariaY".
+const PRUEBA_REAL = [
+  "Quiero hacer una prueba",
+  "Para poner un gasto de 100 € de mantenimiento en Jacob INE se lo vamos a imputar a mi vieja",
+  "La propietaria",
+  "Y se pagó con la tarjeta de Revolut Business",
+];
+
+describe("unirSegmentos", () => {
+  it("nunca pega dos frases sin separador (el bug de la primera prueba)", () => {
+    const t = unirSegmentos(PRUEBA_REAL);
+    expect(t).not.toMatch(/pruebaPara|viejaLa|propietariaY/);
+    expect(t).toContain("una prueba. Para poner");
+  });
+
+  it("baja la mayúscula del conector que quedó en medio de la frase", () => {
+    expect(unirSegmentos(["La propietaria", "Y se pagó con la tarjeta"]))
+      .toBe("La propietaria y se pagó con la tarjeta");
+  });
+
+  it("no parte una frase larga en dos: un trozo que sigue en minúscula se une con espacio", () => {
+    expect(unirSegmentos(["Compré unas patas", "para el mueble del baño"]))
+      .toBe("Compré unas patas para el mueble del baño");
+  });
+
+  it("no duplica el punto si el trozo anterior ya venía puntuado", () => {
+    expect(unirSegmentos(["Compré las patas.", "Las pagué con Revolut"]))
+      .toBe("Compré las patas. Las pagué con Revolut");
+  });
+
+  it("aguanta trozos vacíos y espacios sueltos", () => {
+    expect(unirSegmentos(["  ", "Hola qué tal", "   "])).toBe("Hola qué tal");
+    expect(unirSegmentos([])).toBe("");
+  });
+});
+
+describe("corregirDictado", () => {
+  it("arregla el nombre del piso que el dictado parte en dos", () => {
+    expect(corregirDictado("gasto en Jacob INE")).toContain("Jacobine");
+    expect(corregirDictado("gasto en Jacobin")).toContain("Jacobine");
+  });
+
+  it("escribe bien el resto del vocabulario de la casa", () => {
+    const t = corregirDictado("pagué con revolut de sama vi y lo vi en price labs y en gesty");
+    expect(t).toContain("Revolut");
+    expect(t).toContain("Samavi");
+    expect(t).toContain("PriceLabs");
+    expect(t).toContain("Guesty");
+  });
+
+  it("pasa los euros hablados a cifra", () => {
+    expect(corregirDictado("son 100 euros")).toBe("Son 100 €");
+    expect(corregirDictado("son 47 con 98 euros")).toBe("Son 47,98 €");
+  });
+
+  it("es idempotente: aplicarlo dos veces no cambia nada", () => {
+    const una = corregirDictado("gasto de 47 con 98 euros en Jacob INE");
+    expect(corregirDictado(una)).toBe(una);
+  });
+});
+
+describe("componerDictado", () => {
+  it("reconstruye la nota real de la captura, limpia y legible", () => {
+    expect(componerDictado("", PRUEBA_REAL, "")).toBe(
+      "Quiero hacer una prueba. Para poner un gasto de 100 € de mantenimiento en Jacobine " +
+      "se lo vamos a imputar a mi vieja. La propietaria y se pagó con la tarjeta de Revolut Business",
+    );
+  });
+
+  it("respeta lo que ya estaba escrito y le añade lo dictado detrás", () => {
+    expect(componerDictado("Trona 47,11.", ["Patas del baño"], ""))
+      .toBe("Trona 47,11. Patas del baño");
+  });
+
+  it("deja crudo lo que todavía se está oyendo: se reescribe en el siguiente golpe", () => {
+    expect(componerDictado("", ["Compré unas patas"], "y una tro"))
+      .toBe("Compré unas patas y una tro");
   });
 });
 

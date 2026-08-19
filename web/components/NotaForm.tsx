@@ -13,6 +13,7 @@
 // recuperarlo exige irse a Ajustes. Se recuerda que hubo permiso cuando llega la primera
 // transcripción, que es la única prueba de que el micrófono funcionó de verdad.
 import { useCallback, useEffect, useRef, useState } from "react";
+import { componerDictado, corregirDictado } from "@/lib/notas";
 
 type Alternativa = { transcript: string };
 type Resultado = ArrayLike<Alternativa> & { isFinal: boolean };
@@ -63,8 +64,8 @@ export function NotaForm({
   const [avisoVoz, setAvisoVoz] = useState<string | null>(null);
 
   const recRef = useRef<Reconocedor | null>(null);
-  const baseRef = useRef("");     // lo que ya había escrito cuando empezó a hablar
-  const finalesRef = useRef("");  // lo que el reconocedor ya dio por definitivo
+  const baseRef = useRef("");            // lo que ya había escrito cuando empezó a hablar
+  const finalesRef = useRef<string[]>([]); // las frases que el reconocedor ya dio por cerradas
 
   // El texto vive en un ref además del estado para que `arrancar` no dependa de él: si
   // dependiera, cambiaría de identidad con cada palabra dictada, el efecto de abajo se
@@ -82,9 +83,8 @@ export function NotaForm({
     rec.continuous = true;        // iOS lo ignora y corta solo tras un silencio
     rec.interimResults = true;
 
-    const previo = textoRef.current;
-    baseRef.current = previo.trim() ? previo.trimEnd() + " " : "";
-    finalesRef.current = "";
+    baseRef.current = textoRef.current.trimEnd();
+    finalesRef.current = [];
 
     rec.onresult = (e) => {
       recordarPermiso();  // llegó audio transcrito: el permiso está concedido
@@ -92,10 +92,12 @@ export function NotaForm({
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
         const t = r[0]?.transcript ?? "";
-        if (r.isFinal) finalesRef.current += t;
+        // Las frases cerradas se guardan SUELTAS, no concatenadas: el separador entre dos
+        // lo decide componerDictado. Pegarlas acá fue el bug de "pruebaPara".
+        if (r.isFinal) finalesRef.current.push(t);
         else provisional += t;
       }
-      setTexto((baseRef.current + finalesRef.current + provisional).trimStart());
+      setTexto(componerDictado(baseRef.current, finalesRef.current, provisional));
     };
     rec.onend = () => {
       recRef.current = null;
@@ -192,9 +194,18 @@ export function NotaForm({
         {editandoId != null ? "Guardar la corrección" : "Guardar nota"}
       </button>
       {texto.trim() !== "" && (
-        <button type="button" className="nota-btn-sec" onClick={() => setTexto("")}>
-          Borrar lo escrito y empezar de nuevo
-        </button>
+        <div className="nota-secundarios">
+          <button
+            type="button"
+            className="nota-btn-sec"
+            onClick={() => setTexto((t) => corregirDictado(t))}
+          >
+            ✨ Ordenar el texto
+          </button>
+          <button type="button" className="nota-btn-sec" onClick={() => setTexto("")}>
+            Borrar y empezar de nuevo
+          </button>
+        </div>
       )}
       {editandoId == null && (
         <p className="nota-tip">

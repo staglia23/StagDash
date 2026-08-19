@@ -94,6 +94,84 @@ export function cuandoCorto(iso: string | null | undefined, ahora: Date): string
 export const autorCorto = (email: string | null | undefined) =>
   (email ?? "").split("@")[0] || "—";
 
+// ── Limpieza de lo dictado ─────────────────────────────────────────────────────────
+// El reconocedor de voz entrega FRASES SUELTAS ("resultados finales"), una por cada pausa,
+// sin separador y sin puntuación. Pegarlas tal cual produce "pruebaPara" y "viejaLa" — así
+// salió la primera prueba real de Stag, el 19/08/2026. Estas funciones las vuelven a montar.
+//
+// Ojo con la ambición: esto NO entiende lo que se dijo, solo arregla lo mecánico (espacios,
+// puntos, vocabulario de la casa y euros). Interpretar la nota es trabajo de quien la
+// procesa, y para eso "Jacob INE" ya se entiende perfectamente.
+
+/** Palabras de la casa que el dictado castellano no conoce y siempre escribe mal. */
+const VOCABULARIO: [RegExp, string][] = [
+  [/\bjacob\s*in[eé]?\b/gi, "Jacobine"],
+  [/\bnicasio\b/gi, "Nicasio"],
+  [/\balexander\b/gi, "Alexander"],
+  [/\bmare(?:s)?chal\b/gi, "Marechal"],
+  [/\bmariscal\b/gi, "Marechal"],
+  [/\brevolut[e]?\b/gi, "Revolut"],
+  [/\bsama\s*vi\b/gi, "Samavi"],
+  [/\beco\s*cleans?\b/gi, "Ecocleans"],
+  [/\bair\s?b\s?n\s?b\b/gi, "Airbnb"],
+  [/\bg(?:ue|e)sty\b/gi, "Guesty"],
+  [/\bprice\s*labs?\b/gi, "PriceLabs"],
+  [/\bconfisic\b/gi, "Confisic"],
+];
+
+/** Arranques que, pegados con espacio a la frase anterior, no llevan mayúscula. */
+const CONECTORES = /^(y|o|pero|que|porque|aunque)\b/i;
+
+/**
+ * Vuelve a montar las frases sueltas del dictado.
+ *
+ * Pone punto entre dos frases solo cuando la anterior parece una frase entera (3 palabras o
+ * más) y la siguiente arranca en mayúscula — que es como el reconocedor marca que hubo una
+ * pausa de verdad. Si no, une con un espacio: partir por la mitad una frase larga ("Quiero
+ * hacer. Una prueba.") molesta más que la coma que falta.
+ */
+export function unirSegmentos(segmentos: string[]): string {
+  const limpios = segmentos.map((s) => s.trim()).filter(Boolean);
+  let salida = "";
+  let previo = "";
+
+  for (const seg of limpios) {
+    if (!salida) { salida = seg; previo = seg; continue; }
+    const yaPuntuado = /[.!?…,;:]$/.test(previo);
+    const previoEsFrase = previo.split(/\s+/).length >= 3;
+    const arrancaEnMayus = /^[¿¡"'(]?[A-ZÁÉÍÓÚÑ]/.test(seg);
+
+    if (!yaPuntuado && previoEsFrase && arrancaEnMayus) {
+      salida += ". " + seg;
+    } else {
+      // "…mi vieja. La propietaria Y se pagó" → la "Y" suelta en medio chirría.
+      salida += " " + (CONECTORES.test(seg) ? seg.charAt(0).toLowerCase() + seg.slice(1) : seg);
+    }
+    previo = seg;
+  }
+  return salida;
+}
+
+/** Vocabulario de la casa, euros e importes hablados. Idempotente: se puede aplicar dos veces. */
+export function corregirDictado(texto: string): string {
+  let t = texto;
+  for (const [re, con] of VOCABULARIO) t = t.replace(re, con);
+  t = t.replace(/(\d)\s*euros?\b/gi, "$1 €");          // "100 euros" → "100 €"
+  t = t.replace(/(\d+)\s+con\s+(\d{1,2})\s*€/gi, "$1,$2 €"); // "47 con 98 €" → "47,98 €"
+  t = t.replace(/[ \t]{2,}/g, " ");
+  t = t.replace(/\s+([.,;:!?])/g, "$1");
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+/**
+ * Texto final del cuadro mientras se dicta: lo que ya había escrito + las frases cerradas
+ * (limpias) + lo que el reconocedor todavía está oyendo (crudo — se reescribe solo).
+ */
+export function componerDictado(base: string, finales: string[], provisional: string): string {
+  const cuerpo = finales.length ? corregirDictado(unirSegmentos(finales)) : "";
+  return [base.trimEnd(), cuerpo, provisional.trim()].filter(Boolean).join(" ").trimStart();
+}
+
 export type ResumenInbox = {
   sinProcesar: number;
   registradas: number;
