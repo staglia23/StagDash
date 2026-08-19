@@ -9,6 +9,7 @@ const ASSETS_PUBLICOS = new Set([
   "/apple-icon",
   "/anotar/apple-icon",
   "/manifest.webmanifest",
+  "/anotar/manifest",
 ]);
 
 export async function middleware(req: NextRequest) {

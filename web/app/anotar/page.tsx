@@ -22,6 +22,9 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Anotar — Stag",
   appleWebApp: { capable: true, title: "Anotar", statusBarStyle: "default" },
+  // Manifiesto propio: el del layout raíz tiene start_url "/" y hacía que el icono de
+  // Anotar abriera la portada. Ver el comentario de app/anotar/manifest/route.ts.
+  manifest: "/anotar/manifest",
 };
 
 const ESTADO: Record<string, { icon: string; label: string; cls: string }> = {
