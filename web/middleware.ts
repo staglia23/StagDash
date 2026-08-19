@@ -4,13 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // Puerta del dashboard: sin sesión → /login. También refresca el token de sesión
 // (getUser) y propaga las cookies renovadas, que es lo que permite que los server
 // components lean las vistas con un JWT vigente sin poder escribir cookies ellos mismos.
-const ASSETS_PUBLICOS = new Set([
-  "/icon",
-  "/apple-icon",
-  "/anotar/apple-icon",
-  "/manifest.webmanifest",
-  "/anotar/manifest",
-]);
+const ASSETS_PUBLICOS = new Set(["/icon", "/apple-icon", "/anotar/apple-icon"]);
 
 export async function middleware(req: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;

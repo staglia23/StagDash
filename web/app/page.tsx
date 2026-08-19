@@ -242,7 +242,13 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
   return (
     <main className="container">
       <header className="header mc-header">
-        <h1>Morning Check</h1>
+        {/* Atajo a la bandeja arriba del todo: los accesos viven al final de la portada y
+            anotar un gasto es cosa de todos los días, no de después de leer los números.
+            Además hace de red: si el icono del iPhone acaba en la portada, es UN toque. */}
+        <div className="mc-header-fila">
+          <h1>Morning Check</h1>
+          <Link href="/anotar" className="mc-anotar">🎤 Anotar</Link>
+        </div>
         <div className="sub">{fechaLargaDia(hoyIso)} · Samavi Global Vision SL</div>
         <div className="stamp">
           Sync {fechaLarga(fresh?.last_sync ?? k?.last_sync)} · banco conciliado hasta {cierreHasta}

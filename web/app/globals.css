@@ -905,3 +905,18 @@ table.cobros-tabla { min-width: 480px; font-size: 0.82rem; }
 .nota-accion-borrar:hover { color: var(--critical); border-color: var(--critical); }
 .nota-editandose { border-left-color: var(--accent-bg); background: var(--surface-1); }
 .nota-secundarios { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* Atajo a /anotar en la cabecera de la portada, a la derecha del título. Fila flex y no
+   posición absoluta: así el subtítulo y el sello siguen usando el ancho entero y no hay
+   forma de que el botón se solape con el título en una pantalla estrecha. */
+.mc-header-fila {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.mc-header-fila h1 { margin-bottom: 0; }
+.mc-anotar {
+  display: inline-flex; align-items: center; gap: 5px;
+  min-height: 44px; padding: 0 14px; border-radius: 999px;
+  border: 1px solid var(--accent-bg); color: var(--accent-bg);
+  font-size: 0.82rem; font-weight: 700; text-decoration: none; white-space: nowrap;
+}
+.mc-anotar:hover { background: var(--accent-bg); color: #ffffff; }

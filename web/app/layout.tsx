@@ -6,6 +6,14 @@ export const metadata: Metadata = {
   description: "Rendimiento neto por propiedad — Samavi Global Visión SL",
   // Instalable en la pantalla de inicio del iPhone: abre sin barra de direcciones, como
   // una app. `title` corto a propósito — debajo del icono no caben más de ~11 caracteres.
+  //
+  // AQUÍ NO VA UN MANIFIESTO (web app manifest), y es deliberado. Cuando la página enlaza
+  // uno, iOS abre el acceso en su `start_url` en vez de en la página desde la que lo
+  // creaste: el icono de "Anotar" llevaba a la portada. Darle a /anotar un manifiesto
+  // propio con start_url "/anotar" tampoco lo arregló (19/08/2026, probado en el iPhone de
+  // Stag). Sin manifiesto, Safari usa la URL actual, que es el comportamiento de toda la
+  // vida y el que hace falta. Los iconos y el nombre no dependen de él: salen de
+  // `appleWebApp` y de los apple-icon.tsx.
   appleWebApp: { capable: true, title: "Stag", statusBarStyle: "default" },
 };
 
