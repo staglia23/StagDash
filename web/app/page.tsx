@@ -19,6 +19,7 @@ import { resumenCuentaDuena, type FilaCuenta } from "@/lib/cuentaDuena";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { buildHeadline, nombreCorto } from "@/lib/headline";
 import { mtdPorPropiedad, type NocheRow } from "@/lib/mtd";
+import { resumenInbox, type NotaRow } from "@/lib/notas";
 import { totalesPrecios, type ResumenPrecioRow } from "@/lib/precios";
 import { cruceRentabilidad, spreadContribucion, type RentRow } from "@/lib/rentabilidad";
 import { estadoSalud, revparEquilibrio } from "@/lib/salud";
@@ -74,7 +75,7 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
 
   const [kpisArr, freshArr, alertas, ranking, breakeven, costes, trend, pnlMes, noches,
     forward, forwardDias, pickup, pnlNetoMesActual, propiedades, cuadre, asegurado, resultadoArr,
-    cuentaDuena, precios] =
+    cuentaDuena, precios, notas] =
     await Promise.all([
       readView<Kpis>("v_kpis"),
       readView<Freshness>("v_freshness"),
@@ -99,6 +100,7 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
       readView<ResultadoRow>("v_resultado_samavi"),
       readView<CuentaDuenaFila>("v_cuenta_duena", { order: { col: "mes" } }),
       readView<ResumenPrecioRow>("v_pricelabs_resumen"),
+      readView<NotaRow>("v_notas_inbox", { order: { col: "creado_en", asc: false } }),
     ]);
 
   const k = kpisArr[0];
@@ -312,6 +314,11 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
       {/* 6 · a dónde ir desde acá */}
       <div className="section-title">Ir a</div>
       <div className="tiles">
+        <Link href="/anotar" className="tile">
+          <span className="tile-ic" aria-hidden="true">🎤</span>
+          <span><span className="tile-t">Anotar</span>
+            <span className="tile-s">{resumenInbox(notas).texto}</span></span>
+        </Link>
         <Link href="/analisis" className="tile">
           <span className="tile-ic" aria-hidden="true">📈</span>
           <span><span className="tile-t">Análisis</span>

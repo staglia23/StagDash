@@ -840,3 +840,33 @@ table.cobros-tabla { min-width: 480px; font-size: 0.82rem; }
   .donutwrap { width: 220px; height: 220px; }
 }
 @media (prefers-reduced-motion: reduce) { .slice, .cobro-chev { transition: none; } }
+
+/* ── /anotar: la bandeja de entrada (087) ── */
+.aviso-nota {
+  margin: 0 0 12px; padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--surface-1);
+  font-size: 0.88rem; font-weight: 600;
+}
+.aviso-nota.pos { border-left: 3px solid var(--good); }
+.aviso-nota.neg { border-left: 3px solid var(--critical); }
+.nota-form { display: grid; gap: 10px; }
+.nota-label { font-weight: 700; font-size: 0.95rem; }
+.nota-input {
+  width: 100%; min-height: 132px; resize: vertical;
+  padding: 12px 14px; border-radius: 12px;
+  border: 1px solid var(--baseline); background: var(--page); color: var(--text-primary);
+  /* 16px reales: por debajo de eso Safari en iOS hace zoom al enfocar el campo y deja la
+     pantalla descuadrada justo cuando se abre el teclado */
+  font-size: 16px; font-family: inherit; line-height: 1.5;
+}
+.nota-input::placeholder { color: var(--muted); }
+.nota-input:focus-visible { outline: 2px solid var(--accent-bg); outline-offset: 1px; }
+.nota-btn {
+  min-height: 52px; border: 0; border-radius: 12px; cursor: pointer;
+  background: var(--accent-bg); color: #ffffff;
+  font-size: 1rem; font-weight: 700; font-family: inherit;
+}
+.nota-btn:hover { filter: brightness(1.08); }
+.nota-tip { margin: 0; color: var(--text-secondary); font-size: 0.8rem; line-height: 1.5; }
+.nota-texto { font-size: 0.9rem; margin: 4px 0 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.nota-resultado { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }

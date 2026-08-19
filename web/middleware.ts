@@ -40,7 +40,10 @@ export async function middleware(req: NextRequest) {
     const dest = req.nextUrl.clone();
     dest.pathname = pathname;
     dest.search = "";
-    const redir = NextResponse.redirect(dest);
+    // 303 en los POST (el form de /anotar): el 307 por defecto CONSERVA el método, así que
+    // una sesión vencida justo al guardar reenviaría el POST contra /login y reventaría.
+    // El 303 obliga al navegador a pedir /login con GET y a mostrar el formulario de entrada.
+    const redir = NextResponse.redirect(dest, req.method === "GET" ? undefined : 303);
     res.cookies.getAll().forEach((c) => redir.cookies.set(c));
     return redir;
   };

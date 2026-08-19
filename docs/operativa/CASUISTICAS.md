@@ -389,13 +389,20 @@ ingreso que no existe. Precedentes de la migración 049: mini UPS 77 € (feb-20
 
 ### Cómo se resuelve, paso a paso
 
-1. **Antes de cargar cualquier gasto de Jacobine**, mirar la columna GASTOS de la cuenta
-   corriente de la dueña. Si está ahí, ya se lo cobraron: es neutro, no va al P&L.
+0. **Se captura en el momento**: Stag lo dicta en `/anotar` desde el móvil y cae en
+   `notas_inbox` como `SIN_PROCESAR` (migración 087). La nota no imputa nada; se convierte
+   en recobro o en event con revisión humana, y queda marcada `REGISTRADA` con lo que salió
+   de ella. Si no se captura, no existe: no hay extracto que traiga un bizum personal.
+1. **Antes de cargar cualquier gasto de Jacobine**, mirar **`v_recobros`**: si ya está ahí,
+   no se duplica. ⚠️ **La hoja `2026_JACOBINE_MADRE_INGRESOS` ya no es fuente**: Stag confirmó
+   el 19/08/2026 que hace tiempo que no la actualiza. Los `descuentos` cargados vienen de
+   cuando sí se llevaba; de ahí en adelante **el registro es el dashboard**, no la planilla.
 2. Si es un adelanto nuevo, se registra en la tabla **`recobros`** (`propiedad_codigo, fecha,
    concepto, importe, pagado_por, pagado_a, medio, estado, resuelto_fecha, resuelto_nota,
    notas`), estado `PENDIENTE`.
-3. Cuando Stag le liquida el mes a la dueña, el recobro pasa a `LIQUIDADO` con su fecha.
-   Estados posibles: `PENDIENTE`, `LIQUIDADO`, `INCOBRABLE` (este último exige nota).
+3. El recobro pasa a `LIQUIDADO` **cuando se emite la liquidación a la dueña** — no cuando
+   alguien lo anota en una planilla, porque esa planilla ya no se lleva. Estados posibles:
+   `PENDIENTE`, `LIQUIDADO`, `INCOBRABLE` (este último exige nota).
 4. La cuenta devengada de la dueña se lee en `v_cuenta_duena`: pasivo por noche + su parte de
    cancelaciones retenidas − refactura de limpieza (700 €/mes, `listings.refactura_limpieza_mes`)
    − recobros liquidados. **No** resta transferencias hechas: los pagos viven en los bancos.

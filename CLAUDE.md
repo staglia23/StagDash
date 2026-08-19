@@ -48,7 +48,8 @@ PriceLabs API   → Edge Function pricelabs-sync (cron   ├→ Postgres RAW (li
                   diario 07:10 UTC, migración 063)  ───┘   reservations, general_expenses,
                                                            events, sync_state, pricelabs_prices)
     → MOTOR = funciones f_*(desde, hasta) + vistas wrapper "año en curso" (migración 060)
-      → Next.js 14 App Router (login Supabase Auth → server components, JWT authenticated, SOLO vistas)
+      → Next.js 14 App Router (login Supabase Auth → server components, JWT authenticated,
+        SOLO vistas — única excepción de escritura: `f_nota_add`, la bandeja de la 087)
 ```
 
 **El motor de negocio vive en SQL, en un solo lugar.** El cliente nunca reconstruye
@@ -134,6 +135,15 @@ migración vieja reabre la lectura sin login y el dashboard no lo delataría (é
 como authenticated).
 PII (propietario/NIF/IBAN, nombres de huéspedes) jamás sale a vistas públicas ni al repo
 (en seeds van como 'PENDIENTE').
+
+**La única escritura del cliente (087, 19/08/2026)**: `/anotar` → `f_nota_add(text)` →
+`notas_inbox`. Se acotó a propósito para no romper la doctrina: la función SOLO inserta texto
+en esa tabla, nada del motor la lee, no hay UPDATE ni DELETE expuestos (la bandeja es
+append-only: corregir = dictar otra nota) y el autor sale del JWT, no del cliente. Las notas
+son SIN_PROCESAR hasta que una migración las convierte en `event` o `recobro` — con revisión
+humana, que es lo que hace segura la puerta. **Si algún día hace falta que el cliente escriba
+en `events` o `recobros`, no se hace extendiendo esta función**: es otra decisión y necesita
+su propia revisión de seguridad.
 
 **Frontend** (`web/`):
 - La puerta es `web/middleware.ts` (sin sesión → `/login`; también refresca el token y
