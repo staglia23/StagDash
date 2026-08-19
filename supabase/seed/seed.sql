@@ -658,3 +658,17 @@ where not exists (
   select 1 from recobros r
    where r.propiedad_codigo = '1A_JACO' and r.fecha = date '2026-03-01' and r.importe = 20.00
 );
+
+-- SYNC 20/08/2026 — recobro nacido de la primera nota dictada (091). El seed NO replica
+-- notas_inbox (es un cuaderno operativo, no dato de negocio): solo el recobro.
+insert into recobros (propiedad_codigo, fecha, concepto, importe, pagado_por, pagado_a,
+                      medio, estado, liquidacion, resuelto_fecha, resuelto_nota, notas)
+select '1A_JACO', date '2026-08-19',
+       'Pintura y arreglos en baño y habitación secundaria — mano de obra',
+       40.00, 'STAG_PERSONAL', 'Agustín (manitas Sevilla)', 'bizum',
+       'PENDIENTE', 'DIRECTO_FAMILIA', null, null,
+       'Bizum personal de Stag. Origen: nota dictada en /anotar el 19/08/2026 (091).'
+where not exists (
+  select 1 from recobros r
+   where r.propiedad_codigo = '1A_JACO' and r.fecha = date '2026-08-19' and r.importe = 40.00
+);
