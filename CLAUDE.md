@@ -21,11 +21,17 @@ npx vitest run                 # suite completa (~37 tests)
 npx vitest run tests/headline.test.ts   # un archivo
 ```
 
-- **Deploy**: push a `main` → Vercel despliega solo. La terminal no tiene credenciales de
-  GitHub y `gh` no está instalado. **El commit lo hace Claude** (con mensaje; regla del
-  30/07: a Stag el editor de mensajes le estorba) y **el push lo hace el usuario** desde
-  VS Code (Source Control → Sync). Las `NEXT_PUBLIC_*` se hornean en el build → si
-  cambian, Redeploy.
+- **Deploy**: push a `main` → Vercel despliega solo. **El commit Y el push los hace Claude**
+  (regla del 20/08/2026; antes el push era de Stag desde VS Code → Sync, pero el flujo le
+  resultaba confuso). Las credenciales de GitHub SÍ están: VS Code las dejó en el llavero de
+  macOS y `git push` funciona desde la terminal — lo que no está instalado es `gh`. El commit
+  lo escribe Claude con mensaje en español (regla del 30/07: a Stag el editor de mensajes le
+  estorba). **Antes de cada push: `npx tsc --noEmit`, `npx vitest run` y `npm run build`** —
+  un push publica, y ya no hay nadie en el medio. Las `NEXT_PUBLIC_*` se hornean en el build →
+  si cambian, Redeploy.
+  OJO al explicárselo: **los datos NO necesitan push.** Las migraciones se aplican por el MCP
+  de Supabase y se ven en su móvil al instante; el push solo publica cambios de *pantalla* y
+  guarda el historial en GitHub. Stag creía que sin Sync sus notas no se registraban.
 - **SQL**: migraciones numeradas en `supabase/migrations/`. Se aplican con el MCP de
   Supabase (`apply_migration`, proyecto `enlslwuokresrwbqpyeo`) o, si el conector está
   caído, dándole al usuario un bloque para pegar en el SQL Editor — en ese caso el bloque
