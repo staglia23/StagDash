@@ -870,3 +870,37 @@ table.cobros-tabla { min-width: 480px; font-size: 0.82rem; }
 .nota-tip { margin: 0; color: var(--text-secondary); font-size: 0.8rem; line-height: 1.5; }
 .nota-texto { font-size: 0.9rem; margin: 4px 0 6px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .nota-resultado { font-size: 0.75rem; color: var(--text-secondary); font-weight: 600; }
+
+/* ── /anotar: dictado en pantalla y acciones sobre la nota (088) ── */
+.nota-voz {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; min-height: 64px; cursor: pointer;
+  border: 2px solid var(--accent-bg); border-radius: 14px;
+  background: var(--surface-1); color: var(--text-primary);
+  font-size: 1.05rem; font-weight: 700; font-family: inherit;
+}
+.nota-voz:hover { border-color: var(--text-primary); }
+.nota-voz span { font-size: 1.3rem; line-height: 1; }
+/* Escuchando: cambia el borde Y el texto del botón ("Detener y revisar") + el estado de
+   abajo. El color nunca va solo. */
+.nota-voz-on { border-color: var(--warning); border-style: dashed; }
+.nota-voz-estado { margin: 0; font-size: 0.8rem; font-weight: 600; text-align: center; }
+.nota-btn-sec {
+  min-height: 44px; cursor: pointer; font-family: inherit; font-size: 0.85rem;
+  border: 1px solid var(--gridline); border-radius: 12px;
+  background: transparent; color: var(--text-secondary);
+}
+.nota-btn-sec:hover { color: var(--text-primary); border-color: var(--muted); }
+.nota-cancelar { margin: 10px 0 0; text-align: center; font-size: 0.85rem; }
+.nota-cancelar a { color: var(--text-secondary); }
+.nota-acciones { display: flex; gap: 6px; margin-left: auto; align-items: center; }
+.nota-accion {
+  display: inline-flex; align-items: center; gap: 4px;
+  min-height: 44px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--gridline); background: transparent;
+  color: var(--text-secondary); font-size: 0.78rem; font-weight: 600;
+  font-family: inherit; text-decoration: none; cursor: pointer; white-space: nowrap;
+}
+.nota-accion:hover { color: var(--text-primary); border-color: var(--muted); }
+.nota-accion-borrar:hover { color: var(--critical); border-color: var(--critical); }
+.nota-editandose { border-left-color: var(--accent-bg); background: var(--surface-1); }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { autorCorto, cuandoCorto, resumenInbox, validarNota, type NotaRow } from "../lib/notas";
+import { autorCorto, cuandoCorto, puedeEditar, resumenInbox, validarNota, type NotaRow } from "../lib/notas";
 
 const nota = (o: Partial<NotaRow>): NotaRow => ({
   id: 1, texto: "x", autor: "info@stag-properties.com",
@@ -79,6 +79,28 @@ describe("resumenInbox", () => {
   it("bandeja vacía invita a dictar en vez de cantar un cero", () => {
     expect(resumenInbox([]).texto).toBe("dictá un gasto y lo registro");
     expect(resumenInbox([nota({})]).texto).toBe("1 nota esperando que la registre");
+  });
+});
+
+describe("puedeEditar", () => {
+  const mia = nota({ autor: "info@stag-properties.com" });
+
+  it("la propia y sin procesar se puede corregir", () => {
+    expect(puedeEditar(mia, "info@stag-properties.com")).toBe(true);
+  });
+
+  it("una nota ya registrada se congela: hay un número que salió de ella", () => {
+    const registrada = nota({ estado: "REGISTRADA", resultado: "recobro #12", procesado_en: "2026-08-19T11:00:00Z" });
+    expect(puedeEditar(registrada, "info@stag-properties.com")).toBe(false);
+  });
+
+  it("la nota de otro no se toca, ni con sesión válida", () => {
+    expect(puedeEditar(nota({ autor: "fede@ejemplo.com" }), "info@stag-properties.com")).toBe(false);
+  });
+
+  it("sin sesión conocida no se pinta ningún botón", () => {
+    expect(puedeEditar(mia, null)).toBe(false);
+    expect(puedeEditar(mia, "")).toBe(false);
   });
 });
 

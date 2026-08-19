@@ -3,16 +3,15 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { validarNota } from "@/lib/notas";
 
-// POST /anotar/guardar — la ÚNICA escritura del dashboard (migración 087). Form POST
-// clásico, como /auth/signout: funciona sin JavaScript.
+// POST /anotar/guardar — crea una nota, o corrige una existente si viene `id` (088).
+// Form POST clásico, como /auth/signout: funciona sin JavaScript.
 //
-// No escribe en la tabla directamente: llama a `f_nota_add`, que es lo único que
-// `authenticated` puede ejecutar. El autor lo pone el JWT del lado del servidor, así que el
-// navegador no puede firmar una nota en nombre de otro. Y la nota no imputa nada: cae en la
-// bandeja como SIN_PROCESAR y se convierte en recobro o event con revisión humana.
+// No escribe en la tabla directamente: llama a `f_nota_add` / `f_nota_editar`, lo único que
+// `authenticated` puede ejecutar. El autor y el permiso los resuelve la base con el JWT, no
+// el cliente: el navegador no puede firmar ni corregir una nota en nombre de otro.
 //
-// Siempre redirige (303) en vez de devolver JSON: el usuario vuelve a /anotar y ve el
-// resultado en pantalla, y un refresh no reenvía el formulario.
+// Siempre redirige (303): el usuario vuelve a /anotar y ve el resultado en pantalla, y un
+// refresh no reenvía el formulario.
 export async function POST(req: Request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -21,9 +20,16 @@ export async function POST(req: Request) {
     NextResponse.redirect(new URL(`/anotar${query}`, req.url), { status: 303 });
 
   let texto = "";
+  let id: number | null = null;
   try {
     const form = await req.formData();
     texto = String(form.get("texto") ?? "");
+    const crudo = form.get("id");
+    if (crudo != null && String(crudo) !== "") {
+      const n = Number(crudo);
+      if (!Number.isInteger(n) || n <= 0) return volver("?error=fallo");
+      id = n;
+    }
   } catch {
     return volver("?error=fallo");
   }
@@ -31,7 +37,7 @@ export async function POST(req: Request) {
   // Se valida acá con la MISMA función que la pantalla: el tope y el recorte tienen que
   // coincidir con los de la función SQL, o el rechazo llegaría después de "Guardar".
   const nota = validarNota(texto);
-  if (!nota.ok) return volver("?error=vacia");
+  if (!nota.ok) return volver(id ? `?error=vacia&editar=${id}` : "?error=vacia");
 
   if (!url || !key) return volver("?error=fallo");
 
@@ -46,12 +52,18 @@ export async function POST(req: Request) {
     },
   });
 
-  const { error } = await supabase.rpc("f_nota_add", { p_texto: nota.texto });
+  const { error } =
+    id == null
+      ? await supabase.rpc("f_nota_add", { p_texto: nota.texto })
+      : await supabase.rpc("f_nota_editar", { p_id: id, p_texto: nota.texto });
+
   if (error) {
     // El detalle va al log del servidor, no a la URL: puede traer parte del texto dictado.
-    console.error("f_nota_add falló:", error.message);
-    return volver("?error=fallo");
+    console.error("guardar nota falló:", error.message);
+    // 42501 = la base rechazó tocarla (ya procesada, o de otro autor). No es un fallo
+    // técnico y merece un mensaje distinto: "reintentá" sería un consejo inútil.
+    return volver(error.code === "42501" ? "?error=tarde" : "?error=fallo");
   }
 
-  return volver("?ok=1");
+  return volver(id == null ? "?ok=guardada" : "?ok=corregida");
 }

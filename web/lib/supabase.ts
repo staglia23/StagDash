@@ -31,6 +31,21 @@ const clientePorRequest = cache(function clientePorRequest() {
   });
 });
 
+/**
+ * Email de la sesión (o null). Lo usa /anotar para saber qué notas son suyas y por tanto
+ * corregibles. Va contra el servidor de Auth (getUser), no contra la cookie: una cookie
+ * se puede editar a mano, y de esta respuesta depende que se pinte un botón de borrar.
+ */
+export async function emailSesion(): Promise<string | null> {
+  if (!supabaseConfigured) return null;
+  try {
+    const { data } = await clientePorRequest().auth.getUser();
+    return data.user?.email ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export type ViewQuery = {
   order?: { col: string; asc?: boolean };
   eq?: Record<string, string | number>;

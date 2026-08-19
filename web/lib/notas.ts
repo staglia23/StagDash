@@ -13,7 +13,19 @@ export type NotaRow = {
   estado: string;
   resultado: string | null;
   procesado_en: string | null;
+  editada_en?: string | null;
+  texto_previo?: string | null;
 };
+
+/**
+ * ¿Se puede tocar todavía? Solo la propia y solo mientras no la haya procesado (088).
+ *
+ * Es el mismo criterio que aplican `f_nota_editar`/`f_nota_borrar` en la base: acá decide
+ * si el botón se pinta, y allá si el cambio se acepta. La copia de la regla en el cliente
+ * es cosmética a propósito — quien manda es la base, porque el navegador se puede trucar.
+ */
+export const puedeEditar = (n: NotaRow, email: string | null | undefined) =>
+  n.estado === "SIN_PROCESAR" && !!email && n.autor === email;
 
 export type NotaValidada = { ok: boolean; texto: string; error?: string };
 

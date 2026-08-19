@@ -49,7 +49,7 @@ PriceLabs API   → Edge Function pricelabs-sync (cron   ├→ Postgres RAW (li
                                                            events, sync_state, pricelabs_prices)
     → MOTOR = funciones f_*(desde, hasta) + vistas wrapper "año en curso" (migración 060)
       → Next.js 14 App Router (login Supabase Auth → server components, JWT authenticated,
-        SOLO vistas — única excepción de escritura: `f_nota_add`, la bandeja de la 087)
+        SOLO vistas — única excepción de escritura: la bandeja `/anotar` de la 087/088)
 ```
 
 **El motor de negocio vive en SQL, en un solo lugar.** El cliente nunca reconstruye
@@ -136,14 +136,17 @@ como authenticated).
 PII (propietario/NIF/IBAN, nombres de huéspedes) jamás sale a vistas públicas ni al repo
 (en seeds van como 'PENDIENTE').
 
-**La única escritura del cliente (087, 19/08/2026)**: `/anotar` → `f_nota_add(text)` →
-`notas_inbox`. Se acotó a propósito para no romper la doctrina: la función SOLO inserta texto
-en esa tabla, nada del motor la lee, no hay UPDATE ni DELETE expuestos (la bandeja es
-append-only: corregir = dictar otra nota) y el autor sale del JWT, no del cliente. Las notas
-son SIN_PROCESAR hasta que una migración las convierte en `event` o `recobro` — con revisión
-humana, que es lo que hace segura la puerta. **Si algún día hace falta que el cliente escriba
-en `events` o `recobros`, no se hace extendiendo esta función**: es otra decisión y necesita
-su propia revisión de seguridad.
+**La única escritura del cliente (087 + 088, 19/08/2026)**: `/anotar` → `f_nota_add` /
+`f_nota_editar` / `f_nota_borrar` → `notas_inbox`, y nada más. Se acotó a propósito para no
+romper la doctrina: esas tres funciones solo tocan esa tabla, nada del motor la lee, y el
+autor y el permiso los resuelve la base con el JWT — el cliente no puede firmar ni corregir
+una nota ajena. Corregir y borrar valen **solo mientras la nota siga SIN_PROCESAR**; en cuanto
+una migración la convierte en `event` o `recobro` se congela, porque a partir de ahí hay un
+número que salió de ella y cambiarla en silencio falsearía su origen (la 088 guarda además la
+versión anterior en `texto_previo`). Esa conversión la hace siempre una migración, con
+revisión humana: es lo que mantiene segura la puerta. **Si algún día hace falta que el cliente
+escriba en `events` o `recobros`, no se hace extendiendo estas funciones**: es otra decisión y
+necesita su propia revisión de seguridad.
 
 **Frontend** (`web/`):
 - La puerta es `web/middleware.ts` (sin sesión → `/login`; también refresca el token y
