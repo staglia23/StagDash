@@ -32,6 +32,11 @@ npx vitest run tests/headline.test.ts   # un archivo
   DEBE ser idempotente (`where not exists` / `on conflict`): ya ejecutó uno dos veces.
   `apply_all.sql` y `seed/seed.sql` se mantienen sincronizados con producción (secciones
   "SYNC"): tras cambiar datos/esquema en producción, actualizarlos.
+  **Los smoke tests contra producción limpian SOLO las filas que crearon, por id.** Un
+  `delete from <tabla>` pelado parece inofensivo en una tabla "vacía de pruebas" y no lo es:
+  el 19/08/2026 borró la primera nota real que Stag había dictado en `notas_inbox` mientras
+  se probaba la 088 (se detectó porque la secuencia iba una por delante de las filas que yo
+  había creado). Producción no tiene tablas de juguete.
 - **Local**: `web/.env.local` (gitignored) con `NEXT_PUBLIC_SUPABASE_URL` y
   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (la anon key es pública por diseño). Tras la 059 la
   anon key sola no lee ninguna vista: ver datos en local o verificar por CDP exige
