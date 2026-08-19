@@ -13,6 +13,12 @@
   --good:           #006300;
   --critical:       #d03b3b;
   --warning:        #8a5a00;  /* ámbar oscuro: legible sobre superficie clara */
+  /* Cobros: categórica de 3 + gris de "sin dato". Validada con dataviz/validate_palette.js
+     (light sobre #fcfcfb: banda de luminosidad, croma, CVD y contraste, todo PASS). */
+  --cobro-1:        #1f5eb0;
+  --cobro-2:        #a34a00;
+  --cobro-3:        #5b3fa8;
+  --cobro-0:        var(--muted);
 }
 @media (prefers-color-scheme: dark) {
   :root {
@@ -29,6 +35,11 @@
     --good:           #0ca30c;
     --critical:       #e66767;
     --warning:        #fab219;
+    /* Dark: re-escalonados contra #1a1a19, no invertidos. Validados aparte, todo PASS. */
+    --cobro-1:        #4a94ea;
+    --cobro-2:        #cf7c30;
+    --cobro-3:        #8f7ada;
+    --cobro-0:        var(--muted);
   }
 }
 
@@ -760,3 +771,72 @@ table.ranking.precio-tabla td:first-child { padding-left: 10px; }
   min-height: 44px; padding: 8px 16px;
 }
 .salir-btn:hover { color: var(--text-primary); }
+
+
+/* ── /cobros ───────────────────────────────────────────────────────────────────────── */
+.cobros { display: flex; flex-direction: column; gap: 4px; }
+.cobros .seg {
+  display: flex; background: var(--page); border: 1px solid var(--border);
+  border-radius: 10px; padding: 3px; gap: 3px;
+}
+.cobros .seg button {
+  flex: 1; min-height: 44px; border: 0; border-radius: 7px; background: transparent;
+  color: var(--text-secondary); font: inherit; font-size: 0.85rem; font-weight: 500;
+  cursor: pointer; padding: 8px 6px;
+}
+.cobros .seg button[aria-pressed="true"] {
+  background: var(--surface-1); color: var(--text-primary); font-weight: 600;
+}
+.cobros .seg button:focus-visible { outline: 2px solid var(--accent-bg); outline-offset: 1px; }
+.cobros-hint { color: var(--muted); font-size: 0.82rem; margin: 8px 0 4px; }
+.cobros-row { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.donutwrap { position: relative; width: 200px; height: 200px; flex: none; }
+.donutwrap svg { width: 100%; height: 100%; }
+.donut-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; pointer-events: none; text-align: center;
+}
+.donut-big { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.donut-lbl {
+  font-size: 0.7rem; color: var(--muted); text-transform: uppercase;
+  letter-spacing: 0.06em; margin-top: 3px;
+}
+.slice { cursor: pointer; transition: opacity 0.12s; }
+.slice.dim { opacity: 0.32; }
+.slice:focus-visible { outline: 2px solid var(--accent-bg); outline-offset: 2px; }
+.cobros-legend { list-style: none; margin: 10px 0 0; padding: 0; width: 100%; }
+.cobro-row {
+  display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px;
+  padding: 8px 10px; border: 0; border-radius: 9px; background: transparent;
+  font: inherit; color: inherit; text-align: left; cursor: pointer;
+}
+.cobro-row:hover { background: var(--page); }
+.cobro-row[aria-expanded="true"] { background: var(--page); }
+.cobro-row:focus-visible { outline: 2px solid var(--accent-bg); outline-offset: -2px; }
+.cobro-sw { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+.cobro-name { flex: 1; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.cobro-chev { color: var(--muted); font-size: 0.68rem; transition: transform 0.15s; }
+.cobro-row[aria-expanded="true"] .cobro-chev { transform: rotate(90deg); }
+.cobro-pct { font-size: 0.9rem; font-weight: 600; width: 54px; text-align: right; }
+.cobro-amt { font-size: 0.82rem; color: var(--text-secondary); width: 88px; text-align: right; }
+.cobro-bar {
+  height: 6px; border-radius: 3px; background: var(--gridline);
+  overflow: hidden; margin: 0 10px 10px;
+}
+.cobro-bar i { display: block; height: 100%; border-radius: 3px; }
+.cobro-detalle { margin: 0 0 10px; border-left: 2px solid var(--gridline); padding-left: 10px; }
+table.cobros-tabla { min-width: 480px; font-size: 0.82rem; }
+.cobro-nota { color: var(--muted); font-style: italic; }
+.cobro-pie { color: var(--muted); font-size: 0.8rem; margin: 8px 0 0; }
+.mono { font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.chip-fuera, .chip-falta {
+  display: block; width: fit-content; margin-top: 3px; font-size: 0.66rem; font-weight: 600;
+  padding: 1px 6px; border-radius: 999px; white-space: nowrap;
+}
+.chip-fuera { border: 1px solid var(--border-strong, var(--border)); color: var(--text-secondary); }
+.chip-falta { border: 1px solid var(--warning); color: var(--warning); }
+@media (min-width: 620px) {
+  .cobros-row { flex-direction: row; align-items: center; gap: 22px; }
+  .donutwrap { width: 220px; height: 220px; }
+}
+@media (prefers-reduced-motion: reduce) { .slice, .cobro-chev { transition: none; } }

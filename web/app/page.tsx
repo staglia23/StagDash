@@ -327,6 +327,11 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
           <span><span className="tile-t">Cuadre</span>
             <span className="tile-s">integridad del modelo y banco</span></span>
         </Link>
+        <Link href="/cobros" className="tile">
+          <span className="tile-ic" aria-hidden="true">◔</span>
+          <span><span className="tile-t">Cobros</span>
+            <span className="tile-s">por dónde entra la plata</span></span>
+        </Link>
         <Link href={`/p/${encodeURIComponent(health[0]?.codigo ?? "1A_NICA")}`} className="tile">
           <span className="tile-ic" aria-hidden="true">
             <span className="dot" style={{ background: propColor(health[0]?.codigo ?? "1A_NICA"), marginRight: 0 }} />

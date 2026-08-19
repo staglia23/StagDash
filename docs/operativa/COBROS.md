@@ -147,7 +147,7 @@ select confirmation_code, metodo, familia, destino, entra_en_banco_es
   from v_cobros where confirmation_code in ('GY-jtnC3pfA','GY-xH7rHap5') and estado_pago='SUCCEEDED';
 ```
 
-## 5. La convención propuesta
+## 5. La convención — ADOPTADA el 19/08/2026
 
 Dos decisiones, y con eso queda cerrado para siempre:
 
@@ -171,6 +171,10 @@ DESTINO — detalle libre
 
 Ejemplos con las notas de hoy reescritas:
 `EFECTIVO — José en mano` · `EFECTIVO — Claudio` · `GALICIA-USD — 400 USD` · `REVOLUT — transferencia`
+
+Decidido por Stag el 19/08/2026. Las notas viejas siguen funcionando: la vista `v_cobros` las
+cubre con reglas de compatibilidad («galicia», «efectivo», «cash», «en mano», «revolut», «bbva»),
+pero el prefijo es lo que hace que la clasificación no dependa de adivinar.
 
 **Por qué este prefijo y no otro**: la pregunta que el dashboard tiene que poder responder sola no
 es «¿fue cash o tarjeta?», es **«¿este ingreso va a aparecer en el banco o no?»**. Eso decide si el
@@ -235,3 +239,26 @@ select familia, metodo, sum(importe) filter (where estado_pago='SUCCEEDED') as c
 select codigo, confirmation_code, checkin_local, importe
   from v_cobros where estado_pago='SUCCEEDED' and entra_en_banco_es is null;
 ```
+
+
+## 9. La pantalla `/cobros` (19/08/2026)
+
+Vive en `web/app/cobros/page.tsx` con el donut en `web/components/CobrosDonut.tsx` y la lógica
+pura —testeada, 12 casos— en `web/lib/cobros.ts`. Enlazada desde la portada.
+
+**Qué muestra y por qué así:**
+
+- **Es caja, no margen.** El importe es el del pago, no el ingreso Samavi: en Jacobine un cobro
+  de 520 € deja 130 €. Por eso todo se etiqueta «cobrado» y la pantalla vive separada del ranking.
+- **Dos ejes, no uno** (canal / forma de cobro), por la razón del §1. Un tercer eje por destino se
+  descartó: son 5 categorías y el dato útil —cuánto no aparece en el banco— cabe en un KPI.
+- **Donut + lista.** Con Airbnb al 96 % las otras porciones son rayitas de dos píxeles: el donut
+  da la referencia de un vistazo y la lista es la que se lee. La lista hace de leyenda con
+  etiqueta directa, así que la identidad nunca depende del color solo.
+- **Solo cuenta lo cobrado de verdad**: pago `SUCCEEDED` y reserva viva. Los `PENDING` van a su
+  propio KPI («cobros previstos») porque no son una forma de cobro: todavía no entraron.
+- **«Falta la nota» es una sección, no una nota al pie.** Es la lista de tareas y se vacía sola
+  cuando Stag escribe las notas.
+
+Cifras del día que se construyó (caducan): cobrado 2026 **125.501 €** en 246 cobros · fuera del
+banco español **3.752 €** · previstos sin entrar **49.750 €** · sin nota **75 €** en 1 cobro.
