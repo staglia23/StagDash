@@ -4,6 +4,13 @@ import { NextResponse, type NextRequest } from "next/server";
 // Puerta del dashboard: sin sesión → /login. También refresca el token de sesión
 // (getUser) y propaga las cookies renovadas, que es lo que permite que los server
 // components lean las vistas con un JWT vigente sin poder escribir cookies ellos mismos.
+const ASSETS_PUBLICOS = new Set([
+  "/icon",
+  "/apple-icon",
+  "/anotar/apple-icon",
+  "/manifest.webmanifest",
+]);
+
 export async function middleware(req: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -30,7 +37,14 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getUser();
 
   const ruta = req.nextUrl.pathname;
-  const esPublica = ruta === "/login" || ruta.startsWith("/auth/");
+  // Los iconos y el manifiesto tienen que ser públicos: iOS los pide al AÑADIR el sitio a la
+  // pantalla de inicio y no siempre manda la cookie de sesión. Si contestan un redirect a
+  // /login, el icono no se descarga y el iPhone pone una captura de la página en su lugar.
+  // Lista EXACTA (no `startsWith`): "/anotar/apple-icon" es público, "/anotar" jamás.
+  // No contienen ni un dato: una "S" blanca sobre azul, un micrófono y el nombre del sitio,
+  // que ya se lee en la pantalla de login.
+  const esPublica =
+    ruta === "/login" || ruta.startsWith("/auth/") || ASSETS_PUBLICOS.has(ruta);
 
   // Un redirect NO hereda `res`: hay que copiarle las cookies que getUser() pueda haber
   // renovado. Perderlas deja al navegador con el refresh token viejo ya consumido y,

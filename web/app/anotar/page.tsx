@@ -9,12 +9,20 @@
 // event con revisión humana. Ese es el trato que hace segura la única escritura del repo.
 // Mientras siga sin procesar, su autor puede corregirla o borrarla (088); una vez
 // registrada se congela, porque entonces ya hay un número que salió de ella.
+import type { Metadata } from "next";
 import Link from "next/link";
 import { NotaForm } from "@/components/NotaForm";
 import { autorCorto, cuandoCorto, puedeEditar, resumenInbox, type NotaRow } from "@/lib/notas";
 import { emailSesion, readView, supabaseConfigured } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
+
+// Esta pantalla se puede poner SOLA en la pantalla de inicio (icono de micrófono, su
+// propio apple-icon.tsx). El título corto es el nombre que queda debajo del icono.
+export const metadata: Metadata = {
+  title: "Anotar — Stag",
+  appleWebApp: { capable: true, title: "Anotar", statusBarStyle: "default" },
+};
 
 const ESTADO: Record<string, { icon: string; label: string; cls: string }> = {
   SIN_PROCESAR: { icon: "⏳", label: "Sin procesar", cls: "warn" },
