@@ -86,6 +86,52 @@ del §5 si se adopta):
 - Que las reservas futuras de Airbnb tengan `balanceDue > 0` es normal: Airbnb paga después del
   check-in.
 
+## 4bis. Cómo abrir estas reservas en Guesty (verificado en el Help Center, 19/08/2026)
+
+**Dónde se ve la modalidad**: dentro de la reserva, sección **Payments**. Cada cobro registrado
+muestra su método. Al registrarlo, Guesty ofrece un desplegable con **Cash · Bank transfer ·
+Other** — y si se elige *Other*, el nombre se escribe en la nota
+([Recording a payment](https://help.guesty.com/hc/en-gb/articles/9361487739165-Recording-a-payment-on-a-reservation)).
+
+**Tres caminos para llegar a la reserva:**
+
+1. **Barra de búsqueda** (centro de la barra superior, web). Se busca por nombre de listing,
+   huésped, email o teléfono. ⚠ **Solo alcanza reservas con check-out de hasta 6 meses atrás**
+   ([Using the search bar](https://help.guesty.com/hc/en-gb/articles/9369798299549-Using-the-search-bar)).
+2. **Multi-calendario** — el camino que siempre funciona, también con las viejas: se navega al
+   piso y al mes, y se clica la barra de la reserva.
+3. **App móvil** — el buscador acepta **código de confirmación** directamente, que en la web no
+   está documentado
+   ([Managing reservations in the mobile app](https://help.guesty.com/hc/en-gb/articles/9365054611613-Managing-reservations-in-the-mobile-app)).
+
+**Verificación de que es la reserva correcta**: al abrirla, la URL termina con el `reservationId`.
+
+| Reserva | Piso | Fechas | `reservationId` |
+|---|---|---|---|
+| `GY-jtnC3pfA` | Marechal | 05→07/11/2026 | `6a6324ca8829fe184e61adb4` |
+| `GY-xH7rHap5` | Alexander | 20→22/10/2026 | `6a6095d7e4d68e6838ad6d19` |
+| `GY-xNgBUQwn` | Alexander | 06→12/10/2026 | `6a33389c85521f8c2f15e4ce` |
+| `BC-qpY7JQDO7` | Nicasio | 25→28/06/2026 | `69749fe866b852003ac00641` |
+| `GY-pbc8LdUs` | Alexander | 19→20/06/2026 | `6a2997a12bc1a273b3171e17` |
+| `GY-ZBqRdqsg` | Marechal | 13→17/12/2025 | `69345de6a28822927568ff86` |
+
+⚠ `GY-ZBqRdqsg` tiene check-out del 17/12/2025: **queda fuera de los 6 meses del buscador**. Hay
+que ir por el multi-calendario a diciembre 2025 en Marechal.
+
+## 4ter. Hipótesis del mapeo (a confirmar abriendo una reserva)
+
+Cruzando el desplegable documentado (**Cash · Bank transfer · Other**) con las notas reales:
+
+| ID | Hipótesis | Por qué |
+|---|---|---|
+| `58a1931c0000000000000e87` | **Cash** | Es el primero del desplegable (el que queda si no se cambia). ID con relleno de ceros = constante de sistema de Guesty |
+| `5dee4ebd32acdf7051cd6ed6` | **Bank transfer** | Sus 3 notas son todas bancarias: «Revolut Business», «Bco Galicia USD», «30% reserva banco galicia usd» |
+
+**Si la hipótesis es correcta, hay dos cobros mal marcados**: fueron transferencia y están como
+Cash. Son `GY-xH7rHap5` (358,25 €, nota «CA USD Galicia») y `GY-jtnC3pfA` (329,30 €, nota «CC USD
+Banco Galicia»). No es un error contable —el importe y la fecha están bien— pero rompe la
+clasificación automática por método.
+
 ## 5. La convención propuesta
 
 Dos decisiones, y con eso queda cerrado para siempre:
