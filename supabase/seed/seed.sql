@@ -633,3 +633,28 @@ on conflict (metodo_id) do update
 -- pagó él pero se descontaron de verdad en la cuenta de la dueña (077) y ya están LIQUIDADOS.
 update recobros set liquidacion = 'DIRECTO_FAMILIA'
  where pagado_por = 'STAG_PERSONAL' and estado = 'PENDIENTE';
+
+-- SYNC 20/08/2026 — todo el bolsillo de Stag al carril familiar (090). Incluye el histórico:
+-- los bizums de oct-2025 vuelven a PENDIENTE en su carril (y con eso se va el doble descuento
+-- de nov-2025, que restaba 166,00 en vez de 83,00) y el bizum de 20,00 se separa del recobro
+-- de 77,00 del mini UPS, que baja a 57,00 (la parte que puso Samavi).
+update recobros
+   set liquidacion = 'DIRECTO_FAMILIA', estado = 'PENDIENTE',
+       resuelto_fecha = null, resuelto_nota = null
+ where propiedad_codigo = '1A_JACO' and pagado_por = 'STAG_PERSONAL'
+   and ((fecha = date '2025-10-10' and importe = 53.00)
+     or (fecha = date '2025-10-15' and importe = 30.00));
+
+update recobros set importe = 57.00
+ where propiedad_codigo = '1A_JACO' and fecha = date '2026-02-12' and importe = 77.00;
+
+insert into recobros (propiedad_codigo, fecha, concepto, importe, pagado_por, pagado_a,
+                      medio, estado, liquidacion, resuelto_fecha, resuelto_nota, notas)
+select '1A_JACO', date '2026-03-01', 'Instalación del mini UPS — mano de obra',
+       20.00, 'STAG_PERSONAL', 'Agustín (manitas Sevilla)', 'bizum',
+       'PENDIENTE', 'DIRECTO_FAMILIA', null, null,
+       'Bizum personal de Stag (01/03/2026). Hasta la 090 vivia dentro del recobro de 77,00 del mini UPS.'
+where not exists (
+  select 1 from recobros r
+   where r.propiedad_codigo = '1A_JACO' and r.fecha = date '2026-03-01' and r.importe = 20.00
+);

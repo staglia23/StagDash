@@ -614,9 +614,13 @@ Un reembolso del Resolution Center al huésped que `bruto` no ve. El ADR real de
 **205,72 €**, no los 214,86 que muestra el motor. El **ingreso está bien**; miente solo el precio
 de referencia. La migración 032 dejó fuera a propósito reembolsos y ajustes manuales.
 
-### 8. Cuenta corriente de la dueña — 27.583,57 € devengados a su favor
+### 8. Cuenta corriente de la dueña — 27.997,62 € devengados a su favor
 
-`v_cuenta_duena` (leída hoy): **8.394,68 €** de 2025 + **19.188,89 €** de ene–ago 2026.
+`v_cuenta_duena` (20/08/2026): **8.477,68 €** de 2025 + **19.519,94 €** de ene–ago 2026 (agosto
+en curso; a julio cerrado son 27.376,27 €). Subió 103 € el 20/08 al pasar los bizums de Stag a
+su carril: 83 € de nov-2025 —que además estaban descontados **dos veces**, ver `CASUISTICAS` §3—
+y 20 € de feb-2026 que iban dentro del recobro del mini UPS. Ese dinero no se lo perdona nadie:
+se lo debe a Stag directamente, fuera de Samavi.
 Es pasivo por noche menos los 700 €/mes de limpieza menos los descuentos por recobros.
 A 05/08/2026 **no se le había pagado nada** (memoria del proyecto): la plata está en el banco
 esperando decisión, así que esa cuenta devengada **es deuda real**, no una referencia.
@@ -624,16 +628,23 @@ La liquidación de 2.000 € de mayo salió del Revolut como *"Retiro de socio"*
 pasivo — caja y `pasivo_madre` corren por rieles distintos. **Eso vive en el proyecto Admin &
 Fiscal, no acá.**
 
-### 9. Recobros pendientes — 220,09 € en 5 pagos
+### 9. Recobros pendientes — 323,09 € en 8 pagos, por DOS carriles
 
-`v_recobros_pendientes` (19/08/2026): 5 pagos, **220,09 €**, el más viejo del **29/09/2025**
-(324 días). **125,00 €** salieron de la cuenta personal de Stag (bizums a Agustín) y **95,09 €**
-de la de Samavi (las dos compras de Amazon de agosto, migración 086). Son **neutros para
-Samavi**: nunca entran a `events` ni al P&L. Trabajos: refuerzo de los muebles de los dos baños
-(mano de obra 40,00 + 60,00 y **patas ajustables 47,98** del 14/08), repegado de los rieles de
-las duchas, y **trona 47,11** del 18/08 como equipamiento del piso.
+`v_recobros_pendientes` (20/08/2026), partidos por cómo vuelve cada euro (migración 089):
 
-> ⚑ Las dos compras de agosto las pagó **Samavi con tarjeta**, así que —a diferencia de los
+| Carril | Importe | Pagos | Cómo se cobra |
+|---|---|---|---|
+| `CUENTA_DUENA` | **95,09 €** | 2 | Lo puso Samavi (patas 47,98 del 14/08 y trona 47,11 del 18/08, las dos de Amazon con tarjeta) → se le descuenta en su cuenta corriente. |
+| `DIRECTO_FAMILIA` | **228,00 €** | 6 | Salió del bolsillo de Stag (bizums a Agustín) → se lo devuelve su madre directamente, en efectivo o compensando. **No toca la cuenta con Samavi ni el P&L.** |
+
+El carril familiar son los seis bizums: 25,00 (29/09/25), 53,00 (10/10/25), 30,00 (15/10/25),
+20,00 (01/03/26), 40,00 (23/07/26) y 60,00 (04/08/26). Decisión de Stag del 19-20/08/2026:
+*"lo de mi cuenta personal me lo arreglo con mi madre; no hacemos tóxica la salud de la
+empresa"*. Antes, liquidar uno de esos bajaba la deuda de **Samavi** con ella — la sociedad se
+quedaba el dinero que había puesto él y quedaba debiéndoselo (pasó con 83 € que terminó dando
+por perdidos).
+
+> ⚑ Las dos compras de agosto las pagó Samavi **con tarjeta**, así que —a diferencia de los
 > bizums— **sí aparecen en el extracto de agosto**. Al conciliar, esos dos cargos de Amazon no
 > se cargan como `events`: si entran, el P&L cuenta un coste que Samavi no tuvo.
 
@@ -657,7 +668,8 @@ mano — cobro → recobro a la dueña; devolución → crédito a ella. Madrid 
    febrero y junio como están. **Esperando el OK de Stag.**
 3. ~~**[05/08/2026] Patas de los muebles de baño**~~ **CERRADO el 19/08/2026**: compradas en
    Amazon el 14/08 por 47,98 €, cargadas como recobro (migración 086).
-4. **[11/08/2026] Liquidar los 5 recobros (220,09 €)** cuando se le liquide el mes a la dueña.
+4. **[20/08/2026] Liquidar los recobros por su carril**: los 95,09 € de Samavi, cuando se le
+   liquide el mes a la dueña; los 228,00 € de bizums, cuando Stag lo arregle con ella.
 5. **[26/07/2026] Fijar la regla de tarifa de limpieza en las reservas directas** antes de empujar
    canal directo.
 6. **[05/08/2026] Diferencia de 248,97 € de 2025** (200,00 en agosto + 48,97 en septiembre):

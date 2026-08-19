@@ -419,8 +419,9 @@ ingreso que no existe. Precedentes de la migración 049: mini UPS 77 € (feb-20
 5. En la UI: `web/components/CuentaDuena.tsx` y `RecobrosCard.tsx`, al final de la ficha de la
    propiedad.
 
-**Estado verificado el 19/08/2026**: **5 recobros PENDIENTES por 220,09 €** (125,00 € pagados
-desde la cuenta personal de Stag + 95,09 € desde la de Samavi) y 8 LIQUIDADOS por 3.098,39 €.
+**Estado verificado el 20/08/2026**: **8 recobros PENDIENTES por 323,09 €** — 95,09 € por el
+carril `CUENTA_DUENA` (los pagó Samavi) y 228,00 € por `DIRECTO_FAMILIA` (los seis bizums del
+bolsillo de Stag). LIQUIDADOS: 6 por 2.995,39 €.
 
 ### Trampas
 
@@ -439,6 +440,16 @@ desde la cuenta personal de Stag + 95,09 € desde la de Samavi) y 8 LIQUIDADOS 
   anotado con otro concepto. Se resolvió preguntándole a Stag (migración 077, 11/08/2026).
   **Regla: ante coincidencia exacta de importe con otro concepto, preguntar antes de
   liquidar.**
+- **Y no se arregla marcándolo LIQUIDADO.** Esa fue la trampa siguiente, encontrada el
+  20/08/2026: la 077 marcó los dos bizums como liquidados *para dejar constancia* de que eran
+  el mismo dinero que el descuento de la planilla — pero `f_cuenta_duena` suma como descuento
+  **toda** fila liquidada, así que nov-2025 restaba **166,00 € en vez de 83,00** y la cuenta de
+  la dueña quedó 83 € por debajo durante nueve días. Un recobro que representa el mismo dinero
+  que otro **no se liquida: se saca del carril** (o no se crea). Lo delató que 2025 ya no daba
+  los 8.477,68 certificados contra Guesty en la 071.
+- **Un recobro puede mezclar dos bolsillos y no se ve.** El de 77,00 del mini UPS eran 56,99 de
+  la tarjeta de Samavi + 20,00 de un bizum personal de Stag: ningún filtro por `pagado_por` lo
+  encontraba. La 090 lo partió. Al cargar un adelanto pagado a medias, **una fila por bolsillo**.
 - **Las resoluciones del Resolution Center de Airbnb son de Samavi, no de la dueña**
   (decisión de Stag del 11/08/2026). Si en `airbnb_tx` aparece una `Resolucion` que toca
   Jacobine, se corrige a mano en el cierre: cobro → recobro a la dueña; devolución → crédito a
