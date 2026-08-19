@@ -118,19 +118,34 @@ Other** — y si se elige *Other*, el nombre se escribe en la nota
 ⚠ `GY-ZBqRdqsg` tiene check-out del 17/12/2025: **queda fuera de los 6 meses del buscador**. Hay
 que ir por el multi-calendario a diciembre 2025 en Marechal.
 
-## 4ter. Hipótesis del mapeo (a confirmar abriendo una reserva)
+## 4ter. El mapeo — CONFIRMADO por Stag el 19/08/2026
 
 Cruzando el desplegable documentado (**Cash · Bank transfer · Other**) con las notas reales:
 
-| ID | Hipótesis | Por qué |
+| ID | Nombre en Guesty | Familia |
 |---|---|---|
-| `58a1931c0000000000000e87` | **Cash** | Es el primero del desplegable (el que queda si no se cambia). ID con relleno de ceros = constante de sistema de Guesty |
-| `5dee4ebd32acdf7051cd6ed6` | **Bank transfer** | Sus 3 notas son todas bancarias: «Revolut Business», «Bco Galicia USD», «30% reserva banco galicia usd» |
+| `58a48a4fea2a13ea9fda5873` | Pasarela de Airbnb | `PASARELA` |
+| `58a1931c0000000000000e87` | **Cash** | `EFECTIVO` |
+| `5dee4ebd32acdf7051cd6ed6` | **Bank transfer** | `TRANSFERENCIA` |
+| `589894a91d756b9c47ce1e87` | *sin identificar* — nunca cobró | `PREVISTO` |
+| `58a48a4f0000000000000873` | *sin identificar* — nunca cobró | `PREVISTO` |
 
-**Si la hipótesis es correcta, hay dos cobros mal marcados**: fueron transferencia y están como
-Cash. Son `GY-xH7rHap5` (358,25 €, nota «CA USD Galicia») y `GY-jtnC3pfA` (329,30 €, nota «CC USD
-Banco Galicia»). No es un error contable —el importe y la fecha están bien— pero rompe la
-clasificación automática por método.
+Vive en la tabla **`guesty_payment_methods`** (migración 087) y se consulta por **`v_cobros`**.
+
+**Los dos cobros mal marcados que predijo el análisis eran reales**: `GY-xH7rHap5` (358,25 €,
+«CA USD Galicia») y `GY-jtnC3pfA` (329,30 €, «CC USD Banco Galicia») estaban como *Cash* siendo
+transferencia. Stag **ya los corrigió en Guesty el 19/08/2026**. Causa de raíz: *Cash* es el primer
+elemento del desplegable, el que queda si no se cambia.
+
+⚠ **Trampa del sync a vigilar**: el sync incremental filtra por `lastUpdatedAt >= last_sync`. Si
+editar un pago **no** actualiza el `lastUpdatedAt` de la reserva, esos cambios no llegarían nunca
+por la vía incremental y habría que forzar un resync. Comprobación (debe devolver `Bank transfer`
+en las dos):
+
+```sql
+select confirmation_code, metodo, familia, destino, entra_en_banco_es
+  from v_cobros where confirmation_code in ('GY-jtnC3pfA','GY-xH7rHap5') and estado_pago='SUCCEEDED';
+```
 
 ## 5. La convención propuesta
 
@@ -195,4 +210,28 @@ select r.codigo, r.confirmation_code, (r.money_raw->>'balanceDue')::numeric
   from reservations r
  where r.status='confirmed' and r.checkout_local < current_date
    and coalesce((r.money_raw->>'balanceDue')::numeric,0) > 0.01;
+```
+
+
+## 8. Dónde vive esto ahora (migración 087)
+
+| Objeto | Qué es |
+|---|---|
+| `guesty_payment_methods` | El catálogo `paymentMethodId → nombre + familia`. Se mantiene **a mano**: la API no lo expone. Escritura solo `service_role`. |
+| `v_cobros` | Un renglón por pago con las tres dimensiones resueltas: `canal`, `metodo`/`familia`, `destino` y **`entra_en_banco_es`**. `select` solo para `authenticated`. |
+
+`entra_en_banco_es` es la columna que responde la pregunta del cuadre: `true` aparece en un
+extracto español, `false` no (efectivo o Galicia USD → cuenta con el socio), **`null` = no se puede
+saber porque falta la nota**. Ese `null` es el que hay que perseguir: hoy son exactamente los dos
+cobros del §4.
+
+```sql
+-- Lo cobrado por familia, y cuántos no se pueden clasificar
+select familia, metodo, sum(importe) filter (where estado_pago='SUCCEEDED') as cobrado,
+       count(*) filter (where estado_pago='SUCCEEDED' and entra_en_banco_es is null) as sin_nota
+  from v_cobros group by familia, metodo order by cobrado desc nulls last;
+
+-- Los que faltan por sanear
+select codigo, confirmation_code, checkin_local, importe
+  from v_cobros where estado_pago='SUCCEEDED' and entra_en_banco_es is null;
 ```

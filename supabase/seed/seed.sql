@@ -615,3 +615,14 @@ where not exists (
   select 1 from recobros r
    where r.propiedad_codigo = v.cod and r.fecha = v.fecha and r.importe = v.importe
 );
+
+-- SYNC 19/08/2026 — catálogo de formas de cobro (087). El mapeo paymentMethodId -> nombre NO
+-- lo expone la API de Guesty: se mantiene a mano. Cash y Bank transfer confirmados por Stag.
+insert into guesty_payment_methods (metodo_id, nombre, familia, nota) values
+  ('58a48a4fea2a13ea9fda5873', 'Pasarela Airbnb', 'PASARELA', 'Inequivoco: 622 pagos, todos de airbnb2 y sin nota.'),
+  ('58a1931c0000000000000e87', 'Cash', 'EFECTIVO', 'Confirmado por Stag 19/08/2026. Primero del desplegable de Guesty.'),
+  ('5dee4ebd32acdf7051cd6ed6', 'Bank transfer', 'TRANSFERENCIA', 'Confirmado por Stag 19/08/2026.'),
+  ('589894a91d756b9c47ce1e87', 'Cobro previsto (sin identificar)', 'PREVISTO', 'PENDIENTE de nombrar: nunca cobro nada.'),
+  ('58a48a4f0000000000000873', 'Cobro previsto Booking (sin identificar)', 'PREVISTO', 'PENDIENTE de nombrar: nunca cobro nada.')
+on conflict (metodo_id) do update
+  set nombre = excluded.nombre, familia = excluded.familia, nota = excluded.nota;
