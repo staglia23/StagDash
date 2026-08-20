@@ -394,10 +394,15 @@ Daño real ~0: las equivalentes de 2026 se vendieron con 3–29 días de lead.
 - NO subir el escaparate de Karol G a 1.039 (apuesta ~53 € vs ~224 €/noche perdida). No reproponer
   sin dato nuevo de elasticidad.
 - NO subir larga distancia hasta el 01/10; criterio escrito en ESTADO §5.
-- Min-stay de salida de Feria (15–18/04 → 4/3/2/2 + reperfil de suelos del finde): PENDIENTE —
-  pidió fundamentación antes de decidir (dada el 20/08: min-stay se evalúa sobre la LLEGADA; la
-  Feria 2026 se vendió en trozos de 3+2+3 noches a 624/665 €; el 5 en llegadas tardías vende
-  "finde + noches muertas post-resaca", producto que no compra nadie).
+- Min-stay de salida de Feria: APROBADO por Stag el 20/08 (tarde) tras la fundamentación
+  (min-stay se evalúa sobre la LLEGADA; la Feria 2026 se vendió en trozos de 3+2+3 noches a
+  624/665 €; el 5 en llegadas tardías vende "finde + noches muertas post-resaca", producto que
+  no compra nadie). APLICADO: 15/04 → min 4, 16/04 → min 3, 17/04 → min 2, 18/04 → min 2, con
+  reperfil de suelos del finde (16/04 620→665, 17/04 575→665, 18/04 445→510), todos INERTES
+  (publica 679/723/723/569). Llegadas 12–14 conservan min 5: el comprador de semana entera
+  mantiene prioridad. Verificado en pricing_array post-refresh: precios sin movimiento (deriva
+  diaria de 2–3 €), perfil de min-stay 5/5/5/4/3/2/2. Reversión: para volver a 5 hay que borrar
+  y recrear reenviando el min_price completo. Revisar 12/01/2027 (T−90).
 - Pendientes de Stag: comp set → 2 dormitorios (clic en UI), cleaning fee 70→60 en PriceLabs
   (la API solo acepta min/base/max/tags — el aviso del CLAUDE.md era correcto), push "Sincronizar
   Ahora" (o sync diario ~06:50), y verificación como huésped en Airbnb.
