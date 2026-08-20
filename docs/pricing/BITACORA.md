@@ -352,3 +352,61 @@ la nube de una sola ejecución (21/09 07:00 UTC y 25/10 08:00 UTC), con el playb
 en su contexto, la instrucción explícita de reenviar los campos CICO del 15/11, y aviso por mail
 a info@ al terminar. El del 25/10 además cierra el experimento midiendo cuántas noches de la
 semana se vendieron en cada escalón.
+
+
+---
+
+## 2026-08-20 · Jacobine 2027: guardas post-apertura de ventana (APLICADO) + regla del suelo inerte
+
+**Contexto** · Stag preguntó si may/jun/jul 2027 estaban baratos al ver entrar reservas largas tras
+abrir la ventana a 365 días (14/08). Dos análisis multi-agente con auditoría adversarial. Veredicto:
+NO están baratos (mayo +15 %, junio +7 %, julio 0/+4 % vs neto 2026) y NO se sube la larga distancia.
+La evidencia "el que compra antes paga menos" del primer informe se retiró (n=16 normalizadas en
+Madrid; y 126 reservas de NICA tienen createdAt falso del volcado 15/06/2025 — aunque ninguna en el
+tramo largo). Objeción de Stag sobre reputación: correcta como método (rampa +16/+32 % medida en
+ALEX/MARE, se agota hacia 25–45 reseñas; más allá no es medible con esta cartera), pero la decisión
+no depende de ella: la aritmética de comisión manda (25 % de la subida vs 25 % de TODO el bruto de
+una noche perdida; punto muerto 4,6 noches de 77 incluso con headroom +6 %).
+
+**Early bird probado en línea de factura** · ítem literal "Early bird" al 10,00 % exacto en 16/24
+reservas Airbnb con lead ≥90 d; la reserva Booking a 349 d pagó el 100,0 % del calendario del día.
+Regaló 1.146,60 € de bruto en estancias 2026 de JACO (286,65 € de comisión). Airbnb NO permite
+excluir fechas (confirmado por Stag) → compensación solo vía suelos. Expediente Madrid (~7.000
+€/año simulado, el número más grande y peor medido del dossier) abierto para el 01/10.
+
+**Aplicado (con OK explícito de Stag, punto por punto)** ·
+- BORRADOS los 5 overrides de la cobertura alternativa de Feria que mordían (19–22 y 25/04/2027):
+  calendario confirmado (Feria 13–18/04, alumbrao la noche del 12). Quedan el 23 y el 24/04
+  (inertes; cubren si el "Kings Cup" del feed resultara real).
+- SUELOS anti-derrumbe Karol G (confirmado en estadiolacartuja.es, 3 noches, única ciudad europea
+  del tour con 3 seguidas): 430 el 10/06 y 850 el 11–13/06 — inertes (publica 471/935). Min-stay
+  NO se toca (2). Protegen 833,32 € de comisión que ya están en el precio publicado.
+- GUARDAS pre-Feria: 400 el 09/04 y 390 el 10/04 — inertes (publica 452/439).
+- Verificación completa: overrides_after_update limpio, pricing_array post-refresh sin movimiento
+  en Feria ni Karol G (suelos inertes ✓), 19/04 liberó 500→377 y 25/04 445→408.
+
+**Hallazgo al borrar — va al PLAYBOOK §2.10** · El 20–22/04 NO cayó a demanda: lo agarró el
+Precio Mínimo de Seguridad (110 % del ADR del año pasado por día de semana → hereda Feria 2026)
+y quedó clavado a 544/544/698. Se suelta solo a los 180 días (~22/10); verificación agendada 25/10.
+Daño real ~0: las equivalentes de 2026 se vendieron con 3–29 días de lead.
+
+**Decisiones de Stag (20/08)** ·
+- NO subir el escaparate de Karol G a 1.039 (apuesta ~53 € vs ~224 €/noche perdida). No reproponer
+  sin dato nuevo de elasticidad.
+- NO subir larga distancia hasta el 01/10; criterio escrito en ESTADO §5.
+- Min-stay de salida de Feria (15–18/04 → 4/3/2/2 + reperfil de suelos del finde): PENDIENTE —
+  pidió fundamentación antes de decidir (dada el 20/08: min-stay se evalúa sobre la LLEGADA; la
+  Feria 2026 se vendió en trozos de 3+2+3 noches a 624/665 €; el 5 en llegadas tardías vende
+  "finde + noches muertas post-resaca", producto que no compra nadie).
+- Pendientes de Stag: comp set → 2 dormitorios (clic en UI), cleaning fee 70→60 en PriceLabs
+  (la API solo acepta min/base/max/tags — el aviso del CLAUDE.md era correcto), push "Sincronizar
+  Ahora" (o sync diario ~06:50), y verificación como huésped en Airbnb.
+
+**Booking.com — hallazgo para el motor (NO tocado)** · En la única reserva Booking de la historia
+(30/07–03/08/2027) la base de comisión del motor (host_payout+host_service_fee = 951,05) supera al
+bruto (827,00): +31,01 € facturados de más a la dueña. En Airbnb la desviación es −21,61 € en 123
+reservas (ruido). No se toca hasta contrastar contra factura real; estancia en ago-2027, hay tiempo.
+
+**Medición en curso** · Pipeline 2027 tras la apertura: 4 reservas en 6 días, todas >176 d
+(3.590,90 € bruto / 897,73 € comisión, en ventana de cancelación; el tramo largo cancela al 25 %
+en la cartera). NO anualizable: es vaciado de 15 meses de stock cerrado. Punto de decisión: 01/10.

@@ -155,6 +155,19 @@ fábrica; se cambian solo por UI: Review Prices → Customizations → All Custo
 Para que el descuento de último minuto muerda, el recomendado debe superar el suelo × 1,67. Con
 los suelos actuales casi nunca pasa — por eso se decidió (05/08) no tocar estas personalizaciones.
 
+**2.10 · Un suelo solo es gratis si nace por DEBAJO del precio publicado — y nunca por encima del 140 % del `precio_base`.**
+"Un suelo no cuesta nada si no se vende" (§4.4) vale solo para suelos INERTES. Un `min_price` por
+encima de lo que el algoritmo publica no es un seguro: es una subida de escaparate disfrazada, y en
+modelo comisión una noche perdida cuesta el 25 % de TODO su bruto (una noche de Karol G: ~224 €).
+Antes de escribir un suelo, leer el publicado de esa noche y quedarse por debajo (típicamente 88–92 %).
+*Cicatriz 20/08/2026*: el plan v1 proponía Karol G a 1.039 sobre 935 publicados, Feria a 706 y
+pre-Feria a 555 sobre 443–455 — tres subidas con nombre de seguro — y 5 de los 7 suelos de la
+cobertura 19–25/04 mordían (el 20/04 publicaba 500 sobre base 312, +60 %). La auditoría las tumbó todas.
+*Trampa descubierta al borrarlos (20/08/2026)*: al quitar un override la noche NO cae al precio de
+demanda si la agarra el **Precio Mínimo de Seguridad** (110 % del ADR del año pasado, >180 días) —
+y como su STLY va por día de semana, el 20–22/04/2027 heredó precios de Feria 2026 y quedó clavado
+a 544/544/698 (149–174 % del base). Se suelta solo al entrar en los 180 días (~22/10/2026).
+
 ---
 
 ## 3. Reglas duras de Airbnb

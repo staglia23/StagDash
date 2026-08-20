@@ -123,4 +123,10 @@ bloqueada, leer su rótulo en Guesty.**
 | A las 2 semanas de aplicarla | Revisar y, si el pickup no responde, apagar el perfil |
 | **21/09/2026 07:00 UTC** | Escalón 2 del min-stay "semana despedida": 7→**3** (NICA 4→3) en llegadas 7–15/11 (JACO 8–15/11). ⚠️ En el 15/11 REENVIAR los 3 campos CICO o se pierde el cierre de llegadas. **AUTOMATIZADO** → routine `trig_013aGy9oHDKkwSaB4h5UVyFp` (agente en la nube; avisa por mail a info@). Si se desprograma, hacerlo a mano |
 | **25/10/2026 08:00 UTC** | Escalón 3 (último): min-stay **2** en la misma ventana, misma advertencia del 15/11. **AUTOMATIZADO** → routine `trig_01EdEUADEk3iFTs6gN7JMwe4`. Cierra el experimento en la bitácora |
+| 01/10/2026 | Decisión larga distancia JACO (criterio 20/08: ≥1 reserva/semana con lead >176 d Y calendario ≥6 % sobre 2026 → evaluar subir Fechas Lejanas; si no, NO tocar) + expediente Early bird Madrid (~7.000 €/año simulado, mal medido) + verificar que la subida 155→170 no pisa los suelos 2027 |
+| 25/10/2026 | (además del escalón min-stay) T−180 del 20–22/04/2027: verificar que el Precio Mínimo de Seguridad los soltó (hoy los clava a 544/544/698 por STLY de Feria 2026 desalineado) |
+| 13/12/2026 | Karol G T−180: revisar pickup del 10–13/06/2027 (suelos 430/850, inertes). NO bajar todavía |
+| 12/01/2027 | Feria T−90: pickup del 12–18/04 contra suelos; si el frente 12–15 quedó atascado por una venta de finde, cascada de min-stay en 12–14 |
+| 09/02/2027 | Pre-Feria: guardas 400/390 del 09–10/04 — retirar si siguen sin vender |
+| 11/03/2027 | Karol G T−90: si cero pickup, bajar suelos a 700 (11–13/06) y 380 (10/06) |
 | Pendiente sin fecha | Único eslabón sin verificar de los cierres del 17/08: probar en **Airbnb** como huésped que rebota una llegada el 06/11 y una salida el 19/01 (PriceLabs y Guesty ya verificados) |
