@@ -15,7 +15,7 @@ import { RevparChart } from "@/components/RevparChart";
 import { Salud30 } from "@/components/Salud30";
 import { WaterfallChart } from "@/components/WaterfallChart";
 import { propColor } from "@/lib/colors";
-import { resumenCuentaDuena } from "@/lib/cuentaDuena";
+import { ordenarCuenta, resumenCuentaDuena } from "@/lib/cuentaDuena";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { nombreCorto } from "@/lib/headline";
 import { revparEquilibrio } from "@/lib/salud";
@@ -209,7 +209,7 @@ export default async function FichaPropiedad({
       <header className="header">
         <h1>
           <span className="dot" style={{ background: propColor(codigo) }} />
-          {nombreCorto(codigo)} <span className="tag">{codigo}</span>
+          {nombreCorto(codigo)}
         </h1>
         <div className="sub">{MODELO_LABEL[propiedad?.modelo ?? ""] ?? ""} · YTD {anio}</div>
         <div className="stamp">
@@ -410,10 +410,12 @@ export default async function FichaPropiedad({
 
       {/* ── La cuenta con la dueña (solo modelo comisión) + recobros (065/066) ── */}
       <CuentaDuena
-        rows={cuentaRows}
+        rows={ordenarCuenta(cuentaRows)}
         codigo={codigo}
+        nombre={nombreCorto(codigo)}
         pendienteTotal={pendienteRecobros}
         pendientePagos={Number(recobrosPendArr[0]?.pagos_cuenta ?? 0)}
+        bizumsDirectos={Number(recobrosPendArr[0]?.total_directo ?? 0)}
       />
       <RecobrosCard rows={recobroRows} pend={recobrosPendArr[0]} />
     </main>

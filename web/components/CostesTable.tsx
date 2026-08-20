@@ -1,5 +1,6 @@
 import { eur, pct } from "@/lib/format";
 import { propColor } from "@/lib/colors";
+import { nombreCorto } from "@/lib/headline";
 
 export type CosteRow = {
   codigo: string;
@@ -38,10 +39,10 @@ export function CostesTable({ rows, showTotal = true }: { rows: CosteRow[]; show
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.codigo}>
+            <tr key={nombreCorto(r.codigo)}>
               <td>
                 <span className="dot" style={{ background: propColor(r.codigo) }} />
-                {r.codigo}
+                {nombreCorto(r.codigo)}
               </td>
               <td className="num">{r.renta ? eur(r.renta) : "—"}</td>
               <td className="num">{r.limpieza ? eur(r.limpieza) : "—"}</td>

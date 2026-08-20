@@ -628,14 +628,18 @@ La liquidación de 2.000 € de mayo salió del Revolut como *"Retiro de socio"*
 pasivo — caja y `pasivo_madre` corren por rieles distintos. **Eso vive en el proyecto Admin &
 Fiscal, no acá.**
 
-### 9. Recobros pendientes — 363,09 € en 9 pagos, por DOS carriles
+### 9. Recobros pendientes — 268,00 € en 7 pagos, todos del carril familiar
 
 `v_recobros_pendientes` (20/08/2026), partidos por cómo vuelve cada euro (migración 089):
 
 | Carril | Importe | Pagos | Cómo se cobra |
 |---|---|---|---|
-| `CUENTA_DUENA` | **95,09 €** | 2 | Lo puso Samavi (patas 47,98 del 14/08 y trona 47,11 del 18/08, las dos de Amazon con tarjeta) → se le descuenta en su cuenta corriente. |
+| `CUENTA_DUENA` | **0,00 €** | 0 | Las patas (47,98) y la trona (47,11) se **liquidaron el 20/08/2026** (migración 092): se le descuentan en agosto como gasto repercutido. |
 | `DIRECTO_FAMILIA` | **268,00 €** | 7 | Salió del bolsillo de Stag (bizums a Agustín) → se lo devuelve su madre directamente, en efectivo o compensando. **No toca la cuenta con Samavi ni el P&L.** |
+
+⚠ El descuento de 95,09 € cae en **agosto**, que es el mes en curso: la tarjeta de la ficha no
+suma el mes abierto (llevaría la limpieza entera contra pocos días de alquiler), así que ese
+descuento entra al total **cuando cierre agosto**. En el mes a mes ya se ve.
 
 El carril familiar son los siete bizums: 25,00 (29/09/25), 53,00 (10/10/25), 30,00 (15/10/25),
 20,00 (01/03/26), 40,00 (23/07/26), 60,00 (04/08/26) y 40,00 (19/08/26, pintura y arreglos —
@@ -670,7 +674,7 @@ mano — cobro → recobro a la dueña; devolución → crédito a ella. Madrid 
 3. ~~**[05/08/2026] Patas de los muebles de baño**~~ **CERRADO el 19/08/2026**: compradas en
    Amazon el 14/08 por 47,98 €, cargadas como recobro (migración 086).
 4. **[20/08/2026] Liquidar los recobros por su carril**: los 95,09 € de Samavi, cuando se le
-   liquide el mes a la dueña; los 268,00 € de bizums, cuando Stag lo arregle con ella.
+   liquide el mes a la dueña; los 268,00 € de bizums, cuando Stag lo arregle con ella. Los 95,09 € de Samavi ya se aplicaron (092).
 5. **[26/07/2026] Fijar la regla de tarifa de limpieza en las reservas directas** antes de empujar
    canal directo.
 6. **[05/08/2026] Diferencia de 248,97 € de 2025** (200,00 en agosto + 48,97 en septiembre):

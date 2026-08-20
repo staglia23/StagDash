@@ -6,18 +6,22 @@
 // Forma de recibo, no tabla suelta: la pregunta que responde es "cuánto le debo y por
 // qué se le descuenta", y una cascada de 4 líneas se lee de un vistazo en el móvil.
 import { propColor } from "@/lib/colors";
-import { resumenCuentaDuena, type FilaCuenta } from "@/lib/cuentaDuena";
+import { desgloseLiquidacion, resumenCuentaDuena, type FilaCuenta } from "@/lib/cuentaDuena";
 import { eur, MESES } from "@/lib/format";
 
 export type CuentaDuenaRow = FilaCuenta & { codigo: string };
 
 export function CuentaDuena({
-  rows, codigo, pendienteTotal, pendientePagos,
+  rows, codigo, nombre, pendienteTotal, pendientePagos, bizumsDirectos = 0,
 }: {
   rows: CuentaDuenaRow[];
   codigo: string;
+  /** Nombre de display: en pantalla nunca aparece el código de la propiedad. */
+  nombre: string;
   pendienteTotal: number;
   pendientePagos: number;
+  /** Bizums pendientes que ella le debe a Stag (carril directo, 089). */
+  bizumsDirectos?: number;
 }) {
   if (rows.length === 0) return null;
   const r = resumenCuentaDuena(rows);
@@ -26,6 +30,7 @@ export function CuentaDuena({
   const color = propColor(codigo);
   const anio = rows[rows.length - 1].anio;
 
+  const liq = desgloseLiquidacion(r.neto, bizumsDirectos);
   const rango = hayCerrados
     ? `${MESES[cerrados[0].mes]} ${cerrados[0].anio} – ${MESES[cerrados[cerrados.length - 1].mes]} ${cerrados[cerrados.length - 1].anio}`
     : "";
@@ -44,7 +49,7 @@ export function CuentaDuena({
 
       <div className="card cuenta-card">
         <div className="kpi-label">
-          A favor de la dueña{hayCerrados ? ` · ${rango}` : ""}
+          A favor de la dueña de {nombre}{hayCerrados ? ` · ${rango}` : ""}
         </div>
         <div className="kpi-value" style={{ color: hayCerrados ? undefined : "var(--muted)" }}>
           {hayCerrados ? eur(r.neto, 2) : "—"}
@@ -104,12 +109,38 @@ export function CuentaDuena({
                   {r.descuentos === 0 ? "—" : `−${eur(Math.abs(r.descuentos), 2)}`}
                 </dd>
               </div>
-              <div className="recibo-total">
+              <div className={liq.bizums > 0 ? "recibo-sub" : "recibo-total"}>
                 <dt>A favor de la dueña</dt>
                 <dd className={r.neto >= 0 ? "pos" : "neg"}>
                   {r.neto >= 0 ? "" : "−"}{eur(Math.abs(r.neto), 2)}
                 </dd>
               </div>
+
+              {/* El reparto que pidió Stag (20/08/2026): de lo que Samavi le debe, cuánto se
+                  tapa con los bizums que ella le debe a él y cuánto queda por transferir.
+                  Son deudas entre partes distintas: por eso dice "si lo compensás". */}
+              {liq.bizums > 0 && (
+                <>
+                  <div>
+                    <dt>
+                      Bizums que ella te debe a vos
+                      <span className="recibo-nota">
+                        los pusiste de tu bolsillo · se arreglan por fuera de Samavi
+                      </span>
+                    </dt>
+                    <dd className="neg">−{eur(liq.bizums, 2)}</dd>
+                  </div>
+                  <div className="recibo-total">
+                    <dt>
+                      A transferirle
+                      <span className="recibo-nota">si lo compensás al liquidarle</span>
+                    </dt>
+                    <dd className={liq.aTransferir >= 0 ? "pos" : "neg"}>
+                      {liq.aTransferir >= 0 ? "" : "−"}{eur(Math.abs(liq.aTransferir), 2)}
+                    </dd>
+                  </div>
+                </>
+              )}
             </dl>
           </>
         ) : (

@@ -927,3 +927,8 @@ table.cobros-tabla { min-width: 480px; font-size: 0.82rem; }
 .carril-titulo { font-weight: 700; font-size: 0.9rem; }
 .carril-total { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
 .carril-nota { margin: 4px 0 0; color: var(--text-secondary); font-size: 0.78rem; line-height: 1.5; }
+/* Subtotal del recibo: cuando debajo viene el reparto (bizums / a transferir), "A favor de
+   la dueña" deja de ser el final de la cascada y no debe llevar la raya de total. */
+.recibo-sub { border-bottom: 0; border-top: 1px solid var(--gridline); padding-top: 8px; }
+.recibo-sub dt { color: var(--text-primary); font-weight: 700; font-size: 0.88rem; }
+.recibo-sub dd { font-weight: 700; }

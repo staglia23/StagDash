@@ -1,5 +1,6 @@
 import { eur, pct, pp } from "@/lib/format";
 import { propColor } from "@/lib/colors";
+import { nombreCorto } from "@/lib/headline";
 
 export type BreakevenRow = {
   codigo: string;
@@ -43,10 +44,10 @@ export function BreakevenTable({ rows }: { rows: BreakevenRow[] }) {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.codigo}>
+            <tr key={nombreCorto(r.codigo)}>
               <td>
                 <span className="dot" style={{ background: propColor(r.codigo) }} />
-                {r.codigo}
+                {nombreCorto(r.codigo)}
               </td>
               <td className="num">{eur(r.costes_fijos)}</td>
               <td className="num">{eur(r.contribucion_noche)}</td>

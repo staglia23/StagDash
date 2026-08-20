@@ -419,9 +419,10 @@ ingreso que no existe. Precedentes de la migración 049: mini UPS 77 € (feb-20
 5. En la UI: `web/components/CuentaDuena.tsx` y `RecobrosCard.tsx`, al final de la ficha de la
    propiedad.
 
-**Estado verificado el 20/08/2026**: **9 recobros PENDIENTES por 363,09 €** — 95,09 € por el
-carril `CUENTA_DUENA` (los pagó Samavi) y 268,00 € por `DIRECTO_FAMILIA` (los siete bizums del
-bolsillo de Stag). LIQUIDADOS: 6 por 2.995,39 €.
+**Estado verificado el 20/08/2026**: **7 recobros PENDIENTES por 268,00 €**, todos del carril
+`DIRECTO_FAMILIA` (los bizums del bolsillo de Stag). El carril `CUENTA_DUENA` quedó a cero: las
+patas y la trona se liquidaron ese día (092) y se le descuentan en agosto. LIQUIDADOS: 8 por
+3.090,48 €.
 
 ### Trampas
 

@@ -672,3 +672,10 @@ where not exists (
   select 1 from recobros r
    where r.propiedad_codigo = '1A_JACO' and r.fecha = date '2026-08-19' and r.importe = 40.00
 );
+
+-- SYNC 20/08/2026 — patas y trona liquidadas (092): se le descuentan en agosto.
+update recobros set estado = 'LIQUIDADO', resuelto_fecha = date '2026-08-20',
+       resuelto_nota = 'Aplicado por decision de Stag el 20/08/2026 (092).'
+ where propiedad_codigo = '1A_JACO' and estado = 'PENDIENTE' and liquidacion = 'CUENTA_DUENA'
+   and ((fecha = date '2026-08-14' and importe = 47.98)
+     or (fecha = date '2026-08-18' and importe = 47.11));

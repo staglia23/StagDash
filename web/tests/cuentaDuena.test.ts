@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resumenCuentaDuena, type FilaCuenta } from "../lib/cuentaDuena";
+import { desgloseLiquidacion, ordenarCuenta, resumenCuentaDuena, type FilaCuenta } from "../lib/cuentaDuena";
 
 // Fixture con los datos REALES de producción (v_cuenta_duena, 04/08/2026).
 // Supabase devuelve los numeric como string: el fixture lo replica a propósito.
@@ -83,5 +83,42 @@ describe("resumenCuentaDuena", () => {
     const r = resumenCuentaDuena(REAL, { anio: 2026, mes: 9 });
     expect(r.cerrados).toHaveLength(8);
     expect(r.enCurso).toBeNull();
+  });
+});
+
+describe("ordenarCuenta", () => {
+  // Lo que salía en pantalla: la vista se leía con `order: mes` y con dos años vivos los
+  // meses se intercalaban — ene-2026 aparecía antes que jun-2025 (reportado por Stag el
+  // 20/08/2026). El orden es por año y DENTRO del año por mes.
+  it("pone 2025 antes que 2026 aunque el mes sea mayor", () => {
+    const desordenado = [
+      { anio: 2026, mes: 1 }, { anio: 2025, mes: 6 },
+      { anio: 2026, mes: 8 }, { anio: 2025, mes: 12 },
+    ];
+    expect(ordenarCuenta(desordenado).map((r) => `${r.anio}-${r.mes}`))
+      .toEqual(["2025-6", "2025-12", "2026-1", "2026-8"]);
+  });
+
+  it("no toca el array original", () => {
+    const original = [{ anio: 2026, mes: 1 }, { anio: 2025, mes: 6 }];
+    ordenarCuenta(original);
+    expect(original[0].anio).toBe(2026);
+  });
+});
+
+describe("desgloseLiquidacion", () => {
+  it("resta los bizums de lo que hay que transferirle", () => {
+    expect(desgloseLiquidacion(27376.27, 268)).toEqual({
+      neto: 27376.27, bizums: 268, aTransferir: 27108.27,
+    });
+  });
+
+  it("sin bizums pendientes, se le transfiere todo", () => {
+    expect(desgloseLiquidacion(1000, 0).aTransferir).toBe(1000);
+  });
+
+  it("un importe raro no rompe la pantalla ni inventa un crédito", () => {
+    expect(desgloseLiquidacion(1000, Number.NaN).aTransferir).toBe(1000);
+    expect(desgloseLiquidacion(1000, -50).bizums).toBe(0);
   });
 });

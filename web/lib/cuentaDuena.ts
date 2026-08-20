@@ -32,6 +32,37 @@ export type ResumenCuenta = TotalesCuenta & {
   porAnio: (TotalesCuenta & { anio: number; meses: number })[];
 };
 
+/**
+ * Cronológico de verdad: por año y DENTRO del año por mes.
+ *
+ * La vista se leía con `order: mes` a secas y en pantalla salía ene-2026 antes que jun-2025:
+ * con dos años vivos, ordenar solo por mes los intercala. Se ordena acá y no en la consulta
+ * porque `readView` admite una sola columna de orden.
+ */
+export const ordenarCuenta = <T extends { anio: number; mes: number }>(rows: T[]): T[] =>
+  [...rows].sort((a, b) => (a.anio - b.anio) || (a.mes - b.mes));
+
+export type DesgloseLiquidacion = {
+  /** Lo que Samavi le debe, devengado. */
+  neto: number;
+  /** Bizums pendientes que ELLA le debe a Stag (carril DIRECTO_FAMILIA, migración 089). */
+  bizums: number;
+  /** Lo que quedaría por transferir si se compensan las dos cosas al liquidar. */
+  aTransferir: number;
+};
+
+/**
+ * Parte la deuda en "lo que se arregla por atrás" y "lo que va por transferencia".
+ *
+ * Son deudas entre PARTES DISTINTAS —Samavi le debe a ella, ella le debe a Stag— así que
+ * compensarlas es una decisión de familia, no una regla contable: por eso la pantalla lo
+ * etiqueta como "si lo compensás" y el motor no las mezcla nunca.
+ */
+export function desgloseLiquidacion(neto: number, bizumsPendientes: number): DesgloseLiquidacion {
+  const bizums = Math.max(0, Number(bizumsPendientes) || 0);
+  return { neto, bizums, aTransferir: neto - bizums };
+}
+
 /** "Hoy" en hora de Madrid: el negocio vive ahí y Stag viaja (mismo criterio que format.ts). */
 export function hoyMadrid(): { anio: number; mes: number } {
   const [a, m] = new Intl.DateTimeFormat("en-CA", {
