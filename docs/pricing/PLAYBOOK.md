@@ -239,6 +239,27 @@ vendidas a 160–230 €/noche, la escasez trabaja sola: cualquier rebaja ahí e
 los huecos largos. Min-stay 1 está **autorizado en Nicasio y Alexander** (decisión de Stag,
 09/08/2026) y **prohibido en Marechal**, que conserva la restricción.
 
+**4.8 · Noche liberada por cancelación: primero el min-stay, después el precio — y "lo que pagaba el
+que se fue" se TRADUCE a publicado, no se copia.**
+PriceLabs no tiene lógica ni aviso de cancelación (confirmado en su knowledge base, 29/08/2026): al
+liberarse, la noche se reprecifica como una libre cualquiera con la antelación que tenga en ese
+momento (huérfano −20 % si el hueco es ≤2 noches, curva de último minuto, freno en el `min` del
+anuncio). Tres reglas:
+1. **Min-stay = longitud del hueco, el mismo día.** Con min-stay > hueco la noche vale 0 € y ninguna
+   pantalla lo grita (Alexander 07–08/09/2026 quedó con min-stay 3 sobre un hueco de 2).
+2. Si el objetivo es "no cobrar menos que la reserva caída", el suelo se calcula sobre el **NETO**:
+   `publicado = (neto_objetivo ÷ 0,8124 − limpieza) ÷ noches ÷ 0,85` dentro de los 14 días (0,8124 =
+   payout de Airbnb medido en 2026; 0,85 = el −15 % de última hora, §3.1; fuera de la ventana, ÷1).
+   Copiar el ADR del que se fue como `min_price` se queda corto un 25–35 %: 275 € cash de Magnoli
+   son **170 €/noche publicados**, no 124 ni 155.
+3. Toda escalera descendente se **programa** (routines a las 05:15 UTC, antes del sync diario que
+   publica ~06:50) y se anota con su fecha de medición. Cada routine relee el estado antes de
+   escribir y no toca nada si el hueco ya se vendió o si los overrides no son los esperados.
+*Origen 29/08/2026*: Alexander 07–08/09, reserva directa F&F de 275 € cash liberada a 9 días. Claude
+recomendó min-stay 2 + suelo inerte y, si la cancelación era decisión propia, no cancelar (231 € netos
+ciertos vs ~100 esperados). Stag decidió liberar y cobrar "igual o más": escalera 205/229 → 185/205
+(02/09) → 170/170 (05/09, suelo). La evidencia en contra está en la bitácora; **medición el 09/09**.
+
 ---
 
 ## 5. Doctrina de trabajo con Stag
@@ -259,6 +280,11 @@ El eslabón que cuenta es Airbnb (lo que ve el huésped), no PriceLabs.
 comprobar `status` y etiquetar lo reciente como sujeto a cancelación.
 *Cicatriz 13/08/2026*: la reserva que se presentó como la prueba del éxito del test (Nicasio
 11–14/08 a 144 €/noche) se canceló cinco días después y se revendió a 93,50 €/noche.
+*Actualización 29/08/2026*: la reventa a 93,50 € NO fue obra de la curva de último minuto:
+`get_user_logs` muestra un `price` FIJO de 130 escrito a mano el 10/08 (00:09 UTC) y 110 a las 09:55
+UTC desde el móvil, con el reason viejo del test, y 99 el 12/08; 110 × 0,85 = 93,50. La lección de
+§5.4 (una reserva no es dinero hasta pasar su ventana) sigue en pie; la de "el último minuto regala"
+no se sostiene con ese caso — lo que regaló fue un precio fijo sin escalón.
 
 **5.5 · Un ADR de una sola reserva no es un precio de mercado.** Puede llevar suplementos por
 huéspedes extra, tarifas de limpieza o ajustes. Antes de sacar conclusiones, mirar el desglose.

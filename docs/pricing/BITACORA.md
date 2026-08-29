@@ -415,3 +415,57 @@ reservas (ruido). No se toca hasta contrastar contra factura real; estancia en a
 **Medición en curso** · Pipeline 2027 tras la apertura: 4 reservas en 6 días, todas >176 d
 (3.590,90 € bruto / 897,73 € comisión, en ventana de cancelación; el tramo largo cancela al 25 %
 en la cartera). NO anualizable: es vaciado de 15 meses de stock cerrado. Punto de decisión: 01/10.
+
+---
+
+## 2026-08-29 · Alexander 07–08/09: noches liberadas por cancelación — escalera descendente decidida por Stag (APLICADO)
+
+**Contexto** · Nicolás Magnoli (reserva directa F&F `GY-6gVkY373`, lun 07 → mié 09/09, 2 noches,
+275 € cash, sin cobrar) pide liberar las noches. Hueco de exactamente 2 noches entre el checkout
+del 07 (reserva 02–07/09 a 158 €) y el check-in del 09 (09–12/09 a 260 €). Alexander tiene
+septiembre al 96,7 % con ADR 207 €; la única otra noche libre del mes es el lunes 21.
+**Análisis (workflow de 6 agentes: histórico de 50 cancelaciones / 174 noches, knowledge base de
+PriceLabs, precedentes, 3 jueces)** ·
+- PriceLabs **no tiene lógica ni aviso de cancelación** (KB, preguntas a y f). Al liberarse, la
+  noche se reprecifica como libre a 9 días: huérfano −20 % (hueco ≤2) + curva de último minuto,
+  freno en el `min` 129 → el huésped vería ≈110 €/noche con el −15 % de Airbnb.
+- **Con min-stay 3 el hueco de 2 noches era invendible.** Nadie lo habría avisado.
+- Histórico: >14 días, 86 % de las noches liberadas se revenden a ratio 1,02; **≤14 días en Madrid,
+  56 % a ratio 0,73**, reventa con lead mediano 2 días. Alexander: 3 % de sus reservas entran a ≤10
+  días (lead mediano 104); ninguna noche de septiembre en Madrid se vendió con lead ≤10; máximo
+  pagado en Madrid con lead ≤10 en 2026: 167 €/noche (Alexander: 90,10).
+- Recomendación de Claude: min-stay 2 + suelo inerte (135/160) con reversión T−3, EV ≈ 100 €; y si
+  cancelar era decisión propia, no cancelar (231 € netos ciertos vs ~100 esperados).
+**Decisión de Stag (29/08)** · Liberar y "cobrar igual o más que Magnoli": escalera descendente,
+nunca por debajo de lo de Magnoli, min-stay 2. Aplicado tal cual, con la evidencia en contra
+registrada acá.
+**Traducción del suelo (→ PLAYBOOK §4.8)** · "Lo de Magnoli" = 275 € netos por la estancia. Vía
+Airbnb: 275 ÷ 0,8124 = 338,50 € que paga el huésped; − 50 limpieza = 288,50 → 144,25 €/noche vistos;
+÷ 0,85 (última hora ≤14 d) = **170 €/noche publicados**.
+**Competencia (PriceLabs, 29/08; comp set 267 pisos de 1 dorm.)** · Lun 07: ocupación de mercado
+55,8 % (el año pasado cerró en 73 %), precios p25/p50/p75/p90 = 113/147/186/260, mediana de lo ya
+reservado 137. Mar 08: 55,3 % (LY 79 %), 114/152/205/269, mediana reservada 148; el 08 abre un
+evento de mercado (08–13/09, precios +35 % el 09–13). Recomendado de PriceLabs: 150/178.
+**Aplicado (17:55 UTC)** · overrides ALEX `2026-09-07 min_price 205` y `2026-09-08 min_price 229`
+(fixed, EUR), `min_stay 2` en ambos, reason fechado con la escalera completa. `overrides_after_update`
+limpio (solo los campos enviados). `pricing_array` post-refresh: 07 → **205** (uncustomized 150),
+08 → **229** (uncustomized 178), min_stay 2, unbookable 0, CICO `1111111`. El huésped verá
+174,25 + 194,65 + 50 = **418,90 €** por las 2 noches (neto ≈ 340 €, +65 sobre Magnoli).
+**Escalera (routines en la nube a las 05:15 UTC, para que el sync diario ~06:50 publique)** ·
+- 02/09 (D−5) → **185/205**: huésped 157,25 + 174,25 + 50 = 381,50 € (neto ≈ 310).
+- 05/09 (D−2) → **170/170 = suelo Magnoli**: 144,50 × 2 + 50 = 339 € (neto ≈ 275,40).
+- Sin más escalones: el suelo no se baja. Los overrides caducan con el check-in. Cada routine relee
+  overrides y calendario y NO escribe si el hueco ya se vendió o si alguien editó a mano.
+**Pendiente de Stag** · cancelar la reserva en Guesty, "Sincronizar Ahora" en Alexander y verificar
+en Airbnb como huésped (07→09/09: 418,90 €). Hasta entonces: configurado, no publicado.
+**Hipótesis en juego** · Stag: hay comprador a ≥170 publicado para un lunes–martes a ≤9 días.
+Claude: la evidencia dice lo contrario (ver arriba). Coste de equivocarse: si no se vende, 0 €
+(contra ~100 € esperados de la alternativa); si se vende, entre +0 y +65 € sobre Magnoli.
+**Sin medir · medición 09/09**: vendida o no, a qué precio, en qué escalón y con qué lead. Un caso
+no cierra la discusión (n=1): entra como primer dato prospectivo del detector de noches liberadas.
+**Hallazgo colateral (corrige el precedente Nicasio 11–14/08)** · según `get_user_logs`, los 93,50 €
+no los puso el algoritmo: el 10/08 se escribió un `price` FIJO 130 (00:09 UTC) y 110 (09:55 UTC)
+desde el móvil con el reason viejo del test, y 99 el 12/08; 110 × 0,85 = 93,50. → PLAYBOOK §5.4.
+**Propuesta estructural (sin construir, espera OK)** · vista `v_noches_liberadas` sobre
+`pricelabs_fotos` (Booked ayer → libre hoy) + línea en la guardia diaria y en `/precios`.
+

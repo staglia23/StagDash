@@ -118,6 +118,9 @@ bloqueada, leer su rótulo en Guesty.**
 
 | Cuándo | Qué |
 |---|---|
+| **02/09/2026 05:15 UTC** | Escalera Magnoli, escalón 2: ALEX 07/09 y 08/09 `min_price` 205/229 → **185/205** (min-stay 2 se reenvía en el objeto completo). **AUTOMATIZADO** → routine `trig_01XhA7Bnb22zsjcnJ5ZNCd7A` (relee overrides y calendario; NO escribe si el hueco ya se vendió o si alguien editó a mano; avisa por mail a info@). El sync diario ~06:50 publica |
+| **05/09/2026 05:15 UTC** | Escalera Magnoli, escalón 3 (último): **170/170 = suelo Magnoli** (275 € netos por la estancia vía Airbnb). **AUTOMATIZADO** → routine `trig_01XgJ56kELgbaSp1HZSt78oV`. No hay más escalones: el suelo no se baja; los overrides caducan con el check-in |
+| **09/09/2026** | Medir el caso Magnoli (BITACORA 29/08): vendida o no, precio, escalón y lead. Cerrar la entrada y, si hace falta, ajustar PLAYBOOK §4.8. Primer dato prospectivo del detector de noches liberadas (propuesta E, sin construir) |
 | 01/09/2026 | Recalcular foto forward y decidir promos de Airbnb vivas antes de octubre |
 | 01/10/2026 | Subida estructural de mínimos vía Custom Seasonal Profile (PLAYBOOK §6). **No antes.** |
 | A las 2 semanas de aplicarla | Revisar y, si el pickup no responde, apagar el perfil |
