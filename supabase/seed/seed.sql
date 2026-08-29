@@ -679,3 +679,15 @@ update recobros set estado = 'LIQUIDADO', resuelto_fecha = date '2026-08-20',
  where propiedad_codigo = '1A_JACO' and estado = 'PENDIENTE' and liquidacion = 'CUENTA_DUENA'
    and ((fecha = date '2026-08-14' and importe = 47.98)
      or (fecha = date '2026-08-18' and importe = 47.11));
+
+-- SYNC 29/08/2026 — comisión de 100 € a Claudio por la reserva Booking de Nicasio cobrada en
+-- efectivo (093). Segunda nota dictada que se convierte. El seed NO replica la nota (notas_inbox
+-- es dato vivo del móvil de Stag); solo el event. Idempotente.
+insert into events (anio, mes, propiedad_codigo, categoria, concepto, importe, notas)
+select 2026, 8, '1A_NICA', 'OTROS',
+       'Comisión a Claudio por la reserva Booking BC-68wENnWVl (efectivo)', -100.00,
+       'Pagado en efectivo el 25/08/2026 al portero de Segovia 8, del cobro en efectivo de la reserva BC-68wENnWVl (1.054,52). Sin respaldo bancario por diseno. Origen: nota dictada en /anotar el 24/08/2026 (093). El resto del efectivo (954,52) queda en poder de Stag -> cuenta con el socio.'
+where not exists (
+  select 1 from events e
+   where e.anio = 2026 and e.mes = 8 and e.propiedad_codigo = '1A_NICA'
+     and e.concepto = 'Comisión a Claudio por la reserva Booking BC-68wENnWVl (efectivo)');
