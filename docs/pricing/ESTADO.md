@@ -118,9 +118,10 @@ bloqueada, leer su rótulo en Guesty.**
 
 | Cuándo | Qué |
 |---|---|
-| **02/09/2026 05:15 UTC** | Escalera Magnoli, escalón 2: ALEX 07/09 y 08/09 `min_price` 205/229 → **185/205** (min-stay 2 se reenvía en el objeto completo). **AUTOMATIZADO** → routine `trig_01XhA7Bnb22zsjcnJ5ZNCd7A` (relee overrides y calendario; NO escribe si el hueco ya se vendió o si alguien editó a mano; avisa por mail a info@). El sync diario ~06:50 publica |
-| **05/09/2026 05:15 UTC** | Escalera Magnoli, escalón 3 (último): **170/170 = suelo Magnoli** (275 € netos por la estancia vía Airbnb). **AUTOMATIZADO** → routine `trig_01XgJ56kELgbaSp1HZSt78oV`. No hay más escalones: el suelo no se baja; los overrides caducan con el check-in |
-| **09/09/2026** | Medir el caso Magnoli (BITACORA 29/08): vendida o no, precio, escalón y lead. Cerrar la entrada y, si hace falta, ajustar PLAYBOOK §4.8. Primer dato prospectivo del detector de noches liberadas (propuesta E, sin construir) |
+| **02/09/2026 05:15 UTC** | Hueco Magnoli (objetivo LLENAR, decisión Stag 30/08), escalón 2 (D−5): ALEX 07/09 y 08/09 `min_price` 162/175 → **147/153** (min-stay 2 se reenvía). **AUTOMATIZADO** → routine `trig_01XhA7Bnb22zsjcnJ5ZNCd7A` (relee estado; NO escribe si el hueco ya se vendió o si alguien editó a mano; mail a info@). Publica el sync ~06:50 |
+| **04/09/2026 05:15 UTC** | Escalón 3 (D−3): se QUITA el suelo (delete + recreate solo con `min_stay 2`) → manda el mínimo del anuncio 129 (huésped ve 109,65). **AUTOMATIZADO** → routine `trig_01XgJ56kELgbaSp1HZSt78oV` |
+| **06/09/2026 05:15 UTC** | Escalón 4 (D−1, último): `min_stay 1` en 07 y 08/09 (autorizado en ALEX desde el 09/08). **AUTOMATIZADO** → routine `trig_01Ugf4RGSXB5BGpG8cJ5w5KJ`. Los overrides caducan con el check-in |
+| **09/09/2026** | Medir el caso Magnoli (BITACORA 29/08 + bloque 30/08): vendida o no, escalón, precio, lead, canal. Cerrar la entrada y ajustar PLAYBOOK §4.8 con lo aprendido. Primer dato prospectivo del detector de noches liberadas (plan de automatización guardado en memoria, para ejecutar más adelante) |
 | 01/09/2026 | Recalcular foto forward y decidir promos de Airbnb vivas antes de octubre |
 | 01/10/2026 | Subida estructural de mínimos vía Custom Seasonal Profile (PLAYBOOK §6). **No antes.** |
 | A las 2 semanas de aplicarla | Revisar y, si el pickup no responde, apagar el perfil |

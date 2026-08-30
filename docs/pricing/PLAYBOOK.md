@@ -257,8 +257,12 @@ anuncio). Tres reglas:
    escribir y no toca nada si el hueco ya se vendió o si los overrides no son los esperados.
 *Origen 29/08/2026*: Alexander 07–08/09, reserva directa F&F de 275 € cash liberada a 9 días. Claude
 recomendó min-stay 2 + suelo inerte y, si la cancelación era decisión propia, no cancelar (231 € netos
-ciertos vs ~100 esperados). Stag decidió liberar y cobrar "igual o más": escalera 205/229 → 185/205
-(02/09) → 170/170 (05/09, suelo). La evidencia en contra está en la bitácora; **medición el 09/09**.
+ciertos vs ~100 esperados). Stag decidió liberar y cobrar "igual o más" (escalera con suelo 170) y
+**al día siguiente (30/08) cambió el objetivo a LLENAR sin suelo**: escalera 162/175 (= mediana de lo
+reservado en el comp set ÷ 0,85) → 147/153 (D−5) → sin suelo, mín 129 (D−3) → min-stay 1 (D−1).
+Dato de mercado que manda en este caso: en septiembre las reservas del comp set entran **1–9 días
+antes** — la ventana de compra de una noche liberada a ≤10 días es *ahora*, no "cuando baje".
+La evidencia y las hipótesis están en la bitácora; **medición el 09/09**.
 
 ---
 

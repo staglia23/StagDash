@@ -469,3 +469,34 @@ desde el móvil con el reason viejo del test, y 99 el 12/08; 110 × 0,85 = 93,50
 **Propuesta estructural (sin construir, espera OK)** · vista `v_noches_liberadas` sobre
 `pricelabs_fotos` (Booked ayer → libre hoy) + línea en la guardia diaria y en `/precios`.
 
+**Cambio de objetivo (30/08/2026, Stag)** · "No importa el precio mínimo: analizá la competencia y
+armá la estrategia para que queden reservadas; confío en tu criterio y después aprendemos". Se
+retira el suelo Magnoli. Estado a las 08:35 UTC: la cancelación ya llegó a PriceLabs (07–08 libres,
+demanda "Low"/"Normal"), el sync diario publicó 205/229 + min-stay 2 (`last_date_pushed` 08:35).
+**Competencia hoy (267 pisos 1 dorm.)** · Lun 07: ocupación 56,8 % (+1,0 pp/día; LY cerró 73 %),
+p25/p50/p75 = 110/146/185, **mediana de lo reservado 138**. Mar 08: 56,3 % (LY 79 %), 110/150/205,
+**mediana reservada 149**; PriceLabs detecta evento "Madring F1" desde el 08 (GP 11–13/09, mercado
++35 % del 09 al 13; nuestra reserva 09–12 a 260 lo confirma). Regla de mercado (pulse de PriceLabs):
+**en septiembre las reservas entran 1–9 días antes** → la ventana de compra de estas noches es AHORA.
+Estar a p65–p70 (205/229) en plena ventana era la estrategia equivocada para llenar.
+**Estrategia aplicada (Claude)** · precio de cierre = mediana de lo que pagaron los que reservaron
+esas fechas (138/149 vistos) y escalera hacia lo perecedero, con la bookability primero:
+- **30/08 (D−8, aplicado 09:40 UTC)** → `min_price` **162 / 175** (huésped ve 137,70 + 148,75 + 50 =
+  **336,45 €**; neto ≈ 273). Verificado: overrides_after_update limpio, pricing_array 162/175,
+  min_stay 2, unbookable 0. Publica el sync de mañana ~06:50 o Stag con "Sincronizar Ahora".
+- **02/09 (D−5)** → 147 / 153 (huésped 125 + 130 + 50 = 305 €) — routine `trig_01XhA7Bnb22zsjcnJ5ZNCd7A`.
+- **04/09 (D−3)** → se QUITA el suelo (delete + recreate solo con min_stay 2): manda el mínimo del
+  anuncio 129 → huésped 109,65/noche (≈ p25) — routine `trig_01XgJ56kELgbaSp1HZSt78oV`.
+- **06/09 (D−1)** → min-stay **1** (última red; los huecos de 1 noche venden el 1,4 %) — routine
+  `trig_01Ugf4RGSXB5BGpG8cJ5w5KJ`.
+Palancas fuera de PriceLabs pedidas a Stag: confirmar Instant Book en Alexander; comprobar que
+Booking.com (listing 15469385, cero reservas históricas) tiene el 07–09 abierto y con precio;
+ofrecer las noches en directo a su red (130 €/noche directo ≈ 160 por Airbnb); opcional: promoción
+personalizada de Airbnb en esas fechas (precio tachado, visibilidad §3.4) — si la activa, el visible
+baja ×0,90 más y NO se compensa (es el escalón D−5 adelantado).
+**Hipótesis** · con min-stay 2 y precio en la mediana reservada, P(venta) 35–50 % (Madrid ≤14 d:
+56 % de noches revendidas; conversión de Alexander a ≤9 d: 17 %). **Medición 09/09**: vendida o no,
+escalón, precio, lead, canal. Lo que aprendemos: (a) si vende en el escalón 1–2, la mediana
+reservada es el ancla correcta; (b) si vende recién sin suelo, el mercado de 2 noches lun–mar a ≤3
+días es de p25; (c) si no vende, el hueco era de forma, no de precio (§4.1).
+
