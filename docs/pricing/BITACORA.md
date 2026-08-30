@@ -653,3 +653,35 @@ cada 4 que se hubieran vendido igual, y la base de "se hubieran vendido igual" e
 
 **Sin medir · medición 04/09**: qué noches se vendieron, a qué precio, con qué lead, por qué canal y en qué
 escalón. Se compara con el caso Magnoli de Alexander (medición 09/09), que corrió la estrategia inversa.
+
+## 2026-08-31 · Directa 31/10 (exhuésped de Nicasio): cotización a paridad y nacimiento del manual DIRECTAS (PRESUPUESTO ENVIADO)
+
+**El caso** · Una exhuésped de Nicasio pide por WhatsApp UNA noche, la del sábado 31/10 (salida
+6:00 por vuelo). El min-stay 3 la bloquea en todos los canales y en la web propia (comparten
+calendario). Jacobine descartado (vendido 27/10→02/11); los tres de Madrid libres, en el medio
+de tramos abiertos de 9–16 noches → venderla no crea huérfanas (los restos quedan ≥4 noches).
+
+**Cotización (paridad ×0,8124 sobre canal, limpieza 60 € incluida, redondeo arriba)** · canal:
+343 (NICA) / 325 (ALEX) / 292 (MARE) → directo: **280 / 265 / 240 €**. Neto tras coste real de
+limpieza: ~226 / 221 / 196 €, todos 1,4–1,8× su ADR de equilibrio.
+
+**El contexto de mercado que respaldó no regalar** (comp set 267 pisos 1BR, leído 31/08):
+p25 149 · p50 185 · p75 236 · p90 321. Publicados estamos en p75–p90; en directo el huésped
+paga mediana-p75 por pisos del cuartil alto (MARE directo queda −3 % vs mediana). Mercado 33 %
+vendido a 62 días (+6,5 pp vs STLY 26,3 %), cierre LY de esa noche: 96 %. **Hallazgo**: la zona
+aún NO repreció el puente (p50 del 31/10 = 185 < p50 del sábado normal 24/10 = 194, y el viernes
+publicado más caro que el sábado) — es finde largo en Madrid (festivo trasladado al lunes 02/11)
+y la competencia no se enteró; nuestros precios ya lo tenían puesto. Hotel 4★ centro esa noche:
+~305 € (tarifa fechada, Trip.com, con caveat) → el directo queda −8/−21 % vs habitación de hotel.
+
+**Lo que nació de acá** · `docs/operativa/DIRECTAS.md`: fórmula de paridad (con la trampa del
+doble descuento de limpieza, que estuvo a punto de pasar), términos de pago (100 % transferencia
+en ≤2 noches / señal 50 % + saldo efectivo — cicatriz Magnoli: el efectivo nunca bloquea; no
+reembolsable con UN cambio de fecha ≥7 días; validez 48 h) y la plantilla definitiva del mensaje
+fijada por Stag, con sus reglas de voz (§4.2). Los 100 € a Claudio NO eran el coste de cobrar
+efectivo (cubrían relevamiento + puerta de Marechal + recogida) — corregido en CASUISTICAS §1.4.
+
+**Estado** · Presupuesto enviado el 31/08 con validez 48 h. **Medir ~02/09**: si reservó (qué
+piso, qué método de pago) o si se dejó vencer — y anotar acá el resultado. Si entra: reserva
+manual `confirmed` + Record a payment con nota (DIRECTAS §5). Sin tocar PriceLabs: la reserva
+manual ignora el min-stay.

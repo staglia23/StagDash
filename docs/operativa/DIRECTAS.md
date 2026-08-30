@@ -2,8 +2,10 @@
 
 Creado el 31/08/2026 a pedido de Stag ("tenemos que armar una plantilla para siempre decir en
 el mismo tono, establecer el pago y todo lo demás"). Las reglas de precio y la operativa salen
-de precedentes ya aplicados; **los términos de pago (§3) son propuesta de Claude del 31/08/2026
-— pendiente del OK explícito de Stag**. Cuando lo dé, borrar esta línea.
+de precedentes ya aplicados. Los términos de pago de estancias cortas (100 % transferencia /
+señal 50 % + efectivo, no reembolsable, 48 h) quedaron **adoptados por Stag el 31/08/2026** al
+fijar el mensaje definitivo (§4.1); la escala de 3+ noches del §3 sigue siendo propuesta sin
+estrenar.
 
 ---
 
@@ -81,41 +83,47 @@ tengan dato del día se omiten, no se inventan:
 7. **CTA con validez** — "te mantengo el precio 48 h; con la transferencia te lo dejo
    bloqueado al momento".
 
-### 4.1 La plantilla literal (ajustar tú/vos/ustedes según el huésped; sin PII acá)
+### 4.1 La plantilla DEFINITIVA (fijada por Stag el 31/08/2026 — no reescribirla, rellenarla)
 
-> ¡Hola, [nombre]! Les paso los precios para [la noche del sábado DD/MM | las N noches del
-> DD–DD/MM] — [flexibilidad de horarios que hayan pedido, p.ej. "la salida a las 6:00 la
-> dejamos anotada, sin problema"].
->
-> Son **precios finales, con la limpieza incluida** — no hay ningún cargo extra:
->
-> 🏠 **[Piso] — [total] €** [(donde se alojaron la última vez)]
-> 🏠 **[Piso] — [total] €**
->
-> Al reservar directo conmigo **les descuento la comisión de Airbnb, un 18 %**: [esa misma
-> noche | esas noches] por la plataforma les costaría[n] [X] € ([piso]) o [Y] € ([piso]).
-> [Comparador externo si refuerza: "un hotel 4★ del centro esa noche ronda los X € solo la
-> habitación."]
->
-> [Gancho de demanda con dato real del día: festivo, finde largo, ocupación.] **Les mantengo
-> precio y disponibilidad durante 48 horas** — pasado eso, [la noche vuelve | las noches
-> vuelven] a la venta.
->
-> Los pisos están en [dirección]; pueden ver las fotos en www.stag-properties.com
->
-> Para confirmar y dejarles [la noche bloqueada | las noches bloqueadas]:
-> ✅ [≤2 noches: **Transferencia del total** (les paso la cuenta) y les confirmo al momento.
->    | 3+: **Señal del 50 % por transferencia** y el resto [a 7 días de la llegada | en
->    efectivo a la llegada].]
-> 💶 [≤2 noches, si prefieren efectivo: **señal del 50 % por transferencia** y el resto en
->    efectivo a la llegada.]
->
-> La tarifa es no reembolsable, pero [si les cambia el plan] **les muevo la fecha sin coste**
-> avisándome con 7 días. ¡Cualquier duda me dicen! 😊
+Ajustar tú/ustedes según sean uno o varios; el saludo va en singular a quien escribe. Sin PII acá.
 
-Primer uso real (directa 31/10/2026, exhuésped de Nicasio): ver BITACORA 30–31/08/2026.
-Reglas de la plantilla: nada de ganchos inventados (si no hay dato de demanda, se omite el
-bloque); el desglose noche+limpieza se usa solo si el huésped pregunta o regatea (§2).
+> Hola, [nombre]! Disculpa la demora. Les paso los precios para la noche del [día DD/MM] — [flexibilidad que hayan pedido, p.ej. "la salida a las 6:00 la dejamos anotada, sin problema"].
+>
+> Son precios finales, con la limpieza incluida — no hay ningún cargo extra:
+>
+> 🏠 [Piso] — [total] € [(donde se alojaron la última vez)]
+> 🏠 [Piso] — [total] €
+> 🏠 [Piso] — [total] €
+>
+> Al reservar directo conmigo les descuento la comisión de Airbnb, un 18 %: esa misma noche por la plataforma les costaría [X] € ([piso]), [Y] € ([piso]) o [Z] € ([piso]).
+>
+> [Gancho de demanda con dato real: festivo, finde largo, "la zona está con mucha demanda".] Les mantengo precio y disponibilidad durante 48 horas.
+>
+> Los pisos están en [dirección] ([zona]), pueden ver las fotos en www.stag-properties.com
+>
+> Para confirmar y dejarles la noche bloqueada:
+> ✅ Transferencia del total (les paso la cuenta) y les confirmo al momento.
+> 💶 Si prefieren efectivo: señal del 50 % por transferencia y el resto en efectivo a la llegada.
+>
+> La tarifa es no reembolsable, pero [si el plan les puede cambiar: "si el vuelo les vuelve a cambiar,"] les muevo la fecha sin coste avisándome con 7 días. Cualquier duda me dicen! 😊
+
+### 4.2 La voz de Stag (aprendida de sus ediciones al borrador, 31/08/2026)
+
+Lo que Stag CAMBIÓ del borrador de Claude define el tono — respetarlo siempre:
+
+- **Sin "¡" de apertura**: la exclamación solo cierra ("Cualquier duda me dicen!"). Estilo
+  rioplatense de WhatsApp.
+- **Texto plano**: sin negritas ni formato. Los énfasis los da el orden, no el asterisco.
+- **Sin punto y coma**: comas y puntos. Frases cortas.
+- **Urgencia sin amenaza**: el dato de demanda + "48 horas" y punto. Stag BORRÓ el "— pasado
+  eso, la noche vuelve a la venta": la consecuencia se sobreentiende, escribirla es presión.
+- **Sin muletillas** ("Eso sí:", "Para que comparen:"): afirmaciones directas.
+- **Comparador de hotel: fuera del mensaje por defecto.** Stag lo quitó — es munición de
+  respaldo si el huésped duda o regatea, no argumento inicial.
+- **Emojis, exactamente estos**: 🏠 en cada piso, ✅/💶 en las opciones de pago, UN 😊 al
+  cierre. Nada más.
+- **Cortesía primero**: "Disculpa la demora" si tardó en contestar; personalización real si
+  existe ("donde se alojaron la última vez").
 
 ## 5. Operativa al confirmar (el circuito de siempre)
 
