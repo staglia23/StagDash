@@ -589,6 +589,56 @@ error.
 
 ---
 
+### 5.4 No-show de Booking.com (payment by the property)
+
+**Cuándo aparece.** El huésped de una reserva de Booking no llega ni contesta. En Nicasio (el único
+piso donde Booking vende de verdad) el huésped paga **en el piso**, así que un no-show es una reserva
+con `total_paid = 0` que el motor sigue contando como confirmada y devengada hasta que Guesty reciba
+la cancelación. *Cicatriz 29–30/08/2026*: `BC-jg7mnkyGW`, 5 noches 29/08→03/09, 1.215,52 € de bruto,
+0 € cobrados, comisión de 206,64 € (17 %) facturable aunque nadie durmiera.
+
+**Lo que manda la plata, en orden** (fuentes: Partner Help de Booking y Help Center de Guesty,
+consultadas el 30/08/2026):
+
+1. **Marcar el no-show en la extranet de Booking, no en Guesty.** Reservas → la reserva →
+   «Relacionado con la reserva» → **«Marcar como no presentado»**. Ventana: desde la medianoche del
+   día de check-in hasta **48 h después de la fecha prevista de check-out**. Si nadie lo marca en ese
+   plazo, **Booking factura la comisión completa** de una estancia que no ocurrió; la disputa
+   posterior se hace por el Inbox y se paga la factura igual mientras tanto. Booking cancela la
+   reserva al instante (mail a ambos) y es irreversible.
+2. **Elegir la opción que EXIME el cargo por no-show** («Sí, eliminar el cargo») → **comisión 0 €**.
+   La otra opción («No, cobrar el cargo») hace que Booking cobre el 17 % sobre lo declarado
+   **aunque después no se consiga cobrar**. Solo tiene sentido si (a) la política de la tarifa
+   permitía el cargo (no reembolsable / primera noche) **y** (b) hay un TPV o pasarela propia para
+   cobrar una tarjeta no presente — Booking no cobra por nosotros y el contracargo lo asume Samavi.
+   Sin las dos cosas, el fee es teórico: eximir y liberar. Los datos de tarjeta se ven hasta 3 veces
+   (CVC una sola) y hasta 10 días después del check-out o de la cancelación.
+3. **Nunca cancelar en Guesty antes del paso 1**: una cancelación iniciada por el alojamiento no es
+   un no-show y la comisión se factura igual. Después de marcarlo, Guesty pasa la reserva a
+   `canceled` solo (documenta 1–24 h; suele ser minutos). Solo si no llega, cancelar en Guesty
+   (motivo no-show). La venta se abre en Airbnb y Booking **en cuanto Guesty cancela**, con el
+   precio y el min-stay que Guesty ya tenía — no hace falta tocar PriceLabs para que se abra;
+   PriceLabs solo mejora la forma del hueco (min-stay = hueco, §4.8 del PLAYBOOK).
+4. **Verificar el último eslabón** (PLAYBOOK §5.3): la extranet debe mostrar la reserva como
+   «No presentado» con comisión 0; Guesty en `canceled` con el hueco visible; Airbnb y Booking
+   abiertos como huésped. Booking factura **por fecha de salida**: la comprobación de que no cobró
+   la comisión se hace en el extracto del mes de salida, que llega a principios del mes siguiente.
+5. **El motor**: mientras `reservations.status` siga `confirmed`, el P&L cuenta las noches como
+   vendidas (acá 693,31 € en agosto + 462,21 € en septiembre + limpieza). Comprobar al día siguiente
+   que guesty-sync trajo el `canceled`; si no, forzar resync. No hay cobro retenido que registrar
+   (`total_paid = 0`), así que `v_ingreso_cancelaciones` no se toca.
+
+**Trampas.**
+- La ventana de 48 h que declara Guesty para reportar no-shows es **desde el check-in**, más corta
+  que la de Booking (desde el check-out): otra razón para hacerlo por la extranet.
+- Si el huésped aparece después, la reserva no se reabre ni en Booking ni en Guesty: habría que
+  crear una nueva. Guardar el registro de mensajes y llamadas sin respuesta.
+- Una reseña del huésped se retira sola al confirmarse el no-show; el «reportar mal comportamiento»
+  no existe para no-shows.
+- **Las noches liberadas se pricean como cualquier hueco de última hora** (PLAYBOOK §4.8), no
+  contra lo que pagaba el que no vino: igualar un ADR reservado a 172 días exige un publicado por
+  encima del p90 del barrio a 1–4 días. El caso completo está en la bitácora (30/08/2026).
+
 ## 6. Sincronización y frescura del dato
 
 ### Cuándo aparece
