@@ -118,10 +118,16 @@ bloqueada, leer su rótulo en Guesty.**
 
 | Cuándo | Qué |
 |---|---|
+| **31/08/2026 05:15 UTC** | No-show Nicasio (BITACORA 30/08), escalera de min-stay, escalón 1: 31/08 `min_stay` 2→**1** (suelo inerte 150 se reenvía en el objeto completo). **AUTOMATIZADO** → routine `trig_012yeB7VnD57aXf3duepmSZ8` (relee overrides y calendario; NO escribe si la noche ya se vendió o si el override no es el esperado; mail a info@). Publica el sync ~06:50 |
+| **01/09/2026 05:15 UTC** | No-show Nicasio, escalón 2: 01/09 `min_stay` 2→**1**. **AUTOMATIZADO** → routine `trig_019FpJ6i8uzBRNw7LBcvN7oj` |
+| **02/09/2026 05:15 UTC** | No-show Nicasio, escalón 3 (último): 02/09 `min_stay` 2→**1**; 02–03/09 queda hueco de 2 noches y el huérfano −20 % lo frena el suelo 150. **AUTOMATIZADO** → routine `trig_017sc2Z9Azyo3ysWbNYtRqK3`. **No hay escalón por debajo de 150** |
 | **02/09/2026 05:15 UTC** | Hueco Magnoli (objetivo LLENAR, decisión Stag 30/08), escalón 2 (D−5): ALEX 07/09 y 08/09 `min_price` 162/175 → **147/153** (min-stay 2 se reenvía). **AUTOMATIZADO** → routine `trig_01XhA7Bnb22zsjcnJ5ZNCd7A` (relee estado; NO escribe si el hueco ya se vendió o si alguien editó a mano; mail a info@). Publica el sync ~06:50 |
 | **04/09/2026 05:15 UTC** | Escalón 3 (D−3): se QUITA el suelo (delete + recreate solo con `min_stay 2`) → manda el mínimo del anuncio 129 (huésped ve 109,65). **AUTOMATIZADO** → routine `trig_01XgJ56kELgbaSp1HZSt78oV` |
 | **06/09/2026 05:15 UTC** | Escalón 4 (D−1, último): `min_stay 1` en 07 y 08/09 (autorizado en ALEX desde el 09/08). **AUTOMATIZADO** → routine `trig_01Ugf4RGSXB5BGpG8cJ5w5KJ`. Los overrides caducan con el check-in |
 | **09/09/2026** | Medir el caso Magnoli (BITACORA 29/08 + bloque 30/08): vendida o no, escalón, precio, lead, canal. Cerrar la entrada y ajustar PLAYBOOK §4.8 con lo aprendido. Primer dato prospectivo del detector de noches liberadas (plan de automatización guardado en memoria, para ejecutar más adelante) |
+| **04/09/2026** | Medir el no-show de Nicasio (BITACORA 30/08): noches 30/08–03/09 vendidas o no, precio, lead, canal, escalón. Cerrar la entrada y comparar con Magnoli el 09/09 |
+| **Primera semana de octubre** | Extracto de Booking de septiembre (factura por fecha de SALIDA): `BC-jg7mnkyGW` debe figurar con comisión 0 salvo que Booking haya cobrado el 50 % (607,76 → ≈103 de comisión). Si figura comisión sin cobro, disputar (Finanzas → Extractos / Inbox). De paso, cargar como events las dos comisiones de agosto (216,92 + 250,03) |
+| Sin fecha (hasta que entre) | Cobro pendiente de la huésped del no-show: **607,76 €** (50 % de 1.215,52), por transferencia o vía Booking. Si entra: cobro retenido de Nicasio (línea aparte del ingreso, no toca noches) + comisión de Booking sobre él como event |
 | 01/09/2026 | Recalcular foto forward y decidir promos de Airbnb vivas antes de octubre |
 | 01/10/2026 | Subida estructural de mínimos vía Custom Seasonal Profile (PLAYBOOK §6). **No antes.** |
 | A las 2 semanas de aplicarla | Revisar y, si el pickup no responde, apagar el perfil |

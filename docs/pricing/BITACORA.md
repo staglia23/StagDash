@@ -500,3 +500,64 @@ escalón, precio, lead, canal. Lo que aprendemos: (a) si vende en el escalón 1�
 reservada es el ancla correcta; (b) si vende recién sin suelo, el mercado de 2 noches lun–mar a ≤3
 días es de p25; (c) si no vende, el hueco era de forma, no de precio (§4.1).
 
+---
+
+## 2026-08-30 · No-show Booking en Nicasio 29/08→03/09: comisión, cobro del 50 % y noches liberadas a suelo 150 + escalera de min-stay (APLICADO)
+
+**Contexto** · Reserva Booking.com `BC-jg7mnkyGW` (nº Booking 5425115874), sáb 29/08 → jue 03/09, 5 noches,
+2 huéspedes, reservada el 10/03 (lead 172 d): 1.155,52 € de alojamiento (1.256 − 8 % de markup del canal)
++ 60 limpieza = 1.215,52 €; comisión 17 % = 206,64 €. Pago en el piso, `total_paid` 0. Los huéspedes no
+llegaron ni respondieron mensajes ni llamadas el 29–30/08.
+**Dinero (Stag, 30/08)** · La tarifa llevaba política **50 % no reembolsable**. El usuario de la extranet no
+tiene permiso para ver la tarjeta, así que no se pudo cobrar. Stag marcó el no-show en la extranet eligiendo
+«No, cobrar el cargo»; Booking le dijo que intentará cobrarle el 50 % (**607,76 €**) a la huésped sin
+garantía, y que si no se cobra no hay comisión. Stag le escribió a la huésped pidiendo la transferencia.
+Riesgo abierto: que el extracto de septiembre (Booking factura por fecha de salida → llega a principios de
+octubre) traiga comisión sobre 607,76 (≈103 €) sin que haya entrado nada → disputar ahí. Mecánica completa
+y fuentes en [CASUISTICAS §5.4](../operativa/CASUISTICAS.md).
+**Análisis (workflow de 5 agentes: no-show de Booking por fuentes oficiales, histórico de última hora en
+Supabase, plan con valor esperado y dos revisores adversariales — uno "pro-subida", otro de playbook)** ·
+- Competencia (comp set 267 pisos de 1 dorm., leído el 30/08): ocupación de mercado dom 30/08 **77 %**
+  (STLY 85; evento The Weeknd) · lun 31/08 **57 %** (71) · mar 01/09 **53 %** (73) · mié 02/09 **53 %** (74)
+  · jue 03/09 **61 %** (74). Medianas publicadas 125/116/124/130/145; medianas de lo **ya reservado**
+  132/119/116/119/131; pickup de los últimos 7 días 4–6 pp contra 13–16 STLY → un tercio de la demanda del
+  año pasado y ~120 pisos libres lun–mié.
+- Histórico Nicasio: **5 ventas a ≤4 días en 14 meses**, todas Airbnb, todas de 2 noches, 93,50–125,20 €/noche
+  (ratio 0,60–0,78 del ADR del mes con lead 15+) — 3 de ellas a precios fijos que pusimos nosotros bajos el
+  10–12/08, así que es techo de oferta, no de demanda. La huérfana del 28/08 (167 €) se vendió el 23/08 recién
+  cuando PriceLabs la bajó de 181 a 167 tras 10 días quieta. Booking.com nunca trajo una reserva con lead <152 d.
+- PriceLabs recomendaba (uncustomized) 82–131 para 30/08–03/09: el mínimo del anuncio (150) ya frena hacia arriba.
+- Igualar lo que pagaba el que no vino (231,10/noche a 172 d) exigiría ≈278 € publicados (fórmula §4.8.2), por
+  encima del p90 de todas las noches: ese precio existe a 172 días, no a 1–4.
+- EV neto del hueco según estrategia (probabilidades 15–50 % por noche según lectura, cuota de mercado vs ancla
+  histórica): **suelo 150 + escalera de min-stay 100–200 €** · subir a 175: 45–116 · subir a 200: 20–57 ·
+  bajar bajo el suelo: empata con 150 pero contra §2.5/§4.3. La diferencia entre la mejor y la peor decisión
+  de precio (~140 €) es menor que la comisión en juego (206,64).
+- El revisor pro-subida defendió **170** en 31/08–03/09 (traducción §4.8.2; dentro de la banda §5.7 — 175 la
+  dispararía el 31/08) con escalón a 150 al volverse same-day: ±30 € de EV, dentro del ruido; su valor sería
+  medir la elasticidad de última hora de Nicasio. Condición previa: verificar como huésped si el −15 % de
+  Airbnb se aplica en Nicasio (el 28/08 vendió 166,95 sobre 167 publicados: sospecha de que no).
+**Decisión** · Stag (30/08, 13:50 Madrid): "hacé lo que consideres mejor". Aplicado lo recomendado: **no subir**;
+suelo inerte 150 (= mínimo del anuncio, no es subida ni bajada) + escalera de min-stay.
+**Aplicado (11:57 UTC)** · 5 overrides NICA `min_price 150 fixed EUR` con reason fechado: 30/08 `min_stay 1` ·
+31/08, 01/09 y 02/09 `min_stay 2` · 03/09 `min_stay 1`. `overrides_after_update` limpio (solo los campos
+enviados). Refresh: pricing_array **150 × 5**, min_stay 1/2/2/2/1, unbookable 0 en las cinco (el 03/09 estaba
+unbookable antes de liberar), CICO `1111111`; uncustomized 82/92/102/110/131. El huésped ve en Airbnb
+127,50 €/noche + 60; en Booking ≈163. Alexander y Marechal llenos 30/08–07/09: sin canibalización.
+**Pendiente de Stag** · «Sincronizar Ahora» en Nicasio (las noches ya estaban abiertas a 150/min-stay 2 desde
+que Guesty canceló; el push solo publica el min-stay 1 del 30/08 y del 03/09) y verificar como huésped en
+Airbnb que 03/09→04/09 se puede reservar por 1 noche y que 31/08→02/09 muestra ≈127,50/noche.
+**Escalera (routines en la nube a las 05:15 UTC; cada una relee overrides y calendario, NO escribe si la noche
+ya se vendió o si el override no es el esperado, y avisa por mail a info@)** · 31/08 → min-stay 1 en 31/08
+(`trig_012yeB7VnD57aXf3duepmSZ8`) · 01/09 → min-stay 1 en 01/09 (`trig_019FpJ6i8uzBRNw7LBcvN7oj`) · 02/09 →
+min-stay 1 en 02/09, último (`trig_017sc2Z9Azyo3ysWbNYtRqK3`). **Sin escalón por debajo de 150.**
+**Hipótesis en juego** · Claude: si el hueco se vende, se vende a 150 publicados, con lead 1–3 días, estancia
+de 2 noches, por Airbnb; subir no compra nada en un mercado al 53–57 %. Contrahipótesis registrada: 170 con
+escalón habría vendido igual (elasticidad ~0, §4.3) y habría dejado +13,80 €/noche.
+**Sin medir · medición 04/09**: noches vendidas, precio, lead, canal, escalón; comparar con la reventa del caso
+Magnoli (medición 09/09). Segundo caso prospectivo del detector de noches liberadas.
+**Motor** · Mientras `reservations.status` siga `confirmed`, el P&L cuenta 693,31 € en agosto + 462,21 en
+septiembre + limpieza que no existen. **Resuelto el mismo día**: Guesty la canceló a las 11:32 UTC y guesty-sync la trajo
+`canceled` en la corrida de las 12:00 UTC — el P&L de agosto ya no la cuenta. Si entra el 50 %
+(607,76 €), es un **cobro retenido** (línea aparte, no toca noches ni ADR) y la comisión de Booking sobre él
+va como event al llegar la factura.
