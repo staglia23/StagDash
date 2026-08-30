@@ -54,6 +54,9 @@ con el calendario tomado dos semanas; ver PLAYBOOK §4.8 y BITACORA 29–30/08).
   regalar cobertura que ninguna plataforma regala.
 - La señal SIEMPRE por transferencia (Revolut Business). El efectivo solo vale para el saldo,
   nunca para bloquear — un "te pago al llegar" pelado es la cicatriz Magnoli otra vez.
+- Si el huésped prefiere efectivo (vale también en ≤2 noches): **señal del 50 % por
+  transferencia + saldo en efectivo a la llegada**. El principio no se negocia: sin
+  transferencia no hay bloqueo.
 - **Oferta con validez 48 h.** Sin señal la fecha sigue a la venta; con demanda alta el tiempo
   juega para nosotros (31/10: mercado 6,5 pp adelantado, cierre histórico 96 %).
 - Cancelación: **no reembolsable** (es el trato que compra el descuento); se permite UN cambio
@@ -78,7 +81,41 @@ tengan dato del día se omiten, no se inventan:
 7. **CTA con validez** — "te mantengo el precio 48 h; con la transferencia te lo dejo
    bloqueado al momento".
 
-Ejemplo real (directa 31/10/2026, bloques 1–4 y 7): ver BITACORA 30–31/08/2026.
+### 4.1 La plantilla literal (ajustar tú/vos/ustedes según el huésped; sin PII acá)
+
+> ¡Hola, [nombre]! Les paso los precios para [la noche del sábado DD/MM | las N noches del
+> DD–DD/MM] — [flexibilidad de horarios que hayan pedido, p.ej. "la salida a las 6:00 la
+> dejamos anotada, sin problema"].
+>
+> Son **precios finales, con la limpieza incluida** — no hay ningún cargo extra:
+>
+> 🏠 **[Piso] — [total] €** [(donde se alojaron la última vez)]
+> 🏠 **[Piso] — [total] €**
+>
+> Al reservar directo conmigo **les descuento la comisión de Airbnb, un 18 %**: [esa misma
+> noche | esas noches] por la plataforma les costaría[n] [X] € ([piso]) o [Y] € ([piso]).
+> [Comparador externo si refuerza: "un hotel 4★ del centro esa noche ronda los X € solo la
+> habitación."]
+>
+> [Gancho de demanda con dato real del día: festivo, finde largo, ocupación.] **Les mantengo
+> precio y disponibilidad durante 48 horas** — pasado eso, [la noche vuelve | las noches
+> vuelven] a la venta.
+>
+> Los pisos están en [dirección]; pueden ver las fotos en www.stag-properties.com
+>
+> Para confirmar y dejarles [la noche bloqueada | las noches bloqueadas]:
+> ✅ [≤2 noches: **Transferencia del total** (les paso la cuenta) y les confirmo al momento.
+>    | 3+: **Señal del 50 % por transferencia** y el resto [a 7 días de la llegada | en
+>    efectivo a la llegada].]
+> 💶 [≤2 noches, si prefieren efectivo: **señal del 50 % por transferencia** y el resto en
+>    efectivo a la llegada.]
+>
+> La tarifa es no reembolsable, pero [si les cambia el plan] **les muevo la fecha sin coste**
+> avisándome con 7 días. ¡Cualquier duda me dicen! 😊
+
+Primer uso real (directa 31/10/2026, exhuésped de Nicasio): ver BITACORA 30–31/08/2026.
+Reglas de la plantilla: nada de ganchos inventados (si no hay dato de demanda, se omite el
+bloque); el desglose noche+limpieza se usa solo si el huésped pregunta o regatea (§2).
 
 ## 5. Operativa al confirmar (el circuito de siempre)
 
