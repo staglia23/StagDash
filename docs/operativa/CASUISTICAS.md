@@ -612,7 +612,22 @@ consultadas el 30/08/2026):
    permitía el cargo (no reembolsable / primera noche) **y** (b) hay un TPV o pasarela propia para
    cobrar una tarjeta no presente — Booking no cobra por nosotros y el contracargo lo asume Samavi.
    Sin las dos cosas, el fee es teórico: eximir y liberar. Los datos de tarjeta se ven hasta 3 veces
-   (CVC una sola) y hasta 10 días después del check-out o de la cancelación.
+   (CVC una sola) y hasta 10 días después del check-out o de la cancelación — **pero solo si el usuario
+   de la extranet tiene el permiso «Ver datos de la tarjeta de crédito»**. Si el botón sale gris y en
+   rojo dice "No dispones de permisos", el cargo NO se puede materializar: es la señal de que hay que
+   eximir. *Cicatriz 30/08/2026*: el permiso faltaba y se descubrió con el no-show ya marcado.
+   **Pedirlo a Booking antes de que haga falta.**
+2-bis. **Si ya se marcó «cobrar el cargo» y no se va a poder cobrar — hay marcha atrás, verificada.**
+   La acción es irreversible por API, pero **Atención al Cliente de Booking sí la corrige**, y el camino
+   que indican no es "revertir el no-show" sino **marcar la tarjeta del huésped como NO VÁLIDA** (botón
+   propio en el bloque «Pago» de la reserva, con motivo). A las **24–48 h** de hacerlo aparece en la
+   reserva **un botón para reclamar la exención de la comisión**, y hay que apretarlo: no es automático.
+   *Cicatriz 30/08/2026*: el primer agente de Booking aseguró que «No, cobrar el cargo» no generaba
+   comisión — es falso, una segunda agente lo desmintió, y la corrección salió de una tercera llamada.
+   **Regla derivada: lo que diga un agente por teléfono no vale hasta que esté por escrito en el Inbox
+   de la extranet**; pedir siempre el resumen de la llamada por ahí y anotar nombre y hora.
+   Ojo al elegir este camino: con la tarjeta declarada inválida, Booking ya no intenta cobrar → el
+   cargo por no-show se da por perdido y solo queda que el huésped pague voluntariamente por transferencia.
 3. **Nunca cancelar en Guesty antes del paso 1**: una cancelación iniciada por el alojamiento no es
    un no-show y la comisión se factura igual. Después de marcarlo, Guesty pasa la reserva a
    `canceled` solo (documenta 1–24 h; suele ser minutos). Solo si no llega, cancelar en Guesty
@@ -635,6 +650,9 @@ consultadas el 30/08/2026):
   crear una nueva. Guardar el registro de mensajes y llamadas sin respuesta.
 - Una reseña del huésped se retira sola al confirmarse el no-show; el «reportar mal comportamiento»
   no existe para no-shows.
+- **El botón de exención de comisión no aparece al instante ni se aprieta solo**: sale a las 24–48 h de
+  marcar la tarjeta como no válida y caduca con el ciclo de facturación. Ponerle fecha en ESTADO §5 el
+  mismo día, o la comisión se cobra por olvido.
 - **Las noches liberadas se pricean como cualquier hueco de última hora** (PLAYBOOK §4.8), no
   contra lo que pagaba el que no vino: igualar un ADR reservado a 172 días exige un publicado por
   encima del p90 del barrio a 1–4 días. El caso completo está en la bitácora (30/08/2026).

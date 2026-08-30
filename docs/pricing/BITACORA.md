@@ -512,9 +512,16 @@ llegaron ni respondieron mensajes ni llamadas el 29–30/08.
 tiene permiso para ver la tarjeta, así que no se pudo cobrar. Stag marcó el no-show en la extranet eligiendo
 «No, cobrar el cargo»; Booking le dijo que intentará cobrarle el 50 % (**607,76 €**) a la huésped sin
 garantía, y que si no se cobra no hay comisión. Stag le escribió a la huésped pidiendo la transferencia.
-Riesgo abierto: que el extracto de septiembre (Booking factura por fecha de salida → llega a principios de
-octubre) traiga comisión sobre 607,76 (≈103 €) sin que haya entrado nada → disputar ahí. Mecánica completa
-y fuentes en [CASUISTICAS §5.4](../operativa/CASUISTICAS.md).
+**Desenlace del mismo día (30/08, tres llamadas)** · El primer agente de Booking le aseguró a Stag que
+«No, cobrar el cargo» no generaba comisión: **es falso**, y una segunda agente lo desmintió. En la tercera
+llamada le dieron el camino de corrección real: **marcar la tarjeta del huésped como NO VÁLIDA** (botón
+propio, con motivo) y, a las **24–48 h**, apretar el botón de reclamación que aparece en la reserva para
+que **no se cobre la comisión**. Stag marcó la tarjeta como no válida el 30/08 — coherente con que su
+usuario ni siquiera tiene el permiso «Ver datos de la tarjeta». Consecuencia: la comisión de 206,64 €
+queda en camino de anularse (reclamar el **01/09**, en ESTADO §5), y el cobro del 50 % se da por perdido
+salvo transferencia voluntaria de la huésped. **Regla nueva** (→ CASUISTICAS §5.4 punto 2-bis): lo que
+diga un agente por teléfono no vale hasta que esté por escrito en el Inbox de la extranet. Mecánica
+completa y fuentes en [CASUISTICAS §5.4](../operativa/CASUISTICAS.md).
 **Análisis (workflow de 5 agentes: no-show de Booking por fuentes oficiales, histórico de última hora en
 Supabase, plan con valor esperado y dos revisores adversariales — uno "pro-subida", otro de playbook)** ·
 - Competencia (comp set 267 pisos de 1 dorm., leído el 30/08): ocupación de mercado dom 30/08 **77 %**
@@ -544,9 +551,9 @@ suelo inerte 150 (= mínimo del anuncio, no es subida ni bajada) + escalera de m
 enviados). Refresh: pricing_array **150 × 5**, min_stay 1/2/2/2/1, unbookable 0 en las cinco (el 03/09 estaba
 unbookable antes de liberar), CICO `1111111`; uncustomized 82/92/102/110/131. El huésped ve en Airbnb
 127,50 €/noche + 60; en Booking ≈163. Alexander y Marechal llenos 30/08–07/09: sin canibalización.
-**Pendiente de Stag** · «Sincronizar Ahora» en Nicasio (las noches ya estaban abiertas a 150/min-stay 2 desde
-que Guesty canceló; el push solo publica el min-stay 1 del 30/08 y del 03/09) y verificar como huésped en
-Airbnb que 03/09→04/09 se puede reservar por 1 noche y que 31/08→02/09 muestra ≈127,50/noche.
+**Push verificado** · Stag pulsó «Sincronizar Ahora» y `last_date_pushed` quedó en **12:05:26 UTC**, posterior
+a la escritura de las 11:57: el min-stay 1 del 30/08 y del 03/09 llegó al canal. Queda solo la comprobación
+visual como huésped en Airbnb (03/09→04/09 reservable por 1 noche; 31/08→02/09 a ≈127,50/noche).
 **Escalera (routines en la nube a las 05:15 UTC; cada una relee overrides y calendario, NO escribe si la noche
 ya se vendió o si el override no es el esperado, y avisa por mail a info@)** · 31/08 → min-stay 1 en 31/08
 (`trig_012yeB7VnD57aXf3duepmSZ8`) · 01/09 → min-stay 1 en 01/09 (`trig_019FpJ6i8uzBRNw7LBcvN7oj`) · 02/09 →
