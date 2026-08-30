@@ -159,6 +159,15 @@ Cuatro agujeros estructurales, todos descubiertos con casos reales:
    Stag → cuenta con el socio. Precedente: una reserva directa de 3 noches de julio-2026, 520 €. En el
    cuadre esa reserva nunca va a tener respaldo bancario y **eso es normal, no un agujero**.
 
+   **Aclaración de Stag (30/08/2026) sobre los 100 € a Claudio** (event de la migración 093,
+   ago-2026, Nicasio): NO fueron solo por recibir el efectivo de la Booking `BC-68wENnWVl` —
+   cubrieron un paquete de trabajos: relevamiento de mantenimiento de los apartamentos,
+   recogida del efectivo y una limada de la puerta de Marechal que cerraba mal. Implicación:
+   **cobrar en efectivo no cuesta 100 € por operación** — no usar ese event como referencia
+   del coste de un cobro en mano. (El event quedó cargado entero a 1A_NICA aunque parte del
+   trabajo fue de Marechal/general; por materialidad no se re-partió, decisión de Stag si
+   algún día quiere afinarlo.)
+
    **Cómo se identifican sin preguntar** (hallazgo del 18/08/2026): el sync guarda el objeto
    `money` de Guesty entero en `reservations.money_raw`, y ahí vive `payments[]` con la nota,
    el importe, la fecha y el método de cada cobro. El `paymentMethodId`

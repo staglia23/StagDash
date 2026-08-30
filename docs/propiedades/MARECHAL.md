@@ -25,13 +25,15 @@ PriceLabs. Datos frescos ese día: `guesty-sync` 09:00 UTC, `pricelabs-sync` 07:
 | Bajo gestión desde | **01/12/2025** (`listings.fecha_inicio`) |
 | Ciudad / edificio | Madrid — mismo edificio que Nicasio y Alexander |
 | Dormitorios | **1** (PriceLabs, comp set "1 BR") |
-| Limpieza que se **cobra** | **50 €** en 73 de 89 reservas; 60 € en 15; 0 € en 1. Media 51,12 € |
+| Limpieza que se **cobra** | **60 €** desde el 30/08/2026 (decisión de Stag: unificó los 4 pisos en 60 €). Histórico: 50 € en 73 de 89 reservas; 60 € en 15; 0 € en 1. Media 51,12 € |
 | Limpieza que **cuesta** | **43,80 €** por reserva (`listings.limpieza_por_reserva`) |
 
-**La limpieza va en pérdida.** La comisión de canal se cobra también sobre la tarifa de
-limpieza (18,6 % medido acá), así que de los 50 € cobrados entran **40,62 €** contra 43,80 €
-de coste: **−3,18 € por reserva**. Para cubrir coste habría que cobrar ~53,91 €. No es palanca
-de conversión — ver [PLAYBOOK §3.3](../pricing/PLAYBOOK.md).
+Con 60 € la limpieza deja de ir en pérdida: la comisión de canal se cobra también sobre la
+tarifa de limpieza (18,6 % medido acá), así que entran ~48,84 € contra 43,80 € de coste:
+**+5,04 € por reserva** (con los 50 € históricos era −3,18 €; cubrir coste exigía ~53,91 €).
+No es palanca de conversión — ver [PLAYBOOK §3.3](../pricing/PLAYBOOK.md). OJO 30/08/2026: al
+verificar por API, PriceLabs aún mostraba `cleaning_fees` 50 € acá y en Alexander — pendiente
+confirmar que el cambio quedó guardado en Guesty/Airbnb (protocolo §5.3).
 
 ---
 
@@ -233,7 +235,7 @@ descuento — **no se tocan** (PLAYBOOK §4.6).
 | Base (`base`) | **159 €** |
 | Máximo (`max`) | **null — a propósito** (Stag rechazó el techo el 14/08/2026, ver §2.7 y §5.7) |
 | Base recomendada por PriceLabs | 160 € (`bp_ratio` 1,01 — el base está bien calibrado) |
-| Tarifa de limpieza configurada | 50 € |
+| Tarifa de limpieza configurada | 50 € (foto 14/08; Stag la subió a 60 € el 30/08/2026 — ver arriba) |
 | `push_enabled` | true |
 | `last_date_pushed` | 2026-08-14 05:38 UTC |
 | Noches a precio mínimo en los próximos 30 días | **67 %** |

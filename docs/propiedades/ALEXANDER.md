@@ -58,12 +58,15 @@ solo una parte toca suelo, +16 € de mínimo NO son +16 € de ADR. Verificar e
 | Bajo gestión desde | **01/10/2025** (`listings.fecha_inicio`) |
 | Ciudad / edificio | Madrid — mismo edificio que Nicasio y Marechal |
 | Dormitorios | 1 (PriceLabs, 14/08) |
-| Limpieza que **se cobra** | 50 € por reserva (media real cobrada 50,50 €; máximo visto 60 €) |
+| Limpieza que **se cobra** | **60 €** desde el 30/08/2026 (decisión de Stag: unificó los 4 pisos en 60 €). Histórico hasta entonces: 50 € (media real cobrada 50,50 €; máximo visto 60 €) |
 | Limpieza que **cuesta** | **43,80 €** (`listings.limpieza_por_reserva`) — coste real devengado ene–jul: 2.630,11 € / 57 reservas = **46,14 €** |
 
-La limpieza **pierde plata**: la comisión de canal se cobra también sobre ella (18,69 % medido
-acá), así que de los 50 € entran 40,66 € contra un coste de 43,80 € → **−3,14 € por reserva**
-(−5,48 € si se usa el coste real devengado). No es palanca de conversión — ver PLAYBOOK §3.3.
+Con 60 € la limpieza deja de ir en pérdida: la comisión de canal se cobra también sobre ella
+(18,69 % medido acá), así que entran ~48,79 € contra un coste de 43,80 € → **+4,99 € por
+reserva** (con los 50 € históricos era −3,14 €). Sigue sin ser palanca de conversión — ver
+PLAYBOOK §3.3. OJO 30/08/2026: al verificar por API, PriceLabs aún mostraba `cleaning_fees`
+50 € acá y en Marechal (60 en Nicasio/Jacobine) — pendiente confirmar que el cambio quedó
+guardado en Guesty/Airbnb (protocolo §5.3: verificar el último eslabón).
 
 ---
 
