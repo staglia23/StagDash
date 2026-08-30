@@ -135,6 +135,11 @@ Al listar noches libres, excluir siempre las bloqueadas.
 4 noches de Marechal (22–25/08) que estaba **cerrado a la venta**. Ninguna pantalla lo gritó.
 Ojo al contar: hay un artefacto de borde en las 2 últimas fechas sincronizadas del horizonte
 (migración 064) que también aparece como no vendible y no es un bloqueo real.
+*Trampa gemela, 31/08/2026*: al revés también miente. Tras cancelarse una reserva, `get_listing_prices`
+puede seguir devolviendo `booking_status: "Booked"` con la `booked_date` vieja **mientras `occupancy` ya es 0
+y `ADR` es −1**: el estado quedó fantasma. **Para saber si una noche se vendió, mirar `occupancy` (y
+`unbookable`), nunca `booking_status`** — y contrastar con `reservations`. Toda routine que decida "no tocar
+porque ya se vendió" tiene que usar esos campos, o se queda paralizada ante un fantasma.
 *Actualización 15/08/2026 (guesty-sync v8 + migración 081)*: los bloqueos YA NO son invisibles —
 guesty-sync ingesta el calendario de Guesty con sus bloqueos y **su rótulo** → tabla
 `guesty_bloqueos` / vista `v_bloqueos` (refresco cada 3 h, ventana 365 días). Ante una noche
@@ -263,6 +268,27 @@ reservado en el comp set ÷ 0,85) → 147/153 (D−5) → sin suelo, mín 129 (D
 Dato de mercado que manda en este caso: en septiembre las reservas del comp set entran **1–9 días
 antes** — la ventana de compra de una noche liberada a ≤10 días es *ahora*, no "cuando baje".
 La evidencia y las hipótesis están en la bitácora; **medición el 09/09**.
+
+**4.9 · Una noche no puede tener más precios que syncs le queden — y el último precio se pone el D−1, no el día D.**
+PriceLabs publica al canal **una vez al día** (~06:50 UTC). Una escalera de tres escalones para una noche a la
+que le quedan dos syncs se ejecuta como dos: el peldaño intermedio vive de madrugada y **no lo ve ningún
+comprador**. Antes de diseñar una escalera, contar los syncs restantes de cada noche — ése es el número máximo
+de precios que puede tener. Y el peldaño más bajo va en el **D−1**, no en el día mismo: el día D no compra nada
+(Nicasio: cero ventas same-day en 14 meses) y es el único coste que **no caduca**, porque el precio de esa noche
+entra en la serie STLY y el Precio Mínimo de Seguridad (110 % del ADR del año pasado, por día de semana)
+gobierna esa misma noche del año siguiente hasta ~T−180.
+*Origen 31/08/2026*: el primer diseño de la bajada del hueco de Nicasio daba 2/3/3/4 escalones a cuatro noches
+que tenían 1/2/3/4 syncs por delante, con el fondo (110/115) puesto en el día D. La revisión lo tumbó: se
+rediseñó a un escalón por sync, con suelo duro en el D−1.
+
+**4.10 · Para bajar, `min_price` — no `price` fijo — y siempre que el recomendado ya esté por debajo.**
+Si el `uncustomized_price` de PriceLabs está por debajo del suelo (el caso típico de una noche perecedera:
+la curva de último minuto ya empuja hacia abajo y el mínimo del anuncio la frena), **bajar el `min_price`
+basta para bajar el publicado** y el override pisa el mínimo del anuncio. Se prefiere a `price` fijo por su
+**modo de fallo**: si una routine no corre, la noche se queda en el precio más CARO, no en el más barato.
+Es la antítesis exacta de la cicatriz de §5.4. Comprobar siempre en el `pricing_array` que publica el suelo:
+si publica MÁS, el suelo no está mandando (§2.2) y esa fecha no se vuelve a bajar; si publica MENOS, parar,
+porque se rompió un supuesto.
 
 ---
 

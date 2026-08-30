@@ -568,3 +568,88 @@ septiembre + limpieza que no existen. **Resuelto el mismo día**: Guesty la canc
 `canceled` en la corrida de las 12:00 UTC — el P&L de agosto ya no la cuenta. Si entra el 50 %
 (607,76 €), es un **cobro retenido** (línea aparte, no toca noches ni ADR) y la comisión de Booking sobre él
 va como event al llegar la factura.
+
+---
+
+## 2026-08-31 (00:15 Madrid) · Nicasio, noches del no-show: BAJADA TÁCTICA con escalera D−1 (APLICADO)
+
+**Pedido de Stag** (30/08, de noche): *"no deberíamos bajar los precios de las noches que quedaron libres…
+bajemos un poco más el precio y veamos a ver cómo funciona"*. Decisión suya; la tarea fue diseñar la mejor
+bajada posible, no discutirla. Respaldo del playbook: **§4.4** (a ≤7 días una noche vacía compite contra 0 €).
+
+**El hallazgo que hay que leer antes que los precios: a 150 NO estábamos caros.** El huésped veía 127,50
+(con el −15 %) y eso nos dejaba en **p38–p56** del comp set en las cuatro noches, a +7/+10 % de la mediana
+de lo que el barrio YA cobró (y −2,7 % el jueves). Y contra el `precio_base` de cada noche (122/128/136/159),
+los nuevos 124/120/136/150 están entre el 94 % y el 106 %: **esto no es bajar el precio, es dejar de subirlo**
+— el que estaba fuera de sitio era el 150 plano, que es el mínimo del anuncio calibrado para el año, no para
+un martes de septiembre a 24 horas. Las 11 h sin vender del domingo no eran evidencia de nada.
+
+**Competencia (comp set 267 pisos, leído a las 23:35 del 30/08; segunda lectura del día)** · mediana de lo
+YA reservado: lun **119** · mar **116** · mié **119** · jue **131**, idéntica a la de la mañana. Ocupación de
+mercado subió en el día (56,8→60,1 · 52,8→55,6 · 53,4→55,0 · 60,6→61,4) y el pickup de 7 días también
+(4,4→7,3 · 5,6→8,8 · 5,2→6,8 · 6,3→7,5): **el mercado absorbió inventario sin bajar precios**, y la brecha
+contra el año pasado se estrechó 0,8–3,3 pp. `uncustomized` de PriceLabs para esas noches: 76/97/111/134
+(el suelo le tapaba la curva de último minuto).
+
+**El principio de la escalera (lo nuevo que se aprendió acá)** · **cada noche llega a su precio más bajo el
+D−1 — el día ANTES — y el día mismo NO se toca.** Dos razones: (a) Nicasio tiene **cero ventas same-day en
+14 meses**, así que el peldaño del día D no compra nada (±1 € de valor esperado); (b) es el único coste que
+NO caduca: un print bajo entra en la serie STLY y el Precio Mínimo de Seguridad (110 % del ADR del año
+pasado, por día de semana) gobierna esa noche de 2027 hasta ~marzo, justo la ventana donde entra el 71 % de
+las reservas. **Corolario operativo descubierto en la revisión: una noche no puede tener más precios que
+syncs le queden.** PriceLabs publica una vez al día (~06:50 UTC) y las routines corren 95 min antes: una
+escalera de 3 escalones para una noche que tiene 2 syncs por delante se ejecuta como 2, y el peldaño
+intermedio no lo ve nunca un comprador.
+
+**Aplicado (30/08 22:05 UTC = 31/08 00:15 Madrid)** · 4 overrides `min_price fixed EUR` + `min_stay 1` en
+las cuatro noches (el min-stay 1 es la palanca gratis: el hueco es de 4 noches y ninguna combinación queda
+excluida). Verificado en `pricing_array` tras el refresh — publica exactamente el suelo, porque el
+`uncustomized` está por debajo:
+
+| Noche | Hoy | 01/09 | 02/09 | Suelo duro | Huésped ve (Airbnb) | Neto/noche |
+|---|---:|---:|---:|---:|---:|---:|
+| lun 31/08 (D0) | **124** | — | — | 124 | 105,40 | 85,62 |
+| mar 01/09 (D−1) | **120** | — | — | **120** | 102,00 | 82,86 |
+| mié 02/09 | 136 | **120** | — | **120** | 115,60 → 102,00 | 93,91 → 82,86 |
+| jue 03/09 | 150 | 140 | **131** | **131** | 127,50 → 119 → 111,35 | 103,58 → 96,67 → 90,45 |
+
+**Por qué esos suelos** · **120** deja al huésped en 102 = **p25–p32** del barrio (el cuartil barato) y por
+debajo de la mediana reservada (116–119), sin entrar en la zona donde §4.3 midió elasticidad ~0 (cicatriz
+Marechal 07–09/08: percentil ~10 varios días, cero ventas). **131** en el jueves = exactamente la mediana de
+lo que el comp set ya cobró esa noche; es la noche con mejor mercado del hueco (p50 145) y la peor del piso
+(jueves al 58,8 % en 2026 contra 82,4 % el año pasado), así que se la trata aparte y arranca de control.
+El umbral que manda acá **no es el ADR de equilibrio** (esas noches ya tienen los costes fijos hundidos) sino
+el **coste marginal**: ~11–14 €/noche + la limpieza de la estancia (60 cobrados → 48,74 netos vs 53,72 de
+coste = −4,98). Cualquier venta por encima de ~40 € publicados suma; los suelos están muy por encima.
+
+**Mecánica: `min_price`, nunca `price` fijo.** Con el `uncustomized` por debajo, bajar el suelo SÍ baja el
+publicado (confirmado en el `pricing_array`: 124/120/136/150 = los suelos escritos), y la cicatriz de §2.2
+(Alexander con `min` de anuncio 129 y suelo 119 → publicó 123) prueba que el override pisa el mínimo del
+anuncio. Se elige `min_price` por su **modo de fallo**: si una routine no corre, la noche queda al precio
+más CARO, no al más barato — la antítesis exacta de §5.4 (el precio fijo olvidado que regaló los 93,50).
+
+**Routines** · Se **desactivaron** las tres de la escalera de min-stay del 30/08 (`trig_012yeB…`,
+`trig_019FpJ…`, `trig_017sc2…`): habrían reescrito `min_price 150` y pisado la bajada — la del 31/08 corría
+en 4 horas. Nuevas, con guardas reforzadas: **01/09 05:15 UTC** (`trig_01DwgBps3cRpnwbQTdE48wZT`) → 02/09 a
+120 y 03/09 a 140; **02/09 05:15 UTC** (`trig_01DKf85LxxLhspUR1vGXsKTM`, último) → 03/09 a 131.
+Guardas nuevas respecto de las de ayer: (1) **no usar `booking_status`** para saber si una noche se vendió —
+quedó *fantasma* diciendo `"Booked"` con `occupancy 0` y `ADR -1` después de la cancelación; se usa
+`occupancy` del `pricing_array` **y** una consulta a `reservations`; (2) comprobar que **sigue existiendo el
+check-in del 04/09** (si se cae, el hueco cambia de forma y hay que rehacer la escalera); (3) comprobar
+`last_date_pushed` posterior al escalón anterior — si el peldaño de ayer nunca llegó al canal, no se baja
+otro contra cero exposición; (4) si el override no es el esperado, **no dar el paso doble**.
+
+**Pendiente de Stag** · «Sincronizar Ahora» en Nicasio para que salga ya; si no, entra solo en el sync de
+las ~06:50 UTC del 31/08. Y verificar como huésped en Airbnb **si el −15 % de última hora se aplica de
+verdad en Nicasio**: el 28/08 vendió 166,95 sobre 167 publicados, lo que sugiere que no. Si no se aplica,
+toda la banda de esta escalera está un 15 % más arriba de lo calculado (el huésped vería 120–150, no
+102–127,50) — es el input que más mueve la aguja y no está verificado (§5.1).
+
+**Hipótesis en juego** · Stag: a 150 no se vendía y a 120 sí. Claude: el mercado no nos estaba mirando
+todavía; a 120 estamos en el cuartil barato de un barrio que absorbió inventario sin rematar, y si se vende
+no vamos a poder separar qué lo compró — si el precio o el min-stay 1, que se aplicó el mismo día.
+**Coste de la bajada si se venden las 4 noches: −82,88 € contra los 150.** Se paga con 1 noche extra por
+cada 4 que se hubieran vendido igual, y la base de "se hubieran vendido igual" es casi cero.
+
+**Sin medir · medición 04/09**: qué noches se vendieron, a qué precio, con qué lead, por qué canal y en qué
+escalón. Se compara con el caso Magnoli de Alexander (medición 09/09), que corrió la estrategia inversa.
