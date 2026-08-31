@@ -692,9 +692,10 @@ where not exists (
    where e.anio = 2026 and e.mes = 8 and e.propiedad_codigo = '1A_NICA'
      and e.concepto = 'Comisión a Claudio por la reserva Booking BC-68wENnWVl (efectivo)');
 
--- SYNC 01/09/2026 — dormitorios por piso (094): la llave de la categoría del compset de
--- PriceLabs. Confirmados contra PriceLabs (no_of_bedrooms) el 01/09/2026. Idempotente.
+-- SYNC 01/09/2026 — dormitorios por piso (094, corregido en 095): la llave de la categoría
+-- del compset de PriceLabs. OJO: el no_of_bedrooms de PriceLabs decía 3 para Jacobine y
+-- Stag lo corrigió a 2 — el registro de PriceLabs/Guesty está mal, no fiarse de él.
 update listings set dormitorios = 1 where codigo in ('1A_NICA', '4B_ALEX', '3G_MARE') and dormitorios is distinct from 1;
-update listings set dormitorios = 3 where codigo = '1A_JACO' and dormitorios is distinct from 3;
+update listings set dormitorios = 2 where codigo = '1A_JACO' and dormitorios is distinct from 2;
 -- pricelabs_mercado y pricelabs_mercado_fotos NO se seedean: las llena el sync diario
 -- (mismo criterio que pricelabs_prices/pricelabs_fotos).

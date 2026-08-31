@@ -100,7 +100,9 @@ definición). Reglas del motor, validadas contra el Excel histórico y contra ba
   cuentan bloqueos como ocupados y cortan en hoy — diferencias definicionales, no errores.
 - **Año contra año (094, 01/09/2026)**: `pricelabs_mercado` = serie MENSUAL del barrio por
   piso (bloque "Market KPI" de `GET /v1/neighborhood_data` del Customer API, misma key;
-  categoría por `listings.dormitorios`: NICA/ALEX/MARE 1, JACO 3; los tres de Madrid
+  categoría por `listings.dormitorios`: NICA/ALEX/MARE 1, JACO 2 — OJO, el
+  `no_of_bedrooms` de PriceLabs/Guesty dice 3 para Jacobine y está MAL, lo corrigió Stag
+  en la 095: para dormitorios manda `listings`, no PriceLabs; los tres de Madrid
   comparten compset). ADR/ocupación del barrio se DERIVAN en `f_pricelabs_mercado`
   (revenue/vendidas y vendidas/disponibles — la API no las trae); `muestra_chica` marca
   ventanas parciales (ago-2024). OJO parser del sync: la doc oficial de la API está vieja
