@@ -685,6 +685,14 @@ mano — cobro → recobro a la dueña; devolución → crédito a ella. Madrid 
    reserva, cancelada. Decidir si se trabaja o se asume el monocultivo de Airbnb (98,9 %).
 9. **[14/08/2026] Comp set de PriceLabs mal categorizado**: compara contra 1 dormitorio teniendo 2.
    Revisar antes de usar percentiles en cualquier decisión de precio.
+   **[01/09/2026] ACTUALIZACIÓN**: el sesgo cambió de forma, no se arregló solo. El
+   `no_of_bedrooms` de PriceLabs pasó de 2 (14/08) a **3** en algún momento de las dos
+   últimas semanas — nadie sabe todavía quién lo tocó. Los anuncios públicos están BIEN
+   (Airbnb y Booking dicen 2 dormitorios, verificado 01/09), así que el error vive en el
+   registro de PriceLabs, no en Guesty→canales. El dashboard es inmune desde la 094/095
+   (`listings.dormitorios = 2` manda y el compset del barrio se elige con eso), pero la
+   PROPIA interfaz de PriceLabs sigue comparando contra 3 dormitorios: **pendiente que
+   Stag corrija bedrooms=2 en PriceLabs (ficha del listing) y verifique en Guesty**.
 
 ---
 
