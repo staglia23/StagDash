@@ -91,6 +91,9 @@ fecha en que se verificó por última vez. **Si la fecha tiene más de un mes, v
 | Airbnb — viajeros con valoraciones excelentes | disponible, **sin activar** | 07/08/2026 | captura |
 | PriceLabs — personalizaciones por defecto | ver PLAYBOOK §2.7 | 05/08/2026 | capturas |
 | Ventana de la promo anticipada | 3 meses exactos | 07/08/2026 | captura |
+| **Instant Book en Alexander** | **ACTIVO** | 31/08/2026 (Stag) | por chat |
+| **Booking.com — Alexander (15469385)** | conectado en Guesty pero **SIN PUBLICAR**: no recibe reservas | 31/08/2026 (Stag) | por chat |
+| **Booking.com — Marechal (17046956)** | conectado el 09–13/08; **0 reservas** en la base → probablemente tampoco publicado. **Verificar en el extranet** | 31/08/2026 (inferido del dato, no confirmado) | `reservations` |
 
 ⚠️ Solo hay capturas de **Jacobine**. Los descuentos de Nicasio, Alexander y Marechal se asumen
 iguales porque Stag lo confirmó de palabra el 07/08 — no están verificados anuncio por anuncio.

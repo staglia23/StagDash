@@ -610,6 +610,21 @@ dejó ayer en esta bitácora** (formato fijo `**Piloto DD/MM** · estado … · 
 Cada corrida deja línea en la bitácora y manda mail a info@. Se apaga sola fuera de ventana
 (pide por mail que la desactiven) — **compromiso 09/09: apagarla y medir el caso**.
 
+**Verificaciones del canal (31/08, Stag por chat)** · **Push CONFIRMADO**: `last_date_pushed`
+11:02 UTC, posterior a la escritura de las 10:40 → los suelos 161/173 con min-stay 2 ya están
+publicados en Airbnb. **Instant Book: ACTIVO** en Alexander (importa: el comprador de última hora
+filtra por reserva inmediata). **Booking.com: conectado pero SIN PUBLICAR** — eso explica los 0
+históricos. Contraste medido en `reservations` (confirmadas+closed): NICA **2 reservas de Booking
+por 1.937 € de bruto**, JACO 1 por 827 €, **MARE 0**, **ALEX 0**. No salva estas dos noches (una
+alta en Booking no gana ranking en 7 días) pero es un canal gratis que hoy no existe en los dos
+pisos de subarriendo, que son los que se quedan con todo el margen → **pendiente abierto**.
+
+**Paridad para una venta directa (por si Stag la ofrece a su red)** · sin comisión de canal, el
+huésped tendría que pagar **~280 € por las 2 noches con limpieza incluida** para dejar lo mismo que
+los 343,90 € publicados en Airbnb (235,58 € netos, Magnoli pagando 39,42). Regla: `directo =
+neto_objetivo + 43,80` (coste real de limpieza). NO combinar con promoción de Airbnb: sería doble
+descuento (DIRECTAS.md).
+
 
 ---
 
