@@ -569,9 +569,46 @@ acá es exactamente lo que conviene.
   (reescrita: la versión anterior mandaba reenviar el fijo 110 — habría revivido el error).
 **Suelo definitivo 129** (= p25 del barrio a ojos del huésped): por debajo, el alivio para Magnoli
 cae por debajo de 46 € y solo se estaría regalando margen.
-**Supuesto que hay que confirmar con Stag** · que la penalidad es 50 % de 275 = 137,50 y que él paga
-la diferencia hasta 275. Si el pacto fuese otro (p. ej. 50 % del bruto 298, o 50 % fijo sin
-descontar), cambian los números pero NO la estrategia: vender lo más caro posible sin dejar de vender.
+**Pacto CONFIRMADO por Stag (31/08)** · *"Paga el 50 % si las noches no se reservan, pero si las
+logro reservar y supero lo que iba a recibir, paga menos."* Queda cerrado el modelo:
+`paga = min(137,50; max(0; 275 − neto))`. Los dos incentivos apuntan a cosas distintas y hay que
+tenerlos los dos en la cabeza: **que se venda** vale 137,50 € para Samavi; **a qué precio** se venda
+(por encima de ~96 €/noche) es puro alivio para Magnoli.
+
+**PILOTO DIARIO (decisión de Stag, 31/08): "que la estrategia empiece hoy y que cada día, según
+caigan o no reservas, vayas bajando"** · Se cancelan los tres one-shots (quedan deshabilitados y
+renombrados) y los reemplaza **una routine diaria** — `trig_01Cfm7KUw5A1GV1rTvNp4WX6`, cron
+`15 5 * * *` (05:15 UTC, antes del sync que publica ~06:50; primera corrida 01/09).
+
+*Curva base* (suelos `min_price`, min-stay 2 hasta el 05/09 y 1 desde el 06/09):
+
+| corrida | 07/09 | 08/09 | ve el huésped | Magnoli pagaría |
+|---|---|---|---|---|
+| 31/08 (aplicado) | 161 | 173 | 343,90 | **39,42** |
+| 01/09 | 157 | 168 | 336,25 | 45,64 |
+| 02/09 | 152 | 163 | 327,75 | 52,54 |
+| 03/09 | 145 | 155 | 315,00 | 62,89 |
+| 04/09 | 138 | 147 | 302,25 | 73,25 |
+| 05/09 | 132 | 140 | 291,20 | 82,23 |
+| 06/09 | 129 | 129 (+min-stay 1) | 279,30 | 91,90 |
+
+Decay total −20 % en 6 días, más suave al principio (el mercado de septiembre reserva 1–9 días
+antes: la demanda todavía no pasó) y más rápido en la recta final. **Suelo duro 129** (= p25 del
+barrio a ojos del huésped): por debajo el alivio para Magnoli cae de 46 € y solo se regala margen.
+
+*Reacción diaria (lo que hace que no sea un cronograma ciego)* · la routine lee `demand_desc` de
+cada noche, el pickup del listado y el estado de venta, y compara contra **la línea que ella misma
+dejó ayer en esta bitácora** (formato fijo `**Piloto DD/MM** · estado … · demanda … · publica …`):
+- **HOLD** (repetir el suelo de ayer) si la demanda de esa noche sube de escalón, si el pickup de 15
+  días sube o si hubo una reserva en las últimas 24 h. Bajar mientras la demanda sube es regalar.
+- **ACELERAR** (saltar a la fila del día siguiente, nunca más de una) si la demanda baja de escalón
+  o si el recomendado de PriceLabs cae más de un 8 % en el día.
+- **Venta parcial** → la noche que queda es huérfana de 1 noche: min-stay 1 inmediato.
+- **Venta total** → no escribe nada, calcula lo que paga Magnoli con el ADR real y cierra el caso.
+- Nunca sube un suelo ya bajado, nunca `price` fijo, nunca `percent`, nunca por debajo de 129, y
+  si algo no cuadra (reason vacío = edición manual, noche bloqueada, API caída) NO escribe y avisa.
+Cada corrida deja línea en la bitácora y manda mail a info@. Se apaga sola fuera de ventana
+(pide por mail que la desactiven) — **compromiso 09/09: apagarla y medir el caso**.
 
 
 ---
