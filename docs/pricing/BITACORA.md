@@ -531,6 +531,48 @@ PriceLabs): el total que ve el huésped es **247 €**, no 237. (5) DIRECTAS.md:
 una oferta directa u oferta especial — sería el doble descuento; y si reserva por canal, la plata
 entra al reservar, que es exactamente lo que la cicatriz Magnoli pide.
 
+**CORRECCIÓN — el objetivo era otro (31/08, mediodía)** · Stag: *"No, Magnoli ya canceló. Quiero
+que se llene para que no pague el 50 % del valor de la reserva acordado sino menos, para que
+lleguemos al mismo precio. Compará la competencia de la zona para ajustar el mínimo."* Lo del 31/08
+por la mañana se hizo sobre una lectura equivocada de "que él pague menos" (se entendió *que reserve
+él más barato*; era *que le quede menos penalidad*). El precio de cortesía de 110 jugaba **en contra
+del objetivo**: cuanto más barato se vende, MÁS penalidad paga Magnoli.
+
+**La aritmética del caso (la regla que hay que recordar)** · Reserva 275 €, penalidad pactada 50 % =
+**137,50 €**; lo que se recupere revendiendo se le descuenta → Magnoli paga `min(137,50; 275 − neto)`.
+De ahí dos consecuencias que apuntan a cosas distintas:
+- **Que se venda** vale 137,50 € **para Samavi** (de 137,50 sin venta a 275 con venta).
+- **A qué precio** se venda, por encima de ~96 €/noche publicados, **no cambia nada para Samavi**
+  (siempre 275) y es **puro alivio para Magnoli**. A 196 €/noche su penalidad sería 0.
+Neto = `(2 × P × 0,85 + 60) × 0,8124 − 43,80` (0,85 = última hora Airbnb; 0,8124 = payout; 43,80 =
+coste real de limpieza). Tabla: 110/110 → paga 118,14 · 129/129 → 91,90 · 145/155 → 62,89 ·
+161/173 → **39,42** · 185/205 → ~0.
+
+**Competencia leída hoy (31/08, comp set 267 pisos 1BR)** · Lun 07: ocupación 58,5 % (+1,7 pp en un
+día, +7,3 pp en la semana; LY cerró 73 %), p25 110 · p50 146 · p75 185 · p90 258, **mediana PAGADA
+137** (n=145). Mar 08: 56,7 % (+6,1 pp semana; LY 79 %), p25 110 · p50 150 · p75 205 · p90 262,
+**mediana PAGADA 147** (n=140). El ancla NO es el publicado del barrio (que incluye a los que no
+venden) sino **lo que pagaron los que sí reservaron**.
+
+**Aplicado (31/08 10:40 UTC)** · delete del `price` fijo 110 y recreación con **`min_price` 161
+(07/09) y 173 (08/09)** + min-stay 2. Verificado en `pricing_array`: publica **161 / 173** (el
+huérfano −20 % empuja a 117/141 y el suelo lo frena), min_stay 2, unbookable 0. El huésped ve
+136,85 + 147,05 + 60 = **343,90 €** → neto 235,58 → **Magnoli pagaría 39,42 € en vez de 137,50**.
+Se vuelve a `min_price` (no `price` fijo) por §4.10: si una routine falla, la noche queda CARA, que
+acá es exactamente lo que conviene.
+
+**Escalera (routines 05:15 UTC, antes del sync que publica ~06:50; §4.9 un precio por sync)** ·
+- **03/09 (D−4)** → 145/155 · huésped 315 € · Magnoli 62,89 — `trig_01XhA7Bnb22zsjcnJ5ZNCd7A`
+- **05/09 (D−2)** → sin suelo, manda el mínimo del anuncio 129 · huésped 279,30 € · Magnoli 91,90 —
+  `trig_01XgJ56kELgbaSp1HZSt78oV`
+- **06/09 (D−1)** → min-stay 1, precio sin tocar (última red) — `trig_01Ugf4RGSXB5BGpG8cJ5w5KJ`
+  (reescrita: la versión anterior mandaba reenviar el fijo 110 — habría revivido el error).
+**Suelo definitivo 129** (= p25 del barrio a ojos del huésped): por debajo, el alivio para Magnoli
+cae por debajo de 46 € y solo se estaría regalando margen.
+**Supuesto que hay que confirmar con Stag** · que la penalidad es 50 % de 275 = 137,50 y que él paga
+la diferencia hasta 275. Si el pacto fuese otro (p. ej. 50 % del bruto 298, o 50 % fijo sin
+descontar), cambian los números pero NO la estrategia: vender lo más caro posible sin dejar de vender.
+
 
 ---
 
