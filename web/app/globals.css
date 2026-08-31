@@ -763,6 +763,35 @@ table.ranking.precio-tabla td:first-child { padding-left: 10px; }
   table.ranking.precio-tabla th { font-size: 0.62rem; }
 }
 
+/* ── Año contra año (094): el embudo pace ─────────────────────────────────────
+   Barra de color = noches ya vendidas hoy; pista gris = cómo CERRÓ ese mes el año
+   pasado. Mismo lenguaje que el bullet del break-even. "no existía" va con pista
+   punteada vacía: nunca se dibuja como caída (cicatriz 064). */
+.pace-lista { display: grid; gap: 2px; }
+.pace-fila {
+  display: grid; grid-template-columns: 34px 1fr auto; gap: 8px;
+  align-items: center; padding: 4px 0;
+}
+.pace-mes { font-size: 0.78rem; font-weight: 700; color: var(--text-secondary); }
+.pace-track {
+  position: relative; height: 14px; border-radius: 5px;
+  background: var(--gridline); overflow: hidden;
+}
+.pace-track.sin { background: transparent; border: 1px dashed var(--baseline); }
+.pace-ly { position: absolute; inset: 0 auto 0 0; background: var(--baseline); }
+.pace-otb { position: absolute; left: 0; top: 4px; bottom: 4px; border-radius: 3px; }
+.pace-num {
+  font-size: 0.76rem; font-variant-numeric: tabular-nums;
+  color: var(--text-secondary); white-space: nowrap; text-align: right;
+}
+.pace-num b { color: var(--text-primary); }
+.chip-delta { font-weight: 700; font-variant-numeric: tabular-nums; }
+.chip-delta.pos { color: var(--good); }
+.chip-delta.neg { color: var(--critical); }
+.pace-noexiste { color: var(--muted); font-style: italic; }
+/* dato de mercado (PriceLabs): ni real ni reservado ni simulado — taxonomía aparte */
+.badge-mercado { background: var(--muted); color: var(--page); }
+
 /* Cerrar sesión (pie de la portada) */
 .salir { margin-top: 28px; text-align: center; }
 .salir-btn {

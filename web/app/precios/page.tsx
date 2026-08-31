@@ -6,6 +6,8 @@
 // recomendación en una noche que sigue libre, esa noche se vende más barata de lo que el
 // mercado admitiría. Todo lo de acá es FORWARD: nunca toca el P&L devengado.
 import Link from "next/link";
+import { MercadoChart } from "@/components/MercadoChart";
+import { PaceYoy } from "@/components/PaceYoy";
 import { propColor } from "@/lib/colors";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
 import { nombreCorto } from "@/lib/headline";
@@ -14,6 +16,10 @@ import {
   type OportunidadRow, type ResumenPrecioRow,
 } from "@/lib/precios";
 import { readView } from "@/lib/supabase";
+import {
+  filasPace, resumenMercadoSolo, serieMercado, titularPace,
+  type MercadoRow, type PaceRow,
+} from "@/lib/yoy";
 
 export const dynamic = "force-dynamic";
 
@@ -25,10 +31,12 @@ const fechaCorta = (iso: string) => {
 };
 
 export default async function Precios() {
-  const [resumen, oportunidades, freshArr] = await Promise.all([
+  const [resumen, oportunidades, freshArr, paceAll, mercadoAll] = await Promise.all([
     readView<ResumenPrecioRow>("v_pricelabs_resumen"),
     readView<OportunidadRow>("v_pricelabs_oportunidades"),
     readView<Freshness>("v_freshness"),
+    readView<PaceRow>("v_pace_yoy"),
+    readView<MercadoRow>("v_pricelabs_mercado", { order: { col: "mes" } }),
   ]);
 
   const t = totalesPrecios(resumen);
@@ -36,6 +44,33 @@ export default async function Precios() {
   const porEuros = [...resumen].sort(
     (a, b) => Number(b.euros_sobre_la_mesa) - Number(a.euros_sobre_la_mesa),
   );
+
+  // ── Año contra año (094): el embudo por piso + la tendencia del barrio ──
+  const hoyMadrid = new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" }).format(new Date());
+  const mesLimite = `${hoyMadrid.slice(0, 7)}-01`;
+  const anioActual = Number(hoyMadrid.slice(0, 4));
+  const ORDEN_PISOS = ["1A_NICA", "4B_ALEX", "3G_MARE", "1A_JACO"];
+  const pacePorPiso = ORDEN_PISOS
+    .map((codigo) => ({
+      codigo,
+      filas: filasPace(paceAll.filter((r) => r.codigo === codigo)).slice(0, 6),
+    }))
+    .filter((p) => p.filas.length > 0);
+  const paceTitular = titularPace(pacePorPiso);
+  // Los tres de Madrid comparten compset (mismo edificio): el barrio se muestra una vez
+  // por ciudad, con el piso de referencia de cada una.
+  const barrios = [
+    { ciudad: "Madrid · Calle Segovia", codigo: "1A_NICA" },
+    { ciudad: "Sevilla · Alameda", codigo: "1A_JACO" },
+  ].map(({ ciudad, codigo }) => {
+    const rows = mercadoAll.filter((m) => m.codigo === codigo && m.mes < mesLimite);
+    const meta = rows.length ? rows.reduce((a, b) => (a.mes > b.mes ? a : b)) : null;
+    return {
+      ciudad, codigo, meta,
+      serie: serieMercado([], rows, mesLimite),
+      resumen: resumenMercadoSolo(rows, anioActual),
+    };
+  }).filter((b) => b.serie.length > 0);
 
   if (resumen.length === 0) {
     return (
@@ -54,8 +89,8 @@ export default async function Precios() {
       <Link className="backlink" href="/">← Morning Check</Link>
 
       <header className="header">
-        <h1>Precios · próximos 60 días</h1>
-        <div className="sub">Lo que PriceLabs recomienda frente a lo que está publicado</div>
+        <h1>Precios y mercado</h1>
+        <div className="sub">Lo que PriceLabs recomienda, lo ya vendido contra el año pasado y el barrio</div>
         <div className="stamp">
           Foto de PriceLabs del {fechaLarga(resumen[0]?.refreshed_at)} · precios de hoy en
           adelante, no toca el resultado del año
@@ -193,6 +228,77 @@ export default async function Precios() {
               Se muestran las 30 más cercanas de {oportunidades.length}.
             </p>
           )}
+        </>
+      )}
+
+      {/* ── Año contra año (094): el embudo de los 4 pisos ── */}
+      {pacePorPiso.length > 0 && (
+        <>
+          <div className="section-title">
+            Año contra año · lo que viene <span className="badge badge-otb">ya reservado</span>
+          </div>
+          {paceTitular && <p className="titular titular-ficha">{paceTitular}</p>}
+          {pacePorPiso.map((p) => (
+            <div className="card" key={p.codigo} style={{ marginBottom: 10 }}>
+              <div className="prop-head" style={{ marginBottom: 6 }}>
+                <span className="dot" style={{ background: propColor(p.codigo) }} />
+                <Link href={`/p/${encodeURIComponent(p.codigo)}`} className="alerta-prop">
+                  {nombreCorto(p.codigo)}
+                </Link>
+              </div>
+              <PaceYoy filas={p.filas} color={propColor(p.codigo)} />
+            </div>
+          ))}
+          <p className="section-note">
+            Barra de color: noches ya vendidas hoy. Pista gris: cómo cerró ese mes el año
+            pasado. El % compara el precio medio de lo vendido con el de entonces (se calla
+            con menos de 5 noches). «No existía» = el piso aún no estaba en gestión. Los
+            meses con cierres de calendario a propósito (viajes) van por detrás
+            deliberadamente.
+          </p>
+        </>
+      )}
+
+      {/* ── La tendencia del barrio, año tras año ── */}
+      {barrios.length > 0 && (
+        <>
+          <div className="section-title">
+            El barrio, año tras año <span className="badge badge-mercado">mercado</span>
+          </div>
+          {barrios.map((b) => (
+            <div className="chart-card" key={b.codigo} style={{ marginBottom: 10 }}>
+              <div className="card-sub" style={{ color: "var(--muted)", fontSize: "0.78rem", marginBottom: 4 }}>
+                {b.ciudad} · {Number(b.meta?.n_listings ?? 0)} pisos de {b.meta?.categoria ?? "?"} dorm.
+                (compset PriceLabs) · precio medio vendido por mes
+              </div>
+              <MercadoChart data={b.serie} color={propColor(b.codigo)}
+                nombreMercado={b.ciudad} />
+              <p className="section-note" style={{ marginTop: 4 }}>
+                {anioActual} vs {anioActual - 1}:{" "}
+                {b.resumen.adrYoyPct == null ? "sin base todavía" : (
+                  <>
+                    precio{" "}
+                    <strong className={b.resumen.adrYoyPct >= 0 ? "pos" : "neg"}>
+                      {b.resumen.adrYoyPct >= 0 ? "▲ +" : "▼ −"}{pct(Math.abs(b.resumen.adrYoyPct), 0)}
+                    </strong>
+                    {b.resumen.ocupYoyPp != null && (
+                      <>
+                        {" "}· ocupación{" "}
+                        <strong className={b.resumen.ocupYoyPp >= 0 ? "pos" : "neg"}>
+                          {b.resumen.ocupYoyPp >= 0 ? "▲ +" : "▼ −"}{pp(Math.abs(b.resumen.ocupYoyPp))}
+                        </strong>
+                      </>
+                    )}
+                    {" "}(media de {b.resumen.meses} meses)
+                  </>
+                )}
+              </p>
+            </div>
+          ))}
+          <p className="section-note">
+            El mismo barrio vale para los tres pisos de Madrid (mismo edificio). El detalle
+            de cada piso contra su barrio vive en su ficha.
+          </p>
         </>
       )}
 

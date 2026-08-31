@@ -355,7 +355,7 @@ export default async function Home({ searchParams }: { searchParams: { orden?: s
         {precios.length > 0 && (
           <Link href="/precios" className="tile">
             <span className="tile-ic" aria-hidden="true">💶</span>
-            <span><span className="tile-t">Precios</span>
+            <span><span className="tile-t">Precios y mercado</span>
               <span className="tile-s">
                 {totalPrecios.noches > 0
                   ? `${eur(totalPrecios.euros)} en ${totalPrecios.noches} noches por debajo`

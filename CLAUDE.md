@@ -98,6 +98,25 @@ definición). Reglas del motor, validadas contra el Excel histórico y contra ba
   `PRICELABS_API_KEY` (PriceLabs → Account Settings → API Details; 1 $/mes por listing).
   La reconciliación con PriceLabs dio 0 €: sus cifras usan alojamiento SIN limpieza,
   cuentan bloqueos como ocupados y cortan en hoy — diferencias definicionales, no errores.
+- **Año contra año (094, 01/09/2026)**: `pricelabs_mercado` = serie MENSUAL del barrio por
+  piso (bloque "Market KPI" de `GET /v1/neighborhood_data` del Customer API, misma key;
+  categoría por `listings.dormitorios`: NICA/ALEX/MARE 1, JACO 3; los tres de Madrid
+  comparten compset). ADR/ocupación del barrio se DERIVAN en `f_pricelabs_mercado`
+  (revenue/vendidas y vendidas/disponibles — la API no las trae); `muestra_chica` marca
+  ventanas parciales (ago-2024). OJO parser del sync: la doc oficial de la API está vieja
+  — el formato real está comentado en `pricelabs-sync/index.ts` (v4), verificado contra
+  respuesta viva. `pricelabs_mercado_fotos` = foto diaria de los percentiles forward del
+  barrio (mediana pagada incl.): PriceLabs no da su histórico, se acumula desde el
+  01/09/2026. El **STR Index regional NO está en la API REST** (solo MCP/CSV manual): no
+  se automatiza. El YoY propio vive en `f_yoy_mensual` (devengo por noche del motor, ADR
+  **SIN limpieza** desde `money_raw` — así es comparable con el barrio; el ADR del P&L
+  sigue siendo con limpieza) y `f_pace_yoy` (vendido hoy vs cómo CERRÓ ese mes el año
+  pasado, guardas 064: sin STLY válido va `stly_valido=false`, "no existía", jamás 0).
+  Wrappers: `v_yoy_mensual` (24 meses cerrados), `v_pace_yoy` (mes en curso +9),
+  `v_pricelabs_mercado` (~26 meses). El YoY de margen sigue VETADO (§5.5: costes 2025 sin
+  cargar); comparables plenos solo NICA (y JACO desde jul; ALEX estrena oct-2026, MARE
+  dic-2026 — la pantalla lo dice, no lo esconde). Pantallas: sección en la ficha y
+  /precios rebautizada "Precios y mercado"; lógica pura en `web/lib/yoy.ts` + tests.
 - El período es parametrizable desde la 060: el motor vive en funciones `f_*(desde,
   hasta)` (`f_spine` → `f_pnl_mensual_propiedad` → `f_ranking`/`f_costes`/`f_breakeven`/
   `f_canal`, por RPC a `authenticated`) y las vistas son wrappers del año en curso,

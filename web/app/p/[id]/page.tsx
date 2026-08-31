@@ -11,9 +11,12 @@ import { RecobrosCard, type RecobroRow, type RecobrosPendRow } from "@/component
 import { KpiCard } from "@/components/KpiCard";
 import { MiniBarrasMes } from "@/components/MiniBarrasMes";
 import { OnTheBooksTable, type OtbRow } from "@/components/OnTheBooksTable";
+import { MercadoChart } from "@/components/MercadoChart";
+import { PaceYoy } from "@/components/PaceYoy";
 import { RevparChart } from "@/components/RevparChart";
 import { Salud30 } from "@/components/Salud30";
 import { WaterfallChart } from "@/components/WaterfallChart";
+import { YoyAdrChart } from "@/components/YoyAdrChart";
 import { propColor } from "@/lib/colors";
 import { ordenarCuenta, resumenCuentaDuena } from "@/lib/cuentaDuena";
 import { eur, fechaLarga, MESES, pct, pp } from "@/lib/format";
@@ -22,6 +25,10 @@ import { revparEquilibrio } from "@/lib/salud";
 import type { Modelo } from "@/lib/simulador";
 import { readView } from "@/lib/supabase";
 import { pasosWaterfall } from "@/lib/waterfall";
+import {
+  estrenoYoy, filasPace, resumenMercado, resumenYoy, serieAdrYoy, serieMercado, titularYoy,
+  type MercadoRow, type PaceRow, type YoyRow,
+} from "@/lib/yoy";
 
 export const dynamic = "force-dynamic";
 
@@ -78,7 +85,8 @@ export default async function FichaPropiedad({
   const verDirecto = searchParams.margen === "directo";
 
   const [rankAll, beAll, costAll, propAll, canalAll, otbAll, mesesAll, alertAll, freshArr,
-    forwardArr, forwardDias, pickupArr, cuentaRows, recobroRows, recobrosPendArr] =
+    forwardArr, forwardDias, pickupArr, cuentaRows, recobroRows, recobrosPendArr,
+    yoyRows, paceRows, mercadoRows] =
     await Promise.all([
       readView<RankRow>("v_ranking_ytd"),
       readView<BreakevenRow>("v_breakeven_ytd"),
@@ -95,6 +103,9 @@ export default async function FichaPropiedad({
       readView<CuentaDuenaRow>("v_cuenta_duena", { order: { col: "mes" }, eq: { codigo } }),
       readView<RecobroRow>("v_recobros", { eq: { propiedad_codigo: codigo } }),
       readView<RecobrosPendRow>("v_recobros_pendientes", { eq: { propiedad_codigo: codigo } }),
+      readView<YoyRow>("v_yoy_mensual", { eq: { codigo } }),
+      readView<PaceRow>("v_pace_yoy", { eq: { codigo } }),
+      readView<MercadoRow>("v_pricelabs_mercado", { order: { col: "mes" }, eq: { codigo } }),
     ]);
 
   const only = <T extends { codigo: string }>(rows: T[]) => rows.filter((r) => r.codigo === codigo);
@@ -200,6 +211,21 @@ export default async function FichaPropiedad({
     mes: f.mes,
     valor: Number(verDirecto ? f.margen_directo : f.margen_neto),
   }));
+
+  // ── Año contra año (094): devengado vs año previo, el barrio y el embudo forward ──
+  // El mes en curso del mercado llega a medio contar → se corta en el mes anterior.
+  const mesLimiteMercado = `${new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Madrid" })
+    .format(new Date()).slice(0, 7)}-01`;
+  const yoyResumen = resumenYoy(yoyRows, anio);
+  const yoySerie = serieAdrYoy(yoyRows, anio);
+  const mesesArranque = yoySerie.filter((p) => p.arranqueLy).map((p) => MESES[p.mes]);
+  const mercadoSerie = serieMercado(yoyRows, mercadoRows, mesLimiteMercado);
+  const mercadoResumen = resumenMercado(yoyRows, mercadoRows, anio);
+  const mercadoMeta = mercadoRows.length
+    ? mercadoRows.reduce((a, b) => (a.mes > b.mes ? a : b))
+    : null;
+  const pace = filasPace(paceRows).slice(0, 6);
+  const estreno = estrenoYoy(propiedad?.fecha_inicio ?? null);
 
   return (
     <main className="container">
@@ -368,6 +394,88 @@ export default async function FichaPropiedad({
           por noche disponible.
         </p>
       </div>
+
+      {/* ── Año contra año (094): la decisión de Stag del 01/09 — A+B+C juntas ── */}
+      <div className="section-title">
+        Año contra año · {anio} vs {anio - 1} <span className="badge badge-real">real</span>
+      </div>
+      {yoyResumen ? (
+        <div className="chart-card">
+          <p className="titular titular-ficha" style={{ marginBottom: 6 }}>{titularYoy(yoyResumen)}</p>
+          <div className="kpi-sub" style={{ marginBottom: 6 }}>
+            El veredicto lo da el RevPAR (precio × ocupación):{" "}
+            <strong className={yoyResumen.deltaRevparPct >= 0 ? "pos" : "neg"}>
+              {yoyResumen.deltaRevparPct >= 0 ? "▲" : "▼"} {pct(Math.abs(yoyResumen.deltaRevparPct))}
+            </strong>{" "}
+            — {eur(yoyResumen.revpar)} vs {eur(yoyResumen.revparLy)} por noche disponible
+          </div>
+          <YoyAdrChart data={yoySerie} color={propColor(codigo)} anio={anio} />
+          <p className="section-note" style={{ marginTop: 4 }}>
+            ADR sin limpieza y solo meses cerrados (los KPIs de arriba la incluyen — por eso
+            difieren).{yoyResumen.mesesExcluidos > 0 && mesesArranque.length > 0
+              ? ` ${mesesArranque.join(", ")} ${anio - 1} fue el mes de alta: se dibuja pero no cuenta en el total.`
+              : ""}
+          </p>
+        </div>
+      ) : (
+        <div className="notice">
+          Sin base {anio - 1}: el piso todavía no se gestionaba.
+          {estreno ? ` La comparación estrena en ${estreno}.` : ""}
+        </div>
+      )}
+
+      {mercadoSerie.length > 0 && (
+        <>
+          <div className="section-title">
+            Contra su barrio <span className="badge badge-mercado">mercado</span>
+          </div>
+          <div className="chart-card">
+            <MercadoChart data={mercadoSerie} color={propColor(codigo)}
+              nombrePropio={nombreCorto(codigo)}
+              nombreMercado={`Barrio (${Number(mercadoMeta?.n_listings ?? 0)} pisos, ${mercadoMeta?.categoria ?? "?"} dorm.)`} />
+            <dl className="hstats hstats-ficha">
+              <div>
+                <dt>Premium vs barrio · {anio}</dt>
+                <dd>{mercadoResumen.premiumPct == null ? "—"
+                  : `${mercadoResumen.premiumPct >= 0 ? "+" : "−"}${pct(Math.abs(mercadoResumen.premiumPct), 0)}`}</dd>
+              </div>
+              <div>
+                <dt>El barrio vs su {anio - 1}</dt>
+                <dd className={mercadoResumen.mercadoYoyPct != null && mercadoResumen.mercadoYoyPct < 0 ? "neg" : "pos"}>
+                  {mercadoResumen.mercadoYoyPct == null ? "—"
+                    : `${mercadoResumen.mercadoYoyPct >= 0 ? "▲ +" : "▼ −"}${pct(Math.abs(mercadoResumen.mercadoYoyPct), 0)}`}
+                </dd>
+              </div>
+              <div>
+                <dt>Compset PriceLabs</dt>
+                <dd>{Number(mercadoMeta?.n_listings ?? 0)} pisos · {mercadoMeta?.categoria ?? "?"} dorm.</dd>
+              </div>
+            </dl>
+            <p className="section-note" style={{ marginTop: 4 }}>
+              Las dos líneas van sin limpieza: comparación limpia. El «barrio» lo arma
+              PriceLabs con pisos parecidos alrededor; no es censal.
+            </p>
+          </div>
+        </>
+      )}
+
+      {pace.length > 0 && (
+        <>
+          <div className="section-title">
+            Lo que viene vs cómo cerró {anio - 1} <span className="badge badge-otb">ya reservado</span>
+          </div>
+          <div className="card">
+            <PaceYoy filas={pace} color={propColor(codigo)} />
+            <p className="section-note" style={{ marginTop: 8 }}>
+              Barra de color: noches ya vendidas hoy. Pista gris: cómo cerró ese mes el año
+              pasado. El % compara el precio medio de lo vendido con el de entonces y se
+              calla con menos de 5 noches. Los meses con cierres de calendario a propósito
+              (viajes) van por detrás deliberadamente. Precios de PriceLabs, sin limpieza —
+              nada de esto toca el resultado del año.
+            </p>
+          </div>
+        </>
+      )}
 
       <div className="section-title">Detalle mensual · real {anio}</div>
       <div className="table-wrap">
