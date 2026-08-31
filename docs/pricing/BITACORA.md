@@ -500,6 +500,38 @@ escalón, precio, lead, canal. Lo que aprendemos: (a) si vende en el escalón 1�
 reservada es el ancla correcta; (b) si vende recién sin suelo, el mercado de 2 noches lun–mar a ≤3
 días es de p25; (c) si no vende, el hueco era de forma, no de precio (§4.1).
 
+
+**Segundo cambio de objetivo (31/08/2026, Stag)** · "Bajame el precio: no priorizo recuperar,
+sino que él pague menos porque es un conocido" — Magnoli va a reservar por el canal y el precio
+público es la vía elegida (objeción registrada: el precio público es para TODOS; si otro lo agarra
+primero, el conocido se queda sin noches. Lo limpio habría sido reserva directa u oferta especial
+de Airbnb. Stag eligió PriceLabs igual).
+**Aplicado (31/08 ~10:30 UTC)** · delete de los min_price 162/175 y recreación con **`price` FIJO
+110** (fixed, EUR) + min-stay 2 en 07 y 08/09. Es el uso legítimo del precio fijo (§2.2: fijo es
+para BAJAR; §2.10 no aplica — es un descuento deliberado, no un suelo). El huésped ve **93,50
+€/noche** (110 × 0,85) → estancia de 2 noches: 187 + 50 limpieza = **237 €** (−14 % vs los 275 que
+iba a pagar; neto Samavi ≈ 192,5). Referencias: 93,50 visible = por debajo del p25 del mercado
+(110) = el precio exacto al que se revendieron las noches liberadas de Nicasio en agosto → si
+Magnoli no la toma, la probabilidad de que la tome otro es alta.
+**Escaleras canceladas** · routines del 02/09 y 04/09 deshabilitadas (renombradas "CANCELADA
+31/08"). La del 06/09 (D−1) queda como red final reescrita: solo min-stay 2→1, reenviando el
+objeto completo con el fijo 110 (§2.3).
+**Pendiente de Stag** · "Sincronizar Ahora" (si no, publica el sync de mañana ~06:50) y avisarle a
+Magnoli que reserve cuanto antes — el precio es público y esas fechas están por debajo de todo el
+barrio. **Medición 09/09**: quién la reservó (si el ADR ≈ 93,50 vía canal, fue el conocido u otro),
+cuándo, y si el fijo bloqueó una venta mejor (demanda del martes era "Normal" con el F1 cerca).
+**Coherencia con lo de anoche (otra sesión, commits af64d70/0640d95)** · (1) §4.10 pide `min_price`
+para bajar "siempre que el recomendado ya esté por debajo" — acá NO lo está (dinámico 146/176 > 110),
+así que el fijo es la herramienta correcta (§2.2); el modo de fallo barato que §4.10 evita acá es
+deliberado: si todo se cae, la noche queda barata, que es lo que Stag pidió. (2) §4.9 (un precio por
+sync): cumplido de rebote — queda UN solo cambio más (min-stay 1 en D−1). (3) El fijo de 110 entra
+en la serie STLY: si se vende a 93,50, el Precio Mínimo de Seguridad de ese lun–mar de sept-2027
+arrancará bajo (coste chico que no caduca, §4.9). (4) Limpieza ya está en 60 € (verificado en
+PriceLabs): el total que ve el huésped es **247 €**, no 237. (5) DIRECTAS.md: NO mandarle además
+una oferta directa u oferta especial — sería el doble descuento; y si reserva por canal, la plata
+entra al reservar, que es exactamente lo que la cicatriz Magnoli pide.
+
+
 ---
 
 ## 2026-08-30 · No-show Booking en Nicasio 29/08→03/09: comisión, cobro del 50 % y noches liberadas a suelo 150 + escalera de min-stay (APLICADO)
@@ -685,24 +717,3 @@ efectivo (cubrían relevamiento + puerta de Marechal + recogida) — corregido e
 piso, qué método de pago) o si se dejó vencer — y anotar acá el resultado. Si entra: reserva
 manual `confirmed` + Record a payment con nota (DIRECTAS §5). Sin tocar PriceLabs: la reserva
 manual ignora el min-stay.
-
-**Segundo cambio de objetivo (31/08/2026, Stag)** · "Bajame el precio: no priorizo recuperar,
-sino que él pague menos porque es un conocido" — Magnoli va a reservar por el canal y el precio
-público es la vía elegida (objeción registrada: el precio público es para TODOS; si otro lo agarra
-primero, el conocido se queda sin noches. Lo limpio habría sido reserva directa u oferta especial
-de Airbnb. Stag eligió PriceLabs igual).
-**Aplicado (31/08 ~10:30 UTC)** · delete de los min_price 162/175 y recreación con **`price` FIJO
-110** (fixed, EUR) + min-stay 2 en 07 y 08/09. Es el uso legítimo del precio fijo (§2.2: fijo es
-para BAJAR; §2.10 no aplica — es un descuento deliberado, no un suelo). El huésped ve **93,50
-€/noche** (110 × 0,85) → estancia de 2 noches: 187 + 50 limpieza = **237 €** (−14 % vs los 275 que
-iba a pagar; neto Samavi ≈ 192,5). Referencias: 93,50 visible = por debajo del p25 del mercado
-(110) = el precio exacto al que se revendieron las noches liberadas de Nicasio en agosto → si
-Magnoli no la toma, la probabilidad de que la tome otro es alta.
-**Escaleras canceladas** · routines del 02/09 y 04/09 deshabilitadas (renombradas "CANCELADA
-31/08"). La del 06/09 (D−1) queda como red final reescrita: solo min-stay 2→1, reenviando el
-objeto completo con el fijo 110 (§2.3).
-**Pendiente de Stag** · "Sincronizar Ahora" (si no, publica el sync de mañana ~06:50) y avisarle a
-Magnoli que reserve cuanto antes — el precio es público y esas fechas están por debajo de todo el
-barrio. **Medición 09/09**: quién la reservó (si el ADR ≈ 93,50 vía canal, fue el conocido u otro),
-cuándo, y si el fijo bloqueó una venta mejor (demanda del martes era "Normal" con el F1 cerca).
-
