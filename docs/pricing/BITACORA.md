@@ -619,6 +619,29 @@ por 1.937 € de bruto**, JACO 1 por 827 €, **MARE 0**, **ALEX 0**. No salva e
 alta en Booking no gana ranking en 7 días) pero es un canal gratis que hoy no existe en los dos
 pisos de subarriendo, que son los que se quedan con todo el margen → **pendiente abierto**.
 
+**Corridas del piloto** (recuperadas de los mails del 01 y 02/09: el push a GitHub falla con 403
+—"Claude doesn't have GitHub access to staglia23/StagDash"— así que las corridas no pueden dejar
+su línea; **pendiente de Stag: reinstalar la app de Claude en el repo**):
+**Piloto 01/09** · estado: libre · demanda 07: Low, 08: Normal · recomendado PL 07/08: 145/176 ·
+suelos aplicados: 157/168 (fila) · publica: 157/168 · huésped verá: 336,25 € · Magnoli pagaría:
+45,63 € · pickup 15d: 4 · pushed: 2026-08-31T11:02:08Z
+**Piloto 02/09** · estado: libre · demanda 07: Low, 08: **Low** · recomendado PL 07/08: 144/153 ·
+suelos aplicados: 152/163 (fila) · publica: 152/163 · huésped verá: 327,75 € · Magnoli pagaría:
+52,54 € · pickup 15d: 4 · pushed: 2026-09-01T10:53:56Z
+*Criterio del 02/09, bien razonado por la corrida*: el martes bajó de Normal a Low y su recomendado
+cayó de 176 a 153, pero las dos señales estaban medidas contra el 30–31/08, no contra el día
+anterior → repartidas por día dan ~−6,5 %, por debajo del umbral del 8 % que habilita acelerar.
+Ante la duda, la fila. **Y el dato que importa: a 152/163 el huésped ve 129,20 y 138,55, o sea que
+ya estamos POR DEBAJO de la mediana pagada del barrio (137/147).** El precio dejó de ser el
+obstáculo; lo que falta es comprador para un lunes–martes de temporada baja.
+
+**Hallazgo técnico del 01/09 (→ PLAYBOOK §4.8)** · en un hueco huérfano el `min_price` **no actúa
+como piso sino como PRECIO**: el 08/09 publicaba 168 con recomendado 176, porque el −20 % de días
+huérfanos hunde la recomendación (176 × 0,8 = 141) y el suelo la frena en 168. Consecuencia: en un
+hueco de 1–2 noches el suelo fija el precio y **no se captura subida de mercado**, solo se limita la
+caída. Si alguna vez se quiere capturar el alza en un huérfano, hay que apagar la personalización de
+días huérfanos (es a nivel listado, solo por UI).
+
 **Paridad para una venta directa (por si Stag la ofrece a su red)** · sin comisión de canal, el
 huésped tendría que pagar **~280 € por las 2 noches con limpieza incluida** para dejar lo mismo que
 los 343,90 € publicados en Airbnb (235,58 € netos, Magnoli pagando 39,42). Regla: `directo =

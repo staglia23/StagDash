@@ -258,7 +258,15 @@ anuncio). Tres reglas:
    Copiar el ADR del que se fue como `min_price` se queda corto un 25–35 %: 275 € cash de Magnoli
    son **170 €/noche publicados**, no 124 ni 155.
 3. Toda escalera descendente se **programa** (routines a las 05:15 UTC, antes del sync diario que
-   publica ~06:50) y se anota con su fecha de medición. Cada routine relee el estado antes de
+   publica ~06:50) y se anota con su fecha de medición.
+4. **En un hueco huérfano el `min_price` es el PRECIO, no un piso.** El −20 % de días huérfanos
+   hunde la recomendación por debajo del suelo, así que el publicado queda clavado en el suelo: se
+   limita la caída pero **no se captura ninguna subida de mercado** (ALEX 08/09/2026: publicaba 168
+   con recomendado 176). Tenerlo en cuenta al calibrar: el suelo de un huérfano hay que elegirlo
+   como si fuera el precio de venta.
+5. **Una routine que decide con el estado de ayer necesita un canal de memoria que no dependa de
+   GitHub.** Si el push falla, la corrida siguiente arranca ciega. Memoria primaria: su propio mail
+   del día anterior; secundaria: el campo `reason` del override, que siempre está. Cada routine relee el estado antes de
    escribir y no toca nada si el hueco ya se vendió o si los overrides no son los esperados.
 *Origen 29/08/2026*: Alexander 07–08/09, reserva directa F&F de 275 € cash liberada a 9 días. Claude
 recomendó min-stay 2 + suelo inerte y, si la cancelación era decisión propia, no cancelar (231 € netos
