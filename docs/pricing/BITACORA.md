@@ -855,3 +855,24 @@ efectivo (cubrían relevamiento + puerta de Marechal + recogida) — corregido e
 piso, qué método de pago) o si se dejó vencer — y anotar acá el resultado. Si entra: reserva
 manual `confirmed` + Record a payment con nota (DIRECTAS §5). Sin tocar PriceLabs: la reserva
 manual ignora el min-stay.
+
+## 2026-09-02 · Nicasio: min-stay 1 en los dos huérfanos de septiembre (14/09 y 25/09) (APLICADO)
+
+**Pedido de Stag (por chat)** · "poner mínima noche de Nicasio en 1 día — solo para septiembre".
+Cubierto por la autorización vigente de min-stay 1 en huérfanos de NICA/ALEX (09/08, §4.7).
+**Contexto** · Septiembre de Nicasio está casi cerrado: las únicas noches libres son **14/09 y
+25/09**, huérfanas de 1 noche entre reservas y ambas **invendibles** (`unbookable 1`, min-stay 2
+heredado). Las del hueco del no-show (02–03/09) **se vendieron el 31/08** (booked_date del
+calendario; ya tenían min-stay 1 de la escalera) — el detalle de precio/lead/canal va en la
+medición del 04/09, que sigue en pie. Sin bloqueos en `v_bloqueos` para todo el mes.
+**Aplicado** · Overrides `min_stay 1` SOLO en 14/09 y 25/09, **sin tocar precio** (10:21 UTC,
+reason fechado). `overrides_after_update` limpio (ningún campo fantasma). Refresh verificado:
+ambas pasan a vendibles (`unbookable 0`), publican **197 €** (recomendado 246) y **302 €**
+(recomendado 378) — el −20 % de días huérfanos ya mordió; 80 % del recomendado, dentro de banda
+(§5.7) y muy por encima del equilibrio (124 €). El huésped del 14/09 verá ~167 € (−15 % última
+hora, está a 12 días); el del 25/09 verá ~302 € (fuera de ventana, y es noche de alta demanda).
+**Falta** · El push al canal: «Sincronizar Ahora» de Stag o el sync diario de ~06:50 UTC del
+03/09. Verificación del último eslabón en Airbnb pendiente (§5.3).
+**Resultado** · Sin medir — mirar al pasar cada fecha si la noche suelta se vendió (precio, lead,
+canal). Base histórica en contra: los huecos de 1 noche venden el 1,4 % de las veces; la palanca
+vale porque la alternativa es 0 € seguro y el precio no se regaló.
