@@ -637,6 +637,10 @@ consultadas el 30/08/2026):
    de la extranet**; pedir siempre el resumen de la llamada por ahí y anotar nombre y hora.
    Ojo al elegir este camino: con la tarjeta declarada inválida, Booking ya no intenta cobrar → el
    cargo por no-show se da por perdido y solo queda que el huésped pague voluntariamente por transferencia.
+   *Cicatriz 02/09/2026*: **el botón puede no aparecer nunca.** A las +72 h de marcar la tarjeta como no
+   válida seguía sin salir → el reclamo se hace entonces **por escrito vía el Inbox de la extranet**
+   (exención + confirmación escrita de comisión 0 en la factura + nº de caso), que además deja el rastro
+   que la regla de arriba exige. No esperar más de 72 h para pasar al Inbox.
 3. **Nunca cancelar en Guesty antes del paso 1**: una cancelación iniciada por el alojamiento no es
    un no-show y la comisión se factura igual. Después de marcarlo, Guesty pasa la reserva a
    `canceled` solo (documenta 1–24 h; suele ser minutos). Solo si no llega, cancelar en Guesty
