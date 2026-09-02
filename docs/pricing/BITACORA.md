@@ -635,6 +635,27 @@ Ante la duda, la fila. **Y el dato que importa: a 152/163 el huésped ve 129,20 
 ya estamos POR DEBAJO de la mediana pagada del barrio (137/147).** El precio dejó de ser el
 obstáculo; lo que falta es comprador para un lunes–martes de temporada baja.
 
+**02/09 tarde — Stag pide acelerar: "bajame más los precios a ver si las reservamos rápido"** ·
+Se rompe el suelo de 129 **a propósito y solo en estas dos fechas**: `min_price` **120 (07) y 125
+(08)**, min-stay 2. Verificado: publica **121 / 127**, `unbookable` 0. El huésped ve 102,85 + 107,95
++ 60 = **270,80 €** (antes 327,75). Neto 176,19 → **Magnoli pagaría 98,81 €** (antes 52,54).
+*Es una excepción consciente a §2.5, no la cicatriz del 05/08*: va por override de fecha, el mínimo
+del anuncio sigue en 129 y las demás noches no se tocan.
+**Objeción registrada (Claude), Stag decidió igual** · a 129,20/138,55 visibles ya estábamos por
+DEBAJO de la mediana pagada del barrio (137/147), o sea que el precio no era el obstáculo, y la
+elasticidad medida en p22–p76 de esta cartera es ~0 (§4.3). Bajar 30 € más probablemente no compre
+conversión y sí le cuesta ~46 € de alivio a Magnoli. **Pero para Samavi bajar no es malo**: vender
+—al precio que sea por encima de ~96— vale 137,50 € (pasa de 137,50 a 275), así que la apuesta
+tiene sentido desde la caja de la empresa. Es un trade-off entre el bolsillo de Magnoli y la
+probabilidad de vender, y lo decidió el CEO.
+**Curva nueva y suelo nuevo (110)** · 03/09 → 116/120 · 04/09 → 112/116 · 05/09 → 110/112 **y
+min-stay 1** (un día antes de lo previsto, para ganar velocidad) · 06/09 → 110/110 · 07/09 → 110
+solo el 08. **Por debajo de ~96 €/noche el alivio para Magnoli es CERO** (paga los 137,50 igual):
+por eso el suelo se fija en 110, donde todavía le ahorra ~19 €.
+**Nota de coste no perecedero (§4.9)** · una venta a ~103 € entra en la serie STLY y el Precio
+Mínimo de Seguridad del lunes/martes equivalente de sept-2027 arrancará en torno a 113. Chico, pero
+no caduca.
+
 **Hallazgo técnico del 01/09 (→ PLAYBOOK §4.8)** · en un hueco huérfano el `min_price` **no actúa
 como piso sino como PRECIO**: el 08/09 publicaba 168 con recomendado 176, porque el −20 % de días
 huérfanos hunde la recomendación (176 × 0,8 = 141) y el suelo la frena en 168. Consecuencia: en un
