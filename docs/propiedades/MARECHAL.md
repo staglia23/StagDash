@@ -31,9 +31,10 @@ PriceLabs. Datos frescos ese día: `guesty-sync` 09:00 UTC, `pricelabs-sync` 07:
 Con 60 € la limpieza deja de ir en pérdida: la comisión de canal se cobra también sobre la
 tarifa de limpieza (18,6 % medido acá), así que entran ~48,84 € contra 43,80 € de coste:
 **+5,04 € por reserva** (con los 50 € históricos era −3,18 €; cubrir coste exigía ~53,91 €).
-No es palanca de conversión — ver [PLAYBOOK §3.3](../pricing/PLAYBOOK.md). OJO 30/08/2026: al
-verificar por API, PriceLabs aún mostraba `cleaning_fees` 50 € acá y en Alexander — pendiente
-confirmar que el cambio quedó guardado en Guesty/Airbnb (protocolo §5.3).
+No es palanca de conversión — ver [PLAYBOOK §3.3](../pricing/PLAYBOOK.md). **Verificado el 05/09/2026**:
+PriceLabs ya muestra `cleaning_fees` **60 €** para Marechal (`get_listing_data`), así que el cambio
+del 30/08 llegó a la cadena Guesty → PriceLabs. Falta la misma verificación en Alexander y, como
+siempre, el último eslabón en Airbnb (protocolo §5.3).
 
 ---
 
@@ -111,6 +112,15 @@ cayeron los gastos de montaje (mobiliario Sequra 304,34 × 3, TV Xiaomi 460,78, 
 acondicionado 1.834,50); mayo y junio salen verdes porque la renta se compensó contra ese
 mismo aire acondicionado. **Los extraordinarios de 2026 suman 3.822,72 € de los 4.284,88 € de
 "otros"** — el 89 %. La lectura honesta es la del YTD, no la del mes.
+
+📌 **Actualización 05/09/2026 — octubre bajó a 19/31.** La reserva `HMY5R38DJM` (21→27/10, 6
+noches, 1.057 € de payout, reservada el 21/07 con −10 % de early bird) se canceló el 04/09 a las
+21:29 UTC sin retención. Deja un **hueco de 16 noches seguidas, 20/10 → 04/11** (el 20/10 era un
+huérfano de 1 noche; el 05/11 entra la directa `GY-jtnC3pfA`). Análisis completo contra el barrio
+en [BITACORA 05/09](../pricing/BITACORA.md): los precios ya están en el cuartil alto del compset
+(p72–p81) y el barrio va 9–19 puntos por delante del año pasado para esas noches → **decisión: no
+tocar precios**; verificar el refresh de PriceLabs del 05/09 (~08:40 UTC) y el pace el 20/09
+(ESTADO §5).
 
 ### Noviembre es la pendiente número uno
 
@@ -253,6 +263,14 @@ mientras el piso le gana al mercado por 28–34 puntos de ocupación (83 % vs 55
 **suelo mal calibrado hacia abajo**, no de precio alto. Está previsto revisarlo el 01/10 vía
 Custom Seasonal Profile.
 
+**Foto 05/09/2026 (`get_listing_data`)**: min **99** · base **160** (recomendada 162, `bp_ratio`
+1,01) · max null · limpieza **60** · `min_prices_next_30` **0 %** (la señal del 67 % era de agosto:
+ya no hay ninguna noche al mínimo en 30 días) · ocupación 30 d **97 %** vs barrio 68 %, 60 d 85 %
+vs 59 % · MPI 60 d 1,4 · `last_date_pushed` **04/09 08:37 UTC**. OJO: el refresh+push de este piso
+cae a ~08:00–08:40 UTC, **después** del sync de 07:10 → `pricelabs_prices` va un refresh atrás
+(su `precio` es lo que el canal tuvo hasta las ~08:37 de ese día). Y `precio_usuario` NO es un
+override: es el precio del refresh anterior ([PLAYBOOK §2.9](../pricing/PLAYBOOK.md)).
+
 **Min-stay (leído en `pricelabs_prices` el 14/08)**: 2 noches en agosto, **3 noches desde el
 01/09 y en todo el horizonte hasta agosto de 2027**. No hay min-stay 1 en ninguna noche.
 
@@ -361,6 +379,15 @@ vigilancia diaria es de Claude (PLAYBOOK §5.7).
 **12. Refacturación al dueño** *(junio 2026, events)*
 50 % de la inscripción registral: −218,22 €, refacturado al propietario el 19/06.
 
+**13. Cancelación a 46 días en temporada fuerte: la respuesta fue no tocar** *(05/09/2026,
+BITACORA 05/09 y PLAYBOOK §4.8.6)*
+`HMY5R38DJM` (21→27/10, 1.057 €) se cayó a 46 días. Los precios que PriceLabs ya tenía para esas
+noches (231/249/265/269/225/219) eran ≥ lo que pagaba el huésped antes de su early bird, estaban en
+p72–p81 del compset y +36–50 % sobre la mediana pagada, y el barrio iba 9–19 puntos por delante del
+año pasado con pickup al doble. Subir no tenía sustento (por encima de p80 es donde se acumula lo
+que no se vende); bajar tampoco (no perecedero, mercado comprando). Lo único que se verifica el
+mismo día: que el 20/10 salga del modo huérfano en el refresh. Pace a revisar el 20/09.
+
 ---
 
 ## Pendientes abiertos
@@ -410,6 +437,15 @@ vigilancia diaria es de Claude (PLAYBOOK §5.7).
     hay capturas de Jacobine; los de Marechal se asumen iguales porque Stag lo confirmó de
     palabra. Ya costó un error una vez (se infirió −20 % y era −15 %).
 
+12. **Hueco 20/10 → 04/11 (16 noches) por la cancelación del 04/09** *(05/09/2026)*. Sin cambios
+    de precio. Dos citas: **05/09 ~08:40 UTC** (verificar que PriceLabs vio la cancelación: 21–26/10
+    libres en banda y 20/10 fuera de huérfano) y **20/09** (T−30: pace contra el barrio; si no hay
+    pickup y el barrio pasa del ~75 %, primero min-stay 3→2, después precio). ESTADO §5.
+
+13. **`precio_usuario` no es un override** *(05/09/2026)*: es el precio del refresh anterior (KB de
+    PriceLabs). `f_pricelabs_oportunidades` lo usa como "publicado" → los "euros sobre la mesa" de
+    /precios miden otra cosa. Rediseño pendiente (ESTADO §5); Marechal es donde se detectó.
+
 ---
 
 ## Enlaces
@@ -437,6 +473,7 @@ vigilancia diaria es de Claude (PLAYBOOK §5.7).
 
 **Manual de operación** (cierre mensual, proveedores, bloqueos): [`../operativa/CASUISTICAS.md`](../operativa/CASUISTICAS.md)
 
-*Última revisión: 14/08/2026 · Las cifras de esta ficha CADUCAN: se regeneran con las
+*Última revisión: 14/08/2026 (actualización parcial 05/09/2026: limpieza 60 confirmada en PriceLabs,
+octubre 19/31, foto del panel) · Las cifras de esta ficha CADUCAN: se regeneran con las
 consultas de [`../pricing/ESTADO.md`](../pricing/ESTADO.md). Ante cualquier duda entre lo escrito
 acá y la base, manda la base.*

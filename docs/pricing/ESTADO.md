@@ -37,6 +37,11 @@ where codigo = '3G_MARE' and fecha between current_date and current_date + 30
 order by fecha;
 ```
 
+⚠️ `precio_usuario` (= `user_price` de la API) **NO es un override**: es "el último precio que
+PriceLabs vio en el PMS cuando empujó tarifas", o sea el `precio` del refresh anterior (knowledge
+base de PriceLabs, 05/09/2026). Los overrides se leen SOLO en (c). Y `precio` es lo que el canal
+tiene hasta el próximo refresh+push del piso — ver (d).
+
 **c) Qué overrides hay puestos y quién los puso**
 `get_listing_date_overrides(listing_id, pms="guesty", start_date, end_date)`.
 Mirar `reason` (vacío = edición manual desde la UI) y `updated_at`.
@@ -49,6 +54,10 @@ de 7 chars **lunes→domingo, 1 = permitido, 0 = cerrado**. `1111111` = función
 **d) Si el precio llegó al canal**
 `get_listing_data(listing_id)` → comparar `last_date_pushed` con la hora del último cambio.
 Si `last_date_pushed` es anterior, **el canal sigue con el precio viejo**.
+OJO (05/09/2026): la hora del refresh+push **es por piso y se mueve** — observado 03–04/09: ALEX
+05:18, MARE 07:51→08:37, NICA 09:49, JACO 11:01 UTC. No suponer "~06:50": leer `last_date_pushed`.
+En los pisos que refrescan después de las 07:10 UTC, `pricelabs_prices` (sync 07:10) va un
+refresh atrás.
 
 **e) Frescura general del dato**: `select * from v_freshness;`
 
@@ -127,6 +136,8 @@ bloqueada, leer su rótulo en Guesty.**
 | **Diario 05:15 UTC hasta el 08/09** | **Piloto diario del hueco Magnoli** (ALEX 07–08/09). Curva **revisada el 02/09** tras pedir Stag acelerar: aplicado 120/125 (publica 121/127) y sigue 03/09 → 116/120 · 04/09 → 112/116 · 05/09 → 110/112 **+ min-stay 1** · 06/09 → 110/110 · 07/09 → 110 (solo el 08). **Suelo duro 110** (por debajo de ~96 el alivio a Magnoli es cero). Los suelos van por debajo del mínimo del anuncio (129) **a propósito y solo en esas fechas** — no tocar `update_listing_data`. HOLD si la demanda sube, acelera si baja. Memoria de la routine = **su propio mail** (el push a GitHub da 403). → `trig_01Cfm7KUw5A1GV1rTvNp4WX6`; los tres one-shots quedaron DESHABILITADOS |
 | **Pendiente de Stag** | **Reinstalar la app de Claude en el repo** (github.com/apps/claude/installations/select_target): sin eso las routines no pueden commitear la bitácora (403) |
 | **09/09/2026** | **APAGAR la routine `trig_01Cfm7KUw5A1GV1rTvNp4WX6`** (claude.ai/code/routines) y medir el caso Magnoli (BITACORA 29/08, bloques 30 y 31/08): vendida o no, en qué escalón, precio, lead, canal — **y cuánto acabó pagando Magnoli de penalidad** (137,50 si no se vendió). Cerrar la entrada y ajustar PLAYBOOK §4.8 con lo aprendido. Primer dato prospectivo del detector de noches liberadas (plan de automatización guardado en memoria, para ejecutar más adelante) |
+| **05/09/2026 después de ~08:40 UTC** | **Marechal, post-cancelación `HMY5R38DJM` 21→27/10** (BITACORA 05/09): leer `get_listing_prices` 18/10–06/11 y verificar (1) 21–26/10 con `occupancy 0` y precio en banda §5.7 (empujados el 04/09: 231/249/265/269/225/219; alarma si <70 % del recomendado o <136 €), (2) que el **20/10 salga del modo huérfano** (`unbookable 0`, min-stay 2→3, 176→~220). Si el recálculo hunde el bloque >10 %: proponer suelos INERTES al 90 % del ask (205/220/235/240/200/195) con OK de Stag. **Stag: mirar 21→27/10 en Airbnb como huésped** (§5.3) |
+| **20/09/2026** | **Marechal, T−30 del hueco 20/10→04/11** (16 noches): pace contra el barrio (`pricelabs_mercado_fotos` + `occupancy.daily` de `get_neighbourhood_data`). Si 20–26/10 sigue sin pickup y el barrio para esas noches pasa del ~75 %: actuar, primero min-stay 3→2, después precio (§4.8). Antes, no: el barrio compra esas noches entre el ~17/09 y el ~20/10 (ventana mediana 40 d) |
 | **04/09/2026** | Medir el no-show de Nicasio (BITACORA 30/08 + 31/08): noches 30/08–03/09 vendidas o no, precio, lead, canal y en qué escalón de la bajada. Cerrar las dos entradas y comparar con Magnoli (09/09), que corrió la estrategia inversa. Ojo al separar qué compró qué: el min-stay 1 y la bajada se aplicaron el mismo día |
 | **Primera semana de octubre** | Extracto de Booking de septiembre (factura por fecha de SALIDA): `BC-jg7mnkyGW` debe figurar con **comisión 0** (tarjeta declarada no válida el 30/08 + exención reclamada por escrito vía Inbox el 02/09 — el botón prometido nunca apareció). Si aparece la comisión igual, disputar por el Inbox citando ese mensaje y las llamadas del 30/08. De paso, cargar como events las dos comisiones de agosto (216,92 + 250,03) |
 | Sin fecha (poco probable) | Cobro del no-show: **607,76 €** (50 % no reembolsable). Con la tarjeta declarada no válida Booking ya no lo intenta; solo queda que la huésped transfiera por el mail que le mandó Stag el 30/08. Si entrara: cobro retenido de Nicasio (línea aparte, no toca noches) + comisión de Booking sobre él como event |
@@ -142,3 +153,4 @@ bloqueada, leer su rótulo en Guesty.**
 | 09/02/2027 | Pre-Feria: guardas 400/390 del 09–10/04 — retirar si siguen sin vender |
 | 11/03/2027 | Karol G T−90: si cero pickup, bajar suelos a 700 (11–13/06) y 380 (10/06) |
 | Pendiente sin fecha | Único eslabón sin verificar de los cierres del 17/08: probar en **Airbnb** como huésped que rebota una llegada el 06/11 y una salida el 19/01 (PriceLabs y Guesty ya verificados) |
+| Pendiente sin fecha | **Rediseñar `f_pricelabs_oportunidades` / pantalla /precios**: `precio_usuario` NO es override, es el precio del refresh anterior (BITACORA 05/09, hallazgo a) → los "euros sobre la mesa" miden otra cosa. Decidir qué medir (¿recomendado − final solo cuando hay override de precio o clamp de min/max?) y releer los "608 €" del 05/08 |

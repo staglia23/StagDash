@@ -71,6 +71,10 @@ Review Prices) o el sync automático diario (~06:00–07:00 UTC). "Guardar y Act
 izquierdo solo guarda Mínimo/Base/Máximo: **no publica**.
 *Cicatriz 03/08/2026*: los precios quedaron correctos dentro de PriceLabs y Airbnb publicó los
 viejos durante horas. Lo detectó Stag, no el sistema.
+*Actualización 05/09/2026*: la hora del refresh+push **es por piso y se mueve** — observado el
+03–04/09: ALEX 05:18, MARE 07:51→08:37, NICA 09:49, JACO 11:01 UTC. El "~06:50" no es universal:
+antes de dar algo por publicado, leer `last_date_pushed`; y al programar una routine "antes del
+sync", saber que la de las 05:15 corrió **3 minutos** antes del refresh de Alexander.
 
 **2.5 · Los suelos del anuncio mandan; un override que baja el suelo propio es casi siempre un error.**
 Cada listing tiene su `min` configurado. Si el 67–100 % de las noches se venden AL mínimo
@@ -140,6 +144,12 @@ puede seguir devolviendo `booking_status: "Booked"` con la `booked_date` vieja *
 y `ADR` es −1**: el estado quedó fantasma. **Para saber si una noche se vendió, mirar `occupancy` (y
 `unbookable`), nunca `booking_status`** — y contrastar con `reservations`. Toda routine que decida "no tocar
 porque ya se vendió" tiene que usar esos campos, o se queda paralizada ante un fantasma.
+*Trampa tercera, 05/09/2026*: **`user_price` (nuestro `precio_usuario`) NO es un override.** La
+knowledge base de PriceLabs lo define como "el último precio que el sistema vio en el PMS cuando
+empujó tarifas": es el `price` del refresh anterior. Verificado en Marechal: en las 10 noches libres
+del 20/10–04/11 el `user_price` de hoy era exactamente el `price` de ayer, sin ningún override. Los
+overrides se leen SOLO con `get_listing_date_overrides`. Consecuencia: `f_pricelabs_oportunidades`
+(/precios) usa `precio_usuario` como "publicado" y mide otra cosa — rediseño pendiente (ESTADO §5).
 *Actualización 15/08/2026 (guesty-sync v8 + migración 081)*: los bloqueos YA NO son invisibles —
 guesty-sync ingesta el calendario de Guesty con sus bloqueos y **su rótulo** → tabla
 `guesty_bloqueos` / vista `v_bloqueos` (refresco cada 3 h, ventana 365 días). Ante una noche
@@ -268,6 +278,14 @@ anuncio). Tres reglas:
    GitHub.** Si el push falla, la corrida siguiente arranca ciega. Memoria primaria: su propio mail
    del día anterior; secundaria: el campo `reason` del override, que siempre está. Cada routine relee el estado antes de
    escribir y no toca nada si el hueco ya se vendió o si los overrides no son los esperados.
+6. **Cancelación lejana (≥ T−40) en un mes que el barrio cierra por encima del 90 %: la respuesta
+   por defecto es NO tocar el precio.** PriceLabs reprecia solo (y suele venir subiendo por demanda);
+   lo único que se verifica el mismo día es que el huérfano vecino salga del modo huérfano (min-stay
+   y −20 %) y que el recálculo no hunda el bloque (si cae >10 %: suelo INERTE al 90 % del ask, con OK
+   de Stag). Se reevalúa a T−30 con el pace del barrio, y el orden sigue siendo min-stay antes que
+   precio. *Origen 05/09/2026*: Marechal 21–27/10 (`HMY5R38DJM`, 1.057 €) liberada a 46 días — los
+   asks ya estaban en p72–p81 del compset y +36–50 % sobre la mediana pagada, con el barrio 9–19
+   puntos por delante del año pasado y pickup al doble. Subir no tenía sustento; bajar, menos.
 *Origen 29/08/2026*: Alexander 07–08/09, reserva directa F&F de 275 € cash liberada a 9 días. Claude
 recomendó min-stay 2 + suelo inerte y, si la cancelación era decisión propia, no cancelar (231 € netos
 ciertos vs ~100 esperados). Stag decidió liberar y cobrar "igual o más" (escalera con suelo 170) y
@@ -278,7 +296,7 @@ antes** — la ventana de compra de una noche liberada a ≤10 días es *ahora*,
 La evidencia y las hipótesis están en la bitácora; **medición el 09/09**.
 
 **4.9 · Una noche no puede tener más precios que syncs le queden — y el último precio se pone el D−1, no el día D.**
-PriceLabs publica al canal **una vez al día** (~06:50 UTC). Una escalera de tres escalones para una noche a la
+PriceLabs publica al canal **una vez al día** (~06:50 UTC en el caso medido; la hora es por piso y se mueve, §2.4). Una escalera de tres escalones para una noche a la
 que le quedan dos syncs se ejecuta como dos: el peldaño intermedio vive de madrugada y **no lo ve ningún
 comprador**. Antes de diseñar una escalera, contar los syncs restantes de cada noche — ése es el número máximo
 de precios que puede tener. Y el peldaño más bajo va en el **D−1**, no en el día mismo: el día D no compra nada

@@ -876,3 +876,112 @@ hora, está a 12 días); el del 25/09 verá ~302 € (fuera de ventana, y es noc
 **Resultado** · Sin medir — mirar al pasar cada fecha si la noche suelta se vendió (precio, lead,
 canal). Base histórica en contra: los huecos de 1 noche venden el 1,4 % de las veces; la palanca
 vale porque la alternativa es 0 € seguro y el precio no se regaló.
+
+---
+
+## 2026-09-05 · Marechal: cancelación de la reserva 21–27/10 (`HMY5R38DJM`) — hueco de 16 noches; decisión: NO tocar precios (ANÁLISIS, sin cambios)
+
+**Pregunta de Stag (por chat, 05/09 ~02:50 Madrid)** · "me cancelaron una reserva de Marechal para
+octubre… ¿actualizamos los precios en PriceLabs? ¿los libres publicados están bien respecto a la
+competencia o los subimos?"
+
+**Hecho** · `HMY5R38DJM` (Airbnb), 21→27/10 (6 noches, mié 21 a lun 26), reservada el 21/07 (lead
+92 d), cancelada el 04/09 a las 21:29 UTC. Tarifa 211/216/271/270/211/211 = 1.390 € menos "Early
+bird" −139 € (−10 %, reserva anticipada ≥3 meses) + limpieza 50 → comisión 244 → **payout 1.057 €**
+(≈169 €/noche de alojamiento neto). Sin retención: payout 0 (no entra a `v_ingreso_cancelaciones`).
+Octubre pasa de 25/31 a **19/31** (61 %). El hueco resultante es **20/10 → 04/11: 16 noches
+seguidas** (el 20/10 era huérfano de 1 noche entre la salida del 20 y esta entrada; el 05/11 entra
+la directa `GY-jtnC3pfA`). Sin bloqueos en `v_bloqueos`. Sin overrides en octubre (los únicos vivos
+son los de la semana 06–15/11).
+
+**Estado de PriceLabs al analizar** · Último refresh+push de Marechal: **04/09 08:37 UTC — anterior
+a la cancelación**: el `pricing_array` todavía muestra 21–26/10 como Booked. Los precios que empujó a
+esa hora (y que por tanto quedaron vivos en Guesty/Airbnb al liberarse las noches): **231/249/265/
+269/225/219**, min-stay 3. El recálculo forzado (`refresh_listing_pricing`) lo bloqueó el
+clasificador de permisos de la sesión: lo hace solo el refresh de ~08:37 UTC del 05/09. Panel
+(`get_listing_data`): min 99 · base 160 (recomendado 162, bp_ratio 1,01) · max null · **limpieza 60 €
+(confirmado; cierra el OJO del 30/08 en la ficha)** · `min_prices_next_30` **0 %** (en agosto era
+67 %) · ocupación 30 d 97 % vs barrio 68 %; 60 d 85 % vs 59 %; MPI 60 d 1,4.
+
+**Contra el barrio** (265 pisos de 1 dorm., `get_neighbourhood_data` 05/09 ~00:50 UTC; percentiles
+del precio LISTADO, mediana de lo PAGADO por los que ya reservaron, ocupación del compset hoy /
+misma altura del año pasado (STLY) / cómo cerró esa noche en 2025):
+
+| Noche | Nuestro (empujado 04/09) | p50 | p75 | p90 | Mediana pagada | Ocup. hoy | STLY | Cerró 2025 |
+|---|---|---|---|---|---|---|---|---|
+| mar 20/10 | 176 (huérfano −20 %; sin huérfano 220) | 169 | 213 | 270 | 154 | 50 % | 44 % | 95 % |
+| mié 21 | **231** | 177 | 222 | 284 | 154 | 53 % | 43 % | 98 % |
+| jue 22 | **249** | 194 | 252 | 320 | 168 | 57 % | 48 % | 94 % |
+| vie 23 | **265** | 204 | 275 | 353 | 190 | 61 % | 49 % | 94 % |
+| sáb 24 | **269** | 192 | 249 | 318 | 187 | 62 % | 53 % | 98 % |
+| dom 25 | **225** | 166 | 203 | 258 | 164 | 58 % | 44 % | 94 % |
+| lun 26 | **219** | 163 | 204 | 264 | 161 | 54 % | 36 % | 91 % |
+| mar 27 | 175 | 163 | 202 | 245 | 154 | 43 % | 29 % | 90 % |
+| mié 28 | 174 | 172 | 209 | 262 | 148 | 38 % | 25 % | 88 % |
+| jue 29 | 198 | 184 | 243 | 287 | 154 | 37 % | 27 % | 87 % |
+| vie 30 | 241 | 196 | 255 | 348 | 160 | 36 % | 30 % | 92 % |
+| sáb 31 | 241 | 183 | 228 | 317 | 163 | 37 % | 31 % | 96 % |
+| dom 01/11 | 179 | 149 | 188 | 254 | 145 | 32 % | 23 % | 86 % |
+| lun 02 | 151 | 145 | 178 | 249 | 140 | 28 % | 18 % | 82 % |
+| mar 03 | 142 | 147 | 189 | 249 | 135 | 26 % | 17 % | 87 % |
+| mié 04 | 139 | 156 | 201 | 259 | 133 | 24 % | 15 % | 82 % |
+
+(En negrita, las 6 noches liberadas. Datos por noche en `pricelabs_mercado_fotos` desde el 31/08 —
+el `n_reservas` del barrio para 21–26/10 subió de 111–129 a 119–143 en cinco días.)
+
+**Lectura** ·
+1. **El bloque liberado (21–26) ya está caro, no barato**: percentil ~72–81 del listado y +36–50 %
+   sobre la mediana de lo que pagaron los que ya reservaron esas noches. Son además ≥ lo que pagaba
+   el huésped que se fue ANTES de su −10 % (211–271); quien reserve ahora (46 d) no tiene early
+   bird → revendido a estos precios, el payout de las 6 noches sería ~1.230 € contra los 1.057
+   perdidos. PriceLabs además ya los subió solo un +15 % el 28/08 (`pricelabs_fotos`: 21/10 197→231,
+   24/10 259→292→276) por la subida de demanda que él mismo marca en 21–26/10 (+16,6 % de ocupación
+   contra las fechas vecinas; hay un evento del compset el 23–24/10).
+2. **27–31/10 están donde tienen que estar**: p51–p77, +14–51 % sobre la mediana pagada; el barrio va
+   6–14 puntos POR DELANTE del año pasado y cerró 87–96 %. No están "sin vender por caros": están
+   fuera de su ventana — la ventana mediana del barrio en octubre es **40 días** (oct-2025) y la P25
+   de lead de Marechal 43 d → el grueso de la compra de esas noches va del ~17/09 al ~20/10. Pickup a
+   7 días del barrio en 20–27/10: 7,6–10,9 % (STLY 3,2–5,5 %): **el mercado está comprando estas
+   noches AHORA al doble del ritmo del año pasado**.
+3. **Subir**: sin sustento. Marechal en octubre cierra a 165–185 entre semana y 245–262 con finde
+   (alojamiento sin limpieza, `reservations`); los asks del bloque liberado ya están 20–30 % por
+   encima de su propio nivel de entre semana. Por encima de p80 es donde se acumula el inventario que
+   no se vende (por eso el p50 listado está 15–25 % arriba de la mediana pagada).
+4. **Bajar**: sin sustento. 46+ días no es perecedero (§4.4), mercado por delante del año pasado y
+   cierra >90 %.
+5. **Min-stay**: el hueco es de 16 noches → min-stay 3 vale; nada de min-stay 1 (prohibido acá,
+   §4.7). Lo ÚNICO que hay que verificar el mismo día (§4.8.1) es que el **20/10 salga del modo
+   huérfano** en el refresh de 08:37: `unbookable 0`, min-stay 2→3, precio 176→~220.
+6. Las dos únicas noches por debajo del p50 listado son 03 y 04/11 (142/139, "Low Demand", a la
+   mediana pagada 135/133 y al equilibrio del piso 136–139). Son parte del problema de noviembre, que
+   tiene su propio pendiente; no se tocan hoy.
+
+**Decisión** · **No se toca ningún precio ni min-stay.** Verificación en dos tiempos (ESTADO §5):
+- **05/09 después de ~08:40 UTC** (`get_listing_prices` 18/10–06/11): 21–26/10 con `occupancy 0` y
+  precio dentro de banda §5.7 (70–140 % del recomendado; nunca bajo los 136–139 € de equilibrio);
+  20/10 fuera de huérfano. Si el recálculo post-cancelación hunde el bloque >10 %, proponer suelos
+  INERTES al 90 % del ask de hoy (205/220/235/240/200/195), con OK de Stag.
+- **20/09 (T−30 del 20/10)**: pace. Si el bloque 20–26/10 sigue sin pickup y el barrio para esas
+  noches pasa del ~75 %, actuar — primero min-stay (3→2), después precio (§4.8, orden). Antes, no.
+- Último eslabón (§5.3): Stag mira en Airbnb como huésped 21→27/10 (precio y mínimo).
+
+**Valor en juego** · Payout perdido 1.057 €. Revendido a los asks actuales: ~1.230 €; a la mediana
+pagada del barrio (154–190): ~880 €. Probabilidad alta de revender la mayor parte sin tocar nada,
+dado el pace.
+
+**Hallazgos laterales (registrados en PLAYBOOK §2.4 y §2.9 y en ESTADO §1)** ·
+(a) **`user_price` NO es un override**: es "el último precio que PriceLabs vio en el PMS cuando
+empujó tarifas" (knowledge base de PriceLabs, consultada el 05/09). Comprobado: el `user_price` de
+hoy = el `price` de ayer en las 10 noches libres del rango, sin ningún override. Nuestro sync lo
+guarda como `precio_usuario` ("override manual; null = sin override", 063) y
+`f_pricelabs_oportunidades` (072/080) lo usa como "publicado" para los "euros sobre la mesa" de
+/precios → esa pantalla mide *recomendado crudo de hoy − precio final de ayer*, no un override. Los
+"608 € en 22 noches" del 05/08 hay que releerlos. **Rediseño pendiente; no se toca hoy.**
+(b) **La hora del refresh+push es por piso y se mueve**: ALEX 05:18, MARE 07:51→08:37, NICA 09:49,
+JACO 11:01 UTC (03–04/09). El "~06:50" del §4.9 no es universal; la routine de las 05:15 corrió 3
+minutos antes del refresh de Alexander. Leer siempre `last_date_pushed`.
+(c) `pricelabs_prices` de Marechal va un refresh atrás (sync 07:10 < refresh 08:37): su `precio` es
+lo que el canal tuvo hasta las ~08:37 de ese día.
+
+**Resultado** · Pendiente: se mide el 05/09 (refresh) y el 20/09 (pace); se cierra cuando el bloque
+se venda o llegue el 20/10. Registrar precio, lead y canal de cada venta del hueco.
