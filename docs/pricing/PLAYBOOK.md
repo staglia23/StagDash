@@ -202,6 +202,13 @@ que todo suelo se calibra ×1/0,85):
 *Cicatriz 07/08/2026*: se infirió un −20 % para Marechal a partir de una sola observación y se
 publicó 99 € cuando debía ser 93 €. Stag lo corrigió. **Regla derivada: una configuración externa
 que no puedo leer por API no se usa en un cálculo hasta que Stag la confirma** (§5.1).
+*⚠️ NO VERIFICADO (05/09/2026)*: hay un **−10 % que no aparece como promoción** en 9 de 13 reservas de
+Airbnb desde el 05/08 con 30–160 días de antelación, en los 4 anuncios: el huésped paga el 90 % del
+publicado y la reserva no trae línea PROMOTION (4 reservas pagaron el 100 %). No es la anticipada de esta
+tabla, que llega como línea "Early bird" y arranca a los 88–100 días; tampoco es markup de Guesty. Hasta que
+Stag lo identifique en el desglose de `HMR5SYFTDZ` en Airbnb, asumir que en la ventana de 1–3 meses el
+huésped puede estar viendo **0,9× el publicado** — y el percentil de §4.2 va 10 % optimista ahí. Detalle:
+BITACORA 05/09, Resultado.
 
 **3.2 · Apilamiento.** Los descuentos se combinan: mensual + anticipada ≈ −21 %; semanal + última
 hora ≈ −19 %. El suelo debe aguantar el **peor apilamiento posible** y seguir por encima del ADR

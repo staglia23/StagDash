@@ -120,7 +120,9 @@ huérfano de 1 noche; el 05/11 entra la directa `GY-jtnC3pfA`). Análisis comple
 en [BITACORA 05/09](../pricing/BITACORA.md): los precios ya están en el cuartil alto del compset
 (p72–p81) y el barrio va 9–19 puntos por delante del año pasado para esas noches → **decisión: no
 tocar precios**; verificar el refresh de PriceLabs del 05/09 (~08:40 UTC) y el pace el 20/09
-(ESTADO §5).
+(ESTADO §5). **El mismo día a las 12:10: 23→26/10 revendidas** (`HMR5SYFTDZ`, 654,3 € + 60 de limpieza,
+payout 580,33 €, el 97 % de lo que pagaba el cancelado por esas noches) sin tocar nada. Octubre queda
+**22/31** y el hueco se partió en **20–22/10** (3 noches) y **26/10→04/11** (10 noches).
 
 ### Noviembre es la pendiente número uno
 
@@ -437,14 +439,21 @@ mismo día: que el 20/10 salga del modo huérfano en el refresh. Pace a revisar 
     hay capturas de Jacobine; los de Marechal se asumen iguales porque Stag lo confirmó de
     palabra. Ya costó un error una vez (se infirió −20 % y era −15 %).
 
-12. **Hueco 20/10 → 04/11 (16 noches) por la cancelación del 04/09** *(05/09/2026)*. Sin cambios
-    de precio. Dos citas: **05/09 ~08:40 UTC** (verificar que PriceLabs vio la cancelación: 21–26/10
-    libres en banda y 20/10 fuera de huérfano) y **20/09** (T−30: pace contra el barrio; si no hay
-    pickup y el barrio pasa del ~75 %, primero min-stay 3→2, después precio). ESTADO §5.
+12. **Lo que queda del hueco de la cancelación del 04/09: 20–22/10 (3 noches) y 26/10→04/11 (10)**
+    *(05/09/2026)*. La verificación del refresh se hizo (PriceLabs vio la cancelación, 20/10 salió del
+    modo huérfano) y 23–26/10 se revendieron el mismo día. Sin cambios de precio. Cita: **20/09**
+    (T−30: pace contra el barrio; si 20–22 sigue sin vender, min-stay 3→2 con OK de Stag; precio solo
+    si el barrio pasa del ~75 % sin pickup). ESTADO §5.
 
 13. **`precio_usuario` no es un override** *(05/09/2026)*: es el precio del refresh anterior (KB de
     PriceLabs). `f_pricelabs_oportunidades` lo usa como "publicado" → los "euros sobre la mesa" de
     /precios miden otra cosa. Rediseño pendiente (ESTADO §5); Marechal es donde se detectó.
+
+14. **Un −10 % que no es promoción** *(05/09/2026)*. `HMR5SYFTDZ` pagó exactamente el 90 % del precio
+    publicado sin ninguna línea de promoción, y lo mismo pasa en 9 de 13 reservas de Airbnb desde el
+    05/08 en los 4 pisos (30–160 d de antelación). No es early bird (esa arranca a los 88–100 d y viene
+    como línea) ni markup de Guesty. **Stag tiene que abrir esa reserva en Airbnb y leer el desglose.**
+    Mientras, el huésped a 1–3 meses puede estar viendo 0,9× el publicado. ESTADO §3 y BITACORA 05/09.
 
 ---
 

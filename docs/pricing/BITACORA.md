@@ -983,5 +983,39 @@ minutos antes del refresh de Alexander. Leer siempre `last_date_pushed`.
 (c) `pricelabs_prices` de Marechal va un refresh atrás (sync 07:10 < refresh 08:37): su `precio` es
 lo que el canal tuvo hasta las ~08:37 de ese día.
 
-**Resultado** · Pendiente: se mide el 05/09 (refresh) y el 20/09 (pace); se cierra cuando el bloque
-se venda o llegue el 20/10. Registrar precio, lead y canal de cada venta del hueco.
+**Resultado — 05/09, 12:10 Madrid (parcial: 3 de las 6 noches revendidas en 13 horas, sin tocar nada)** ·
+- **Verificación del refresh (07:35 UTC, push 07:35:18)**: PriceLabs vio la cancelación. 21–26/10 pasaron a
+  libres (`occupancy 0`) y el bloque bajó 3–5 %: **224/240/257/256/214/211** (antes 231/249/265/269/225/219),
+  dentro de banda §5.7, sin suelo que proponer. El **20/10 salió del modo huérfano solo**: `unbookable 0`,
+  min-stay 2→3, 176→**212**. Las 27–31/10 bajaron ~5 % (166/166/188/230/229) y el 03/11 quedó en 134, un
+  pelo bajo el equilibrio (136–139): se mira en la revisión de noviembre, no hoy.
+- **Reventa**: `HMR5SYFTDZ` (Airbnb, 2 huéspedes), 23→26/10 (vie–dom), reservada a las 10:04 UTC, lead 48 d.
+  Noches **231,3 / 230,4 / 192,6 = 654,3 €** + limpieza 60 → comisión 133,97 (18,75 %) → **payout 580,33 €**.
+  Se detectó en PriceLabs (`get_pms_reservations`) antes que en la base y se disparó el `guesty-sync` a mano
+  (10:09 UTC, `net.http_post` con el secreto de Vault, el mismo comando del cron; `upserted 1`) para no esperar
+  al de las 12:00. La base y el dashboard ya la tienen.
+- **Contra el que se fue, mismas 3 noches**: el cancelado pagaba 271/270/211 de lista con −10 % de early bird
+  = **243,9 / 243,0 / 189,9 = 676,8 €**. El nuevo paga **654,3 €: −22,5 € (−3,3 %)**. Neto de alojamiento
+  531,6 vs 549,9 (−18,3 €); la limpieza del nuevo (60 → 48,75 netos contra 43,80 de coste) compensa parte.
+  **Las 3 noches se recuperaron al 97 % de lo que pagaba el que canceló.** Frente a su precio de LISTA
+  (752 €) es −13 %, pero ese −10 % de early bird lo tenía también él.
+- **⚠️ Hallazgo: un −10 % que no es promoción.** El nuevo pagó exactamente el **90 %** de lo publicado a las
+  07:35 (257/256/214 → 231,3/230,4/192,6) y la reserva **no trae ninguna línea PROMOTION** (a 48 días no toca
+  early bird, que en los 4 pisos arranca a los 88–100 días según las 75 reservas que sí traen esa línea).
+  Barrido de todas las reservas de Airbnb desde el 05/08 contra la foto de `pricelabs_fotos` del día en que se
+  tomaron: **9 de 13 reservas sin promoción y con 30–160 d de antelación pagaron 0,87–0,91× lo publicado**
+  (JACO 146 d 0,900 · JACO 51 d 0,898 · JACO 37 d 0,900 · NICA 51 d 0,900 · NICA 57 d 0,877 · MARE 48 d
+  0,901 · MARE 56 d 0,900 · ALEX 41 d 0,890 · ALEX 53 d 0,874) y **4 pagaron el 100 %** (NICA 41 d · MARE
+  59 d · ALEX 68 d · ALEX 157 d). Un 10 % clavado, en los 4 anuncios, a unos huéspedes sí y a otros no → no
+  es una regla de antelación pura. PriceLabs no reporta ningún markup de canal en Guesty (`pms_markup_exists`
+  false), así que no viene de ahí. Hipótesis: (a) un descuento de Airbnb configurado como *descuento* y no
+  como *promoción* (p. ej. anticipada a 1 mes) que llega como precio de noche rebajado; (b) uno condicionado
+  al huésped, como el de "viajeros con valoraciones excelentes" (ESTADO §3 lo da como sin activar, pero
+  verificado solo en Jacobine por captura). **No es legible por API (§5.1): Stag abre `HMR5SYFTDZ` en Airbnb
+  y el desglose del precio dice qué descuento aplicó**; después, Precios → Descuentos en los 4 anuncios.
+  Mientras no se sepa, el huésped a 1–3 meses puede estar viendo **0,9× el publicado** y el cálculo de
+  percentil (§4.2) va 10 % optimista en esa ventana. Registrado en ESTADO §3 como NO VERIFICADO.
+- **Lo que queda del hueco**: **20–22/10** (mar–jue, 3 noches; min-stay 3 = exactamente el hueco, solo cabe
+  20→23) y **26/10→04/11** (10 noches, lun→mié). Octubre queda **22/31**. Sin cambios: se mantiene min-stay 3;
+  si el 20/09 el 20–22 sigue sin vender, bajar a 2 (con el riesgo de dejar un huérfano de 1 noche, invendible
+  acá). La medición del 20/09 sigue en pie para los dos bloques; se cierra cuando se vendan o llegue el 20/10.
